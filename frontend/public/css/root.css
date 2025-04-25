@@ -1,0 +1,14 @@
+:root {
+
+    --primaryBackgroundColor: #0c4cac;
+    --primaryBackgroundColorHover: #084387;
+    --primaryTextColor: #ffff;
+    --secondaryBackgroundColor: #0a3d5f;
+    --secondaryBackgroundColorHover: #035e9b;
+    --secondaryTextColor: #ffff;
+    --themeBackgroundColor: #0c57ac;
+    --themeTextColor: #ffff;
+    --tableBackgroundColor: #0a3d5f;
+    --tableTextColor: #ffffff;
+    --bodyBackgroungColor: #FEF9F0;
+}

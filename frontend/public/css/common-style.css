@@ -1,0 +1,121 @@
+/* COLOR */
+.text-success { color: #3cb371 !important; }
+.text-danger { color: #dc3545!important; }
+.text-light-gray { color: #949191!important; }
+
+/* BACKGROUND */
+.bg-none { background: none !important; }
+
+/* FONT SIZE */
+.fs-10 { font-size: 10px !important; }
+.fs-11 { font-size: 11px !important; }
+.fs-12 { font-size: 12px !important; }
+.fs-13 { font-size: 13px !important; }
+.fs-14 { font-size: 14px !important; }
+.fs-15 { font-size: 15px !important; }
+.fs-16 { font-size: 16px !important; }
+.fs-17 { font-size: 17px !important; }
+.fs-18 { font-size: 18px !important; }
+.fs-19 { font-size: 19px !important; }
+.fs-20 { font-size: 20px !important; }
+.fs-21 { font-size: 21px !important; }
+.fs-22 { font-size: 22px !important; }
+.fs-23 { font-size: 23px !important; }
+.fs-24 { font-size: 24px !important; }
+.fs-25 { font-size: 25px !important; }
+
+/* FONT WEIGHT */
+.fw-100 { font-weight: 100 !important; }
+.fw-200 { font-weight: 200 !important; }
+.fw-300 { font-weight: 300 !important; }
+.fw-400 { font-weight: 400 !important; }
+.fw-500 { font-weight: 500 !important; }
+.fw-600 { font-weight: 600 !important; }
+.fw-700 { font-weight: 700 !important; }
+.fw-800 { font-weight: 800 !important; }
+
+/* MARGIN */
+.m-0 { margin: 0 !important; }
+.m-10 { margin: 10px !important; }
+.m-12 { margin: 12px !important; }
+.m-13 { margin: 13px !important; }
+.m-14 { margin: 14px !important; }
+.m-15 { margin: 15px !important; }
+.m-16 { margin: 16px !important; }
+.m-17 { margin: 17px !important; }
+.m-18 { margin: 18px !important; }
+.m-19 { margin: 19px !important; }
+.m-20 { margin: 20px !important; }
+.m-21 { margin: 21px !important; }
+.m-22 { margin: 22px !important; }
+.m-23 { margin: 23px !important; }
+.m-24 { margin: 24px !important; }
+.m-25 { margin: 25px !important; }
+.m-26 { margin: 26px !important; }
+.m-27 { margin: 27px !important; }
+.m-28 { margin: 28px !important; }
+.m-29 { margin: 29px !important; }
+.m-30 { margin: 30px !important; }
+
+/* MARGIN TOP */
+.mt-0 { margin-top: 0 !important; }
+.mt-10 { margin-top: 10px !important; }
+.mt-12 { margin-top: 12px !important; }
+.mt-13 { margin-top: 13px !important; }
+.mt-14 { margin-top: 14px !important; }
+.mt-15 { margin-top: 15px !important; }
+.mt-16 { margin-top: 16px !important; }
+.mt-17 { margin-top: 17px !important; }
+.mt-18 { margin-top: 18px !important; }
+.mt-19 { margin-top: 19px !important; }
+.mt-20 { margin-top: 20px !important; }
+.mt-21 { margin-top: 21px !important; }
+.mt-22 { margin-top: 22px !important; }
+.mt-23 { margin-top: 23px !important; }
+.mt-24 { margin-top: 24px !important; }
+.mt-25 { margin-top: 25px !important; }
+.mt-26 { margin-top: 26px !important; }
+.mt-27 { margin-top: 27px !important; }
+.mt-28 { margin-top: 28px !important; }
+.mt-29 { margin-top: 29px !important; }
+.mt-30 { margin-top: 30px !important; }
+
+/* MARGIN BOTTOM */
+.mb-0 { margin-bottom: 0 !important; }
+.mb-10 { margin-bottom: 10px !important; }
+.mb-12 { margin-bottom: 12px !important; }
+.mb-13 { margin-bottom: 13px !important; }
+.mb-14 { margin-bottom: 14px !important; }
+.mb-15 { margin-bottom: 15px !important; }
+.mb-16 { margin-bottom: 16px !important; }
+.mb-17 { margin-bottom: 17px !important; }
+.mb-18 { margin-bottom: 18px !important; }
+.mb-19 { margin-bottom: 19px !important; }
+.mb-20 { margin-bottom: 20px !important; }
+.mb-21 { margin-bottom: 21px !important; }
+.mb-22 { margin-bottom: 22px !important; }
+.mb-23 { margin-bottom: 23px !important; }
+.mb-24 { margin-bottom: 24px !important; }
+.mb-25 { margin-bottom: 25px !important; }
+.mb-26 { margin-bottom: 26px !important; }
+.mb-27 { margin-bottom: 27px !important; }
+.mb-28 { margin-bottom: 28px !important; }
+.mb-29 { margin-bottom: 29px !important; }
+.mb-30 { margin-bottom: 30px !important; }
+ 
+/* PADDING */
+.p-0 { padding: 0 !important; }
+
+/* WIDTH */
+.w-18 { width: 18% !important; }
+.w-82 { width: 82% !important; }
+.w-83 { width: 83% !important; }
+.w-94 { width: 94% !important; }
+.w-100 { width: 100% !important; }
+
+.w-p-80 { width: 80px !important; }
+.w-p-79 { width: 79px !important; }
+
+.cursor-pointer { cursor: pointer !important; }
+
+.border-none { border: none !important; }

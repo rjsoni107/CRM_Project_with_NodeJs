@@ -1,0 +1,43 @@
+const userPermissions = {
+    ADMIN: [
+        "dashboard",
+        "home",
+        "logout",
+        "forgotPassword",
+        "resetPassword",
+        "changePassword",
+        "user/:id",
+        "userList",
+        "addUser",
+        "getUserList",
+        "getUserDetails",
+        "updateUserData",
+        "deleteUserData",
+        "getCountryList",
+        "getStateList",
+        "getCityList",
+        "profile",
+    ],
+    SUBADMIN: [
+        "dashboard",
+        "home",
+        "logout",
+        "userList",
+        "getUserList",
+        "getCountryList",
+        "getStateList",
+        "getCityList",
+        "profile",
+    ],
+    USER: [
+        "dashboard",
+        "home",
+        "logout",
+        "getCountryList",
+        "getStateList",
+        "getCityList",
+        "profile",
+    ],
+};
+
+module.exports = { userPermissions };

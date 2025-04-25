@@ -1,0 +1,43 @@
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #0b2846;
+    color: #ecf0f1;
+    padding: 10px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 1000;
+    transition: transform 0.3s ease-in-out
+}
+
+.topbar-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.toggle-sidebar-btn {
+    background: none;
+    border: none;
+    color: #ecf0f1;
+    font-size: 1.5rem;
+    cursor: pointer;
+    outline: none;
+}
+
+.logout-btn {
+    background-color: #e74c3c;
+    color: #ecf0f1;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+    background-color: #c0392b;
+}

@@ -1,0 +1,20 @@
+/* ErrorPage.css */
+.error-content {
+    max-width: 600px;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+  }
+  
+  .error-title {
+    font-size: 120px;
+    margin: 0;
+    color: #ff4a4a;
+  }
+  
+  .error-description {
+    font-size: 16px;
+    color: #666;
+    margin: 20px 0;
+  }
