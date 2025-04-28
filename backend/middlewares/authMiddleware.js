@@ -8,6 +8,7 @@ exports.verifyToken = (req, res, next) => {
             responseStatus: "FAILED",
             responseMsg: "No token provided",
             responseCode: "403",
+            redirectUrl: "login"
         });
     }
 
@@ -19,6 +20,7 @@ exports.verifyToken = (req, res, next) => {
             responseStatus: "FAILED",
             responseMsg: "No token provided",
             responseCode: "403",
+            redirectUrl: "login"
         });
     }
 
@@ -32,6 +34,7 @@ exports.verifyToken = (req, res, next) => {
             responseStatus: "FAILED",
             responseMsg: "Invalid or expired token",
             responseCode: "401",
+            redirectUrl: "login"
         });
     }
 };

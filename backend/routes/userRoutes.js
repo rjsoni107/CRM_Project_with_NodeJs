@@ -7,17 +7,16 @@ const router = express.Router();
 
 // Login Routes
 router.post("/loginAction", mainController.loginUser);
-router.post("/changePin", mainController.changePin);
-// router.post("/forgotPin", mainController.forgotPin);
-router.post("/generateOtp", mainController.generateOtp);
-router.post("/verifyOtp", mainController.verifyOtp);
+router.post("/changePinAction", mainController.changePin);
+router.post("/generateOtpAction", mainController.generateOtp);
+router.post("/verifyOtpAction", mainController.verifyOtp);
 
 // User Routes
-router.post("/getUserList", verifyToken, mainController.fetchAllUsers);
-router.post("/addUser", validateAddUser, verifyToken, mainController.addUser);
-router.post("/getUserDetails", verifyToken, mainController.fetchUserByKey);
-router.put("/updateUserData", verifyToken, mainController.updateUser);
-router.delete("/deleteUserData/:id", verifyToken, mainController.deleteUser);
+router.post("/getUserListAction", verifyToken, mainController.fetchAllUsers);
+router.post("/addUserAction", validateAddUser, verifyToken, mainController.addUser);
+router.post("/getUserDetailsAction", verifyToken, mainController.fetchUserByKey);
+router.put("/updateUserAction", verifyToken, mainController.updateUser);
+router.delete("/deleteUserAction/:id", verifyToken, mainController.deleteUser);
 
 // Common Routes
 router.get("/getCountryList", commonController.getCountryList);
