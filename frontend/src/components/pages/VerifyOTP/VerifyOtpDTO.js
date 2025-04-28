@@ -1,18 +1,17 @@
 import { ENDPOINTS } from "../../../utility/ApiEndpoints";
 
-const VerifyOtpDTO = (
-    { state,
-        setError,
-        fetchData,
-        basePathAction,
-        setState,
-        setShowLoader,
-        setIsTimerActive,
-        setErrorMessage,
-        validateFormHandler,
-    }) => {
+const VerifyOtpDTO = ({
+    state,
+    fetchData,
+    basePathAction,
+    setState,
+    setShowLoader,
+    setIsTimerActive,
+    setErrorMessage,
+    validateFormHandler,
+}) => {
 
-    const { mobile, otp } = state.payload;
+    const { mobile, otp, pin, type } = state.payload;
 
     const openPage = (pathName, obj) => {
         setState(prevState => ({
@@ -33,7 +32,7 @@ const VerifyOtpDTO = (
     const getOtpHandler = async (mobile, type) => {
         setShowLoader(true);
         const payload = { mobile, type };
-        const fetchAction = basePathAction(ENDPOINTS.GENERATE_OTP)
+        const fetchAction = basePathAction(ENDPOINTS.GENERATE_OTP_ACTION)
 
         try {
             const response = await fetchData('POST', fetchAction, payload);
@@ -55,22 +54,29 @@ const VerifyOtpDTO = (
         }
     };
 
-    const handleSubmit = async (event) => {
+    const handleVerifyOtp = async (event) => {
         event.preventDefault();
         const that = event.target;
 
         if (validateFormHandler(that)) {
-            const payload = { mobile, otp };
-            const fetchAction = basePathAction(ENDPOINTS.VERIFY_OTP);
-            const redirectAction = basePathAction(ENDPOINTS.DASHBOARD);
+            const payload = { mobile, otp, pin, type };
+            const isLoginOtp = type === 'loginOTP'
+            const fetchActionType = isLoginOtp ? ENDPOINTS.LOGIN_ACTION : ENDPOINTS.VERIFY_OTP_ACTION;
+            const redirectActionType = isLoginOtp ? ENDPOINTS.DASHBOARD : ENDPOINTS.CHANGE_PIN
             setShowLoader(true)
             try {
-                const response = await fetchData('POST', fetchAction, payload);
-                const { responseStatus, responseMsg } = response;
+                const response = await fetchData('POST', basePathAction(fetchActionType), payload);
+                const { responseStatus, responseMsg, token, userDetails } = response;
                 setState(prevState => ({ ...prevState, showLoader: false }));
 
                 if (response && responseStatus === "SUCCESS") {
-                    openPage(redirectAction, response)
+                    if (type === 'loginOTP') {
+                        localStorage.setItem("authToken", token);
+                        localStorage.setItem('globalObj', JSON.stringify(userDetails));
+                        openPage(basePathAction(redirectActionType), userDetails)
+                    } else {
+                        openPage(basePathAction(redirectActionType), response)
+                    }
                 } else {
                     errorMsgHandler(responseStatus, responseMsg);
                     setTimeout(() => {
@@ -82,13 +88,12 @@ const VerifyOtpDTO = (
             } finally {
                 setShowLoader(false)
             }
-
         }
     };
 
     return {
         getOtpHandler,
-        handleSubmit,
+        handleVerifyOtp,
         errorMsgHandler,
     };
 }

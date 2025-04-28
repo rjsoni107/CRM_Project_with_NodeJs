@@ -10,7 +10,7 @@ const UserListDTO = (fetchData, setState, setShowLoader) => {
             length: state.length,
         };
         try {
-            const responseJson = await fetchData('POST', ENDPOINTS.GET_USER_LIST, payload);
+            const responseJson = await fetchData('POST', ENDPOINTS.GET_USER_LIST_ACTION, payload);
             const { userList, countPerPage } = responseJson || {};
 
             if (responseJson && responseJson.responseStatus === 'SUCCESS') {
@@ -29,7 +29,7 @@ const UserListDTO = (fetchData, setState, setShowLoader) => {
     // Add a new user
     const addUser = async (newData) => {
         try {
-            const responseJson = await fetchData('POST', ENDPOINTS.ADD_USER, newData);
+            const responseJson = await fetchData('POST', ENDPOINTS.ADD_USER_ACTION, newData);
             if (responseJson && responseJson.responseStatus === 'Success') {
                 alert(responseJson.responseMsg);
                 // setUserList(userList => [...userList, responseJson.user]);
@@ -43,7 +43,7 @@ const UserListDTO = (fetchData, setState, setShowLoader) => {
     // Update an existing user
     const updateUser = async (id, updatedData) => {
         try {
-            const responseJson = await fetchData('PUT', `${ENDPOINTS.UPDATE_USER_DATA}/${id}`, updatedData);
+            const responseJson = await fetchData('PUT', `${ENDPOINTS.UPDATE_USER_ACTION}/${id}`, updatedData);
             if (responseJson && responseJson.responseStatus === 'Success') {
                 alert(responseJson.responseMsg);
                 // setUserList(userList => userList.map(user => (user._id === id ? { ...user, ...updatedData } : user)));
@@ -58,7 +58,7 @@ const UserListDTO = (fetchData, setState, setShowLoader) => {
     // Delete a user
     const deleteUser = async (id) => {
         try {
-            const responseJson = await fetchData('DELETE', `${ENDPOINTS.DELETE_USER_DATA}/${id}`);
+            const responseJson = await fetchData('DELETE', `${ENDPOINTS.DELETE_USER_ACTION}/${id}`);
             if (responseJson && responseJson.responseStatus === 'Success') {
                 alert(responseJson.responseMsg);
                 // setUserList(userList => userList.filter(user => user._id !== id));

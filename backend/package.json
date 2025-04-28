@@ -1,5 +1,5 @@
 {
-  "name": "nodejs_study",
+  "name": "nodejs_crm_project",
   "version": "1.0.0",
   "description": "Node.js backend for the project",
   "main": "app.js",
@@ -23,7 +23,7 @@
     "upper-case": "^3.0.0"
   },
   "devDependencies": {
-    "concurrently": "^8.2.0",
+    "concurrently": "^8.2.2",
     "nodemon": "^3.1.9"
   },
   "keywords": []

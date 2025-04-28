@@ -36,6 +36,8 @@ const Base = () => {
 
             const data = await response.json();
 
+            if (data.redirectUrl) window.location.href = basePathAction(data.redirectUrl);
+
             return data;
         } catch (error) {
             console.error("Error in fetchData:", error);

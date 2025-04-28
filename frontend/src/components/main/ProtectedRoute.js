@@ -6,7 +6,7 @@ import { ENDPOINTS } from "../../utility/ApiEndpoints";
 const ProtectedRoute = ({ children, requiredPermission }) => {
     const { basePathAction } = Base();
     const isAuthenticated = !!localStorage.getItem("authToken");
-    const permissions = JSON.parse(localStorage.getItem("globalObj")).permissions || [];
+    const permissions = JSON.parse(localStorage.getItem("globalObj"))?.permissions || [];
 
     // Check if the user is authenticated
     if (!isAuthenticated) {

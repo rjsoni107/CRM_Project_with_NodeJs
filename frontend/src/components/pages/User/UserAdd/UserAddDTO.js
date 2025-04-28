@@ -14,7 +14,7 @@ const AddUserDTO = ({setShowLoader, setDialogState, fetchData, basePathAction}) 
         if (validateFormHandler(that)) {
             const userPayload = userAddDetailsRef.current.getPayload();
             const payload = { ...userPayload};
-            const actionName = basePathAction(ENDPOINTS.ADD_USER);
+            const actionName = basePathAction(ENDPOINTS.ADD_USER_ACTION);
 
             setShowLoader(true);
             fetchData('POST', actionName, payload).then(responseJson => {
