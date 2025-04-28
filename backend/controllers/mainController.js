@@ -6,8 +6,6 @@ const { userPermissions } = require("../util/Base")
 const crypto = require("crypto");
 const ForgotPIN = require("../modules/forgotPinModel");
 const LoginOTP = require("../modules/loginOtpModel");
-const otpStore = new Map();
-const axios = require('axios');
 
 function generateUniqueId() {
     return Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)).join('');
@@ -27,6 +25,7 @@ exports.createDefaultAdmin = async () => {
         const adminUser = new User({
             id: "ADMIN001", // Unique ID for the admin
             firstName: "Default",
+            status: active,
             lastName: "Admin",
             emailId: "admin@example.com", // Default email
             mobile: "1111111111", // Default mobile number
@@ -47,7 +46,8 @@ exports.createDefaultAdmin = async () => {
 // Login User
 exports.loginUser = async (req, res) => {
     try {
-        const { mobile, pin } = req.body;
+        const { mobile, pin, type, otp } = req.body;
+
         // Find the user by email
         const user = await User.findOne({ mobile, });
         const isNotActive = await User.findOne({ mobile, status: "Active" });
@@ -67,14 +67,54 @@ exports.loginUser = async (req, res) => {
             });
         }
 
-        // Compare the provided pin with the hashed pin
-        const isMatch = await bcrypt.compare(pin, user.pin);
-        if (!isMatch) {
-            return res.status(401).json({
-                responseStatus: "FAILED",
-                responseMsg: "Invalid credentials",
-                responseCode: "401",
-            });
+        if (type === 'loginOTP') {
+            // Find the active OTP for the mobile
+            const loginOtp = await LoginOTP.findOne({ mobile, otp, status: "active" });
+
+            if (!loginOtp) {
+                return res.status(401).json({
+                    responseStatus: "FAILED",
+                    responseMsg: "Invalid or expired OTP",
+                    responseCode: "401",
+                });
+            }
+
+            // Check if OTP is expired
+            if (loginOtp.otpExpiry < Date.now()) {
+                // Mark the OTP as expired
+                loginOtp.status = "expired";
+                await loginOtp.save();
+
+                return res.status(401).json({
+                    responseStatus: "FAILED",
+                    responseMsg: "OTP has expired",
+                    responseCode: "401",
+                });
+            }
+
+            // Clear OTP after successful verification
+            loginOtp.status = "verified";
+            await loginOtp.save();
+
+        } else {
+            // Validate the PIN
+            if (!user.pin) {
+                return res.status(400).json({
+                    responseStatus: "FAILED",
+                    responseMsg: "User PIN is not set",
+                    responseCode: "400",
+                });
+            }
+
+            // Compare the provided pin with the hashed pin
+            const isMatchPin = await bcrypt.compare(pin, user.pin);
+            if (!isMatchPin) {
+                return res.status(401).json({
+                    responseStatus: "FAILED",
+                    responseMsg: "Invalid credentials",
+                    responseCode: "401",
+                });
+            }
         }
 
         // Generate a JWT token
@@ -334,50 +374,6 @@ exports.deleteUser = async (req, res) => {
     }
 };
 
-exports.changePin = async (req, res) => {
-    try {
-        const { mobile, newPin, confirmPin } = req.body;
-
-        // Validate the new PIN and confirm PIN
-        if (newPin !== confirmPin) {
-            return res.status(400).json({
-                responseStatus: "FAILED",
-                responseMsg: "New PIN and Confirm PIN do not match",
-                responseCode: "400",
-            });
-        }
-
-        // Find the user by mobile
-        const user = await User.findOne({ mobile });
-        if (!user) {
-            return res.status(404).json({
-                responseStatus: "FAILED",
-                responseMsg: "User not found",
-                responseCode: "404",
-            });
-        }
-
-        // Hash the new PIN
-        const hashedPin = await bcrypt.hash(newPin, 10);
-
-        // Update the user's PIN
-        user.pin = hashedPin;
-        await user.save();
-
-        res.status(200).json({
-            responseStatus: "SUCCESS",
-            responseMsg: "PIN updated successfully",
-            responseCode: "200",
-        });
-    } catch (error) {
-        res.status(500).json({
-            responseStatus: "FAILED",
-            responseMsg: "Error updating PIN: " + error.message,
-            responseCode: "500",
-        });
-    }
-};
-
 exports.generateOtp = async (req, res) => {
     try {
         const { mobile, type } = req.body;
@@ -390,16 +386,27 @@ exports.generateOtp = async (req, res) => {
             });
         }
 
+        const user = await User.findOne({ mobile });
+        // Find the user by mobile
+        if (!user) {
+            return res.status(404).json({
+                responseStatus: "FAILED",
+                responseMsg: "User not found",
+                responseCode: "404",
+            });
+        }
+
+        const isNotActive = await User.findOne({ mobile, status: "Active" });
+        if (!isNotActive) {
+            return res.status(403).json({
+                responseStatus: "FAILED",
+                responseMsg: "User not active",
+                responseCode: "403",
+            });
+        }
+
         // Generate a 6-digit OTP
         const otp = crypto.randomInt(100000, 999999).toString();
-
-        // Save OTP in the database (or in-memory storage like Redis)
-        // otpStore.set(mobile, {
-        //     otp,
-        //     otpExpiry: Date.now() + 5 * 60 * 1000
-        // });
-
-        console.log(type)
 
         // Save OTP in the database
         const collectionName = type === 'loginOTP' ? LoginOTP : ForgotPIN;
@@ -461,6 +468,15 @@ exports.verifyOtp = async (req, res) => {
             });
         }
 
+        const isNotActive = await User.findOne({ mobile, status: "Active" });
+        if (!isNotActive) {
+            return res.status(403).json({
+                responseStatus: "FAILED",
+                responseMsg: "User not active",
+                responseCode: "403",
+            });
+        }
+
         // Find the active OTP for the mobile
         const forgotPIN = await ForgotPIN.findOne({ mobile, otp, status: "active" });
 
@@ -511,6 +527,61 @@ exports.verifyOtp = async (req, res) => {
         res.status(500).json({
             responseStatus: "FAILED",
             responseMsg: "Error verifying OTP: " + error.message,
+            responseCode: "500",
+        });
+    }
+};
+
+exports.changePin = async (req, res) => {
+    try {
+        const { mobile, pin, confirmPin } = req.body;
+
+        // Find the user by mobile
+        const user = await User.findOne({ mobile });
+
+        if (!user) {
+            return res.status(404).json({
+                responseStatus: "FAILED",
+                responseMsg: "User not found",
+                responseCode: "404",
+            });
+        }
+
+        // Validate the new PIN and confirm PIN
+        if (pin !== confirmPin) {
+            return res.status(400).json({
+                responseStatus: "FAILED",
+                responseMsg: "New PIN and Confirm PIN do not match",
+                responseCode: "400",
+            });
+        }
+
+        const isSamePin = await bcrypt.compare(pin, user.pin);
+
+        if (isSamePin) {
+            return res.status(402).json({
+                responseStatus: "FAILED",
+                responseMsg: "New PIN cannot be same as old PIN",
+                responseCode: "402",
+            });
+        }
+
+        // Hash the new PIN
+        const hashedPin = await bcrypt.hash(pin, 10);
+
+        // Update the user's PIN
+        user.pin = hashedPin;
+        await user.save();
+
+        res.status(200).json({
+            responseStatus: "SUCCESS",
+            responseMsg: "PIN updated successfully",
+            responseCode: "200",
+        });
+    } catch (error) {
+        res.status(500).json({
+            responseStatus: "FAILED",
+            responseMsg: "Error updating PIN: " + error.message,
             responseCode: "500",
         });
     }

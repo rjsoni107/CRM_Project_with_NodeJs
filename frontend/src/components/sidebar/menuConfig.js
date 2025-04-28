@@ -12,7 +12,7 @@ const menuConfig = [
         label: "Report",
         icon: <FaUser />,
         children: [
-            { label: "Sale Report", path: ENDPOINTS.ADD_USER },
+            { label: "Sale Report", path: ENDPOINTS.ADD_USER_ACTION },
             { label: "Failed Report", path: ENDPOINTS.USER_LIST },
         ],
     },
@@ -20,7 +20,7 @@ const menuConfig = [
         label: "User",
         icon: <FaUser />,
         children: [
-            { label: "Add User", path: ENDPOINTS.ADD_USER },
+            { label: "Add User", path: ENDPOINTS.ADD_USER_ACTION },
             { label: "User List", path: ENDPOINTS.USER_LIST },
         ],
     },

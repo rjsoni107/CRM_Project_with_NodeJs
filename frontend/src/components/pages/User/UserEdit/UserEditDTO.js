@@ -14,7 +14,7 @@ const UserEditDTO = ({setShowLoader, setUserDetails, id, setDialogState, fetchDa
     // Fetch all users
     const getUserDetail = async () => {
         const payload = { id: id };
-        const actionName = basePathAction(ENDPOINTS.GET_USER_DETAILS);
+        const actionName = basePathAction(ENDPOINTS.GET_USER_DETAILS_ACTION);
 
         setShowLoader(true);
         try {
@@ -42,7 +42,7 @@ const UserEditDTO = ({setShowLoader, setUserDetails, id, setDialogState, fetchDa
             const userPayload = userDetailsRef.current.getPayload();
             const userId = {'id': id}
             const payload = { ...userPayload, ...userId };
-            const actionName = basePathAction(ENDPOINTS.UPDATE_USER_DATA);
+            const actionName = basePathAction(ENDPOINTS.UPDATE_USER_ACTION);
 
             setShowLoader(true);
             fetchData('PUT', actionName, payload).then(responseJson => {
@@ -75,7 +75,7 @@ const UserEditDTO = ({setShowLoader, setUserDetails, id, setDialogState, fetchDa
     // Update an existing user
     // const updateUser = async (id, updatedData) => {
     //     try {
-    //         const responseJson = await fetchData('PUT', `${ENDPOINTS.UPDATE_USER_DATA}/${id}`, updatedData);
+    //         const responseJson = await fetchData('PUT', `${ENDPOINTS.UPDATE_USER_ACTION}/${id}`, updatedData);
     //         if (responseJson && responseJson.responseStatus === 'Success') {
     //             alert(responseJson.responseMsg);
     //             setUserList(userList => userList.map(user => (user._id === id ? { ...user, ...updatedData } : user)));

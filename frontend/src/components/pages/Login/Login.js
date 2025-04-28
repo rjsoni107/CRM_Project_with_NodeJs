@@ -14,6 +14,8 @@ const Login = () => {
         payload: {
             mobile: "",
             pin: "",
+            otp: '',
+            type: 'loginPin'
         },
         redirect: null,
         redirectState: null,

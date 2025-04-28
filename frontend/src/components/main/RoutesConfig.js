@@ -6,8 +6,8 @@ import Profile from "../pages/Profile/Profile";
 import Login from "../pages/Login/Login";
 import ErrorPage from "../pages/ErrorPage/ErrorPage";
 import { ENDPOINTS } from "../../utility/ApiEndpoints";
-import VerifyOtp from "../pages/VerifyOTP/VerifyOtp";
-
+import VerifyOtp from "../pages/VerifyOtp/VerifyOtp";
+import ChangePin from "../pages/ChangePin/ChangePin";
 const RoutesConfig = [
     // Public Routes
     {
@@ -26,8 +26,14 @@ const RoutesConfig = [
         isProtected: false,
     },
     {
-        path: ENDPOINTS.VERIFY_OTP,
+        path: ENDPOINTS.VERIFY_OTP_ACTION,
         element: <VerifyOtp />,
+        isProtected: false,
+    },
+
+    {
+        path: ENDPOINTS.CHANGE_PIN,
+        element: <ChangePin />,
         isProtected: false,
     },
 
@@ -43,7 +49,7 @@ const RoutesConfig = [
         isProtected: true,
     },
     {
-        path: ENDPOINTS.ADD_USER,
+        path: ENDPOINTS.ADD_USER_ACTION,
         element: <AddUser />,
         isProtected: true,
     },
