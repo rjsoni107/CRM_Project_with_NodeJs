@@ -2,56 +2,63 @@ const User = require("../modules/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
-const { userPermissions } = require("../util/Base")
+const { userPermissions } = require("../util/Base");
 const crypto = require("crypto");
 const ForgotPIN = require("../modules/forgotPinModel");
 const LoginOTP = require("../modules/loginOtpModel");
+const { Sequelize } = require("sequelize");
 
+// Generate Unique ID
+// This function generates a unique 16-digit ID for the user.
 function generateUniqueId() {
     return Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)).join('');
 }
 
+const isValueExist = (data) => data !== null && data !== undefined && data !== 'null';
+
+// Create Default Admin
 exports.createDefaultAdmin = async () => {
     try {
-        // Check if an admin user already exists
-        const existingAdmin = await User.findOne({ userType: "ADMIN" });
+        console.log("[createDefaultAdmin] Checking if default admin exists...");
+        const existingAdmin = await User.findOne({ where: { userType: "ADMIN" } });
         if (existingAdmin) {
-            console.log("Default admin already exists.");
+            console.log("[createDefaultAdmin] Default admin already exists.");
             return;
         }
 
-        // Create a default admin user
+        console.log("[createDefaultAdmin] Creating default admin...");
         const hashedPin = await bcrypt.hash("111111", 10); // Default PIN (hashed)
-        const adminUser = new User({
-            id: "ADMIN001", // Unique ID for the admin
+        await User.create({
+            id: generateUniqueId(),
             firstName: "Default",
-            status: active,
+            status: "Active",
             lastName: "Admin",
-            emailId: "admin@example.com", // Default email
-            mobile: "1111111111", // Default mobile number
+            emailId: "admin@example.com",
+            mobile: "1111111111",
             pin: hashedPin,
-            userType: "ADMIN", // Set user type as ADMIN
+            userType: "ADMIN",
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
         });
 
-        // Save the admin user to the database
-        await adminUser.save();
-        console.log("Admin created successfully.");
+        console.log("[createDefaultAdmin] Default admin created successfully.");
     } catch (error) {
-        console.error("Error creating default admin:", error.message);
+        console.error("[createDefaultAdmin] Error creating default admin:", error.message);
     }
-}
+};
 
 // Login User
-exports.loginUser = async (req, res) => {
+exports.login = async (req, res) => {
     try {
+        console.log("[loginUser] Login request received:", req.body);
         const { mobile, pin, type, otp } = req.body;
 
-        // Find the user by email
-        const user = await User.findOne({ mobile, });
-        const isNotActive = await User.findOne({ mobile, status: "Active" });
+        console.log("[loginUser] Finding user by mobile...");
+        const user = await User.findOne({ where: { mobile } });
+        const isNotActive = await User.findOne({ where: { mobile, status: "Active" } });
+
         if (!user) {
+            console.log("[loginUser] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
                 responseMsg: "User not found",
@@ -60,6 +67,7 @@ exports.loginUser = async (req, res) => {
         }
 
         if (!isNotActive) {
+            console.log("[loginUser] User is not active.");
             return res.status(403).json({
                 responseStatus: "FAILED",
                 responseMsg: "User not active",
@@ -68,10 +76,11 @@ exports.loginUser = async (req, res) => {
         }
 
         if (type === 'loginOTP') {
-            // Find the active OTP for the mobile
+            console.log("[loginUser] Validating OTP...");
             const loginOtp = await LoginOTP.findOne({ mobile, otp, status: "active" });
 
             if (!loginOtp) {
+                console.log("[loginUser] Invalid or expired OTP.");
                 return res.status(401).json({
                     responseStatus: "FAILED",
                     responseMsg: "Invalid or expired OTP",
@@ -79,9 +88,8 @@ exports.loginUser = async (req, res) => {
                 });
             }
 
-            // Check if OTP is expired
             if (loginOtp.otpExpiry < Date.now()) {
-                // Mark the OTP as expired
+                console.log("[loginUser] OTP has expired.");
                 loginOtp.status = "expired";
                 await loginOtp.save();
 
@@ -92,13 +100,13 @@ exports.loginUser = async (req, res) => {
                 });
             }
 
-            // Clear OTP after successful verification
+            console.log("[loginUser] OTP verified successfully.");
             loginOtp.status = "verified";
             await loginOtp.save();
-
         } else {
-            // Validate the PIN
+            console.log("[loginUser] Validating PIN...");
             if (!user.pin) {
+                console.log("[loginUser] User PIN is not set.");
                 return res.status(400).json({
                     responseStatus: "FAILED",
                     responseMsg: "User PIN is not set",
@@ -106,9 +114,9 @@ exports.loginUser = async (req, res) => {
                 });
             }
 
-            // Compare the provided pin with the hashed pin
             const isMatchPin = await bcrypt.compare(pin, user.pin);
             if (!isMatchPin) {
+                console.log("[loginUser] Invalid credentials.");
                 return res.status(401).json({
                     responseStatus: "FAILED",
                     responseMsg: "Invalid credentials",
@@ -117,16 +125,16 @@ exports.loginUser = async (req, res) => {
             }
         }
 
-        // Generate a JWT token
+        console.log("[loginUser] Generating JWT token...");
         const token = jwt.sign(
-            { id: user.id, userType: user.userType }, // Payload
-            process.env.JWT_SECRET, // Secret key (store in .env)
-            { algorithm: "HS256", expiresIn: "1h" } // Token expiration time
+            { id: user.id, userType: user.userType },
+            process.env.JWT_SECRET,
+            { algorithm: "HS256", expiresIn: "1h" }
         );
 
-        // Get permissions based on user type
         const permissions = userPermissions[user.userType] || [];
 
+        console.log("[loginUser] Login successful.");
         res.status(200).json({
             responseStatus: "SUCCESS",
             responseMsg: "Login successful",
@@ -134,13 +142,15 @@ exports.loginUser = async (req, res) => {
             token,
             userDetails: {
                 id: user.id,
+                name: `${user.firstName} ${isValueExist(user.lastName) ? user.lastName : ''}`,
                 emailId: user.emailId,
                 mobile: user.mobile,
                 userType: user.userType,
-                permissions
-            }, // Exclude the password from the response
+                permissions,
+            },
         });
     } catch (error) {
+        console.error("[loginUser] Error logging in:", error.message);
         res.status(500).json({
             responseStatus: "FAILED",
             responseMsg: "Error logging in: " + error.message,
@@ -150,11 +160,12 @@ exports.loginUser = async (req, res) => {
 };
 
 // Add User
-exports.addUser = async (req, res) => {
+exports.signup = async (req, res) => {
     try {
-        // Validate the request body
+        console.log("[signup] Signup request received:", req.body);
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
+            console.log("[signup] Validation errors:", errors.array());
             return res.status(400).json({
                 responseStatus: "FAILED",
                 responseMsg: "Validation errors",
@@ -163,43 +174,118 @@ exports.addUser = async (req, res) => {
             });
         }
 
-        // Check for duplicate email or mobile
         const { emailId, mobile, pin, confirmPin } = req.body;
-        const existingUser = await User.findOne({ $or: [{ emailId }, { mobile }] });
+        console.log("[signup] Checking for duplicate email or mobile...");
+        const existingUser = await User.findOne({
+            where: { [Sequelize.Op.or]: [{ emailId }, { mobile }] },
+        });
+
         if (existingUser) {
+            console.log("[signup] Duplicate entry detected.");
+            return res.status(400).json({
+                responseStatus: "FAILED",
+                responseMsg: "Email or Mobile already exists",
+                responseCode: "400",
+            });
+        }
+
+        if (pin !== confirmPin) {
+            console.log("[signup] PIN and Confirm PIN do not match.");
+            return res.status(400).json({
+                responseStatus: "FAILED",
+                responseMsg: "Pin and Confirm Pin do not match",
+                responseCode: "400",
+            });
+        }
+
+        console.log("[signup] Hashing PIN...");
+        const hashedPin = await bcrypt.hash(pin, 10);
+
+        console.log("[signup] Creating new account...");
+        const newUser = await User.create({
+            ...req.body,
+            id: generateUniqueId(),
+            pin: hashedPin,
+            userType: 'MERCHANT',
+            status: 'Active',
+        });
+
+        console.log("[signup] Account created successfully.");
+        res.status(201).json({
+            responseStatus: "SUCCESS",
+            responseMsg: "Congratulations! your account has been created successfully🎉",
+            responseCode: "201",
+            data: {
+                id: newUser.id,
+                userType: newUser.userType,
+                emailId: newUser.emailId,
+                mobile: newUser.mobile,
+                created: newUser.created,
+                updated: newUser.updated,
+            },
+        });
+    } catch (error) {
+        console.error("[signup] Error creating account:", error.message);
+        res.status(500).json({
+            responseStatus: "FAILED",
+            responseMsg: "Error creating account: " + error.message,
+            responseCode: "500",
+        });
+    }
+};
+
+// Add User
+exports.addUser = async (req, res) => {
+    try {
+        console.log("[addUser] Add user request received:", req.body);
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            console.log("[addUser] Validation errors:", errors.array());
+            return res.status(400).json({
+                responseStatus: "FAILED",
+                responseMsg: "Validation errors",
+                responseCode: "400",
+                errors: errors.array(),
+            });
+        }
+
+        const { emailId, mobile, pin, confirmPin } = req.body;
+        console.log("[addUser] Checking for duplicate email or mobile...");
+        const existingUser = await User.findOne({
+            where: { [Sequelize.Op.or]: [{ emailId }, { mobile }] },
+        });
+
+        if (existingUser) {
+            console.log("[addUser] Duplicate entry detected.");
             return res.status(400).json({
                 responseStatus: "FAILED",
                 responseMsg: "Duplicate entry detected: Email or Mobile already exists",
                 responseCode: "400",
             });
         }
-        const isValidPin = pin === confirmPin;
 
-        if (!isValidPin) {
+        if (pin !== confirmPin) {
+            console.log("[addUser] PIN and Confirm PIN do not match.");
             return res.status(400).json({
                 responseStatus: "FAILED",
-                responseMsg: "Pin and Confirm Pin is not match",
+                responseMsg: "Pin and Confirm Pin do not match",
                 responseCode: "400",
-                errors: errors.array(),
             });
         }
 
-        const hashedPin = await bcrypt.hash(pin, 10); // 10 is the salt rounds
-        // Hash the pin
+        console.log("[addUser] Hashing PIN...");
+        const hashedPin = await bcrypt.hash(pin, 10);
 
-        // Create a new user
-        const newUser = new User({
+        console.log("[addUser] Creating new user...");
+        const newUser = await User.create({
             ...req.body,
-            pin: hashedPin,
             id: generateUniqueId(),
-            userType: "USER",
-            created: new Date().toISOString(),
-            updated: new Date().toISOString(),
+            pin: hashedPin,
+            userType: 'USER',
+            status: 'Active',
         });
 
-        // Save the user to the database
-        await newUser.save();
-
+        console.log("[addUser] User added successfully.");
         res.status(201).json({
             responseStatus: "SUCCESS",
             responseMsg: "User added successfully",
@@ -214,6 +300,7 @@ exports.addUser = async (req, res) => {
             },
         });
     } catch (error) {
+        console.error("[addUser] Error adding user:", error.message);
         res.status(500).json({
             responseStatus: "FAILED",
             responseMsg: "Error saving user: " + error.message,
@@ -224,43 +311,60 @@ exports.addUser = async (req, res) => {
 
 // Fetch All Users
 exports.fetchAllUsers = async (req, res) => {
-    console.log("Fetching users...");
+    console.log("[fetchAllUsers] Fetching users...");
     try {
         const query = {};
 
         // Dynamically build the query object based on the request payload
+        console.log("[fetchAllUsers] Building query object...");
         for (const [key, value] of Object.entries(req.body)) {
             if (value && value !== "All" && key !== "start" && key !== "length") {
                 query[key] = value;
             }
         }
+        console.log("[fetchAllUsers] Query object:", query);
 
         // Extract pagination parameters
         const start = parseInt(req.body.start) || 0; // Default to 0 if not provided
         const length = parseInt(req.body.length) || 10; // Default to 10 if not provided
+        console.log("[fetchAllUsers] Pagination parameters - Start:", start, "Length:", length);
 
-        // Fetch users with pagination
-        const users = await User.find(query).skip(start).limit(length);
+        // Add a filter to only fetch users with userType = 'USER'
+        query.userType = 'USER';
 
-        // Count total users for the query (without pagination)
-        const countPerPage = await User.countDocuments(query);
-
-        if (users && users.length > 0) {
-            res.json({
-                responseStatus: "SUCCESS", // Response status
-                responseMsg: "Users fetched successfully", // Response message
-                responseCode: "200", // Response code
-                userList: users, // User list
-                countPerPage, // Total number of users matching the query
-            });
-        } else {
-            res.status(404).json({
-                responseStatus: "FAILED",
-                responseMsg: "No users found!",
-                responseCode: "404",
-            });
+        // Build Sequelize query options
+        const whereClause = {};
+        for (const [key, value] of Object.entries(query)) {
+            whereClause[key] = value;
         }
+        console.log("[fetchAllUsers] Where clause:", whereClause);
+
+        // Fetch users with pagination using Sequelize
+        console.log("[fetchAllUsers] Fetching users from database...");
+        const { count, rows: users } = await User.findAndCountAll({
+            where: whereClause, // Apply filters
+            offset: start, // Pagination start
+            limit: length, // Pagination length
+        });
+
+        console.log("[fetchAllUsers] Users fetched successfully. Count:", count);
+        res.json({
+            responseStatus: "SUCCESS",
+            responseMsg: "Users fetched successfully",
+            responseCode: "200",
+            userList: users.map(user => ({
+                id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                emailId: user.emailId,
+                mobile: user.mobile,
+                userType: user.userType,
+                status: user.status,
+            })),
+            countPerPage: count, // Total number of users matching the query
+        });
     } catch (error) {
+        console.error("[fetchAllUsers] Error fetching users:", error.message);
         res.status(500).json({
             responseStatus: "FAILED",
             responseMsg: "Error fetching users: " + error.message,
@@ -271,34 +375,56 @@ exports.fetchAllUsers = async (req, res) => {
 
 // Fetch User by Key
 exports.fetchUserByKey = async (req, res) => {
+    console.log("[fetchUserByKey] Fetching user by key...");
     try {
-        let query = {};
-        if (req.body.id) {
-            query = { id: req.body.id }; // Search by "id" if it exists
-            console.log("Searching by ID:", query); // Log the query for debugging
-        }
+        const { id, emailId, mobile } = req.body;
+        console.log("[fetchUserByKey] Request body:", req.body);
+
+        const query = {};
+        if (id) query.id = id;
+        if (emailId) query.emailId = emailId;
+        if (mobile) query.mobile = mobile;
+        console.log("[fetchUserByKey] Query object:", query);
 
         // Search for the user
-        const user = await User.findOne(query);
-        console.log("User found:", user); // Log the found user for debugging
+        console.log("[fetchUserByKey] Searching for user...");
+        const user = await User.findOne({ where: query });
+        console.log("[fetchUserByKey] User found:", user);
 
         if (user) {
             res.json({
-                responseStatus: "Success",
+                responseStatus: "SUCCESS",
                 responseMsg: "User fetched successfully",
                 responseCode: "200",
-                user,
+                user: {
+                    id: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    emailId: user.emailId,
+                    mobile: user.mobile,
+                    userType: user.userType,
+                    address: user.address,
+                    city: user.city,
+                    state: user.state,
+                    country: user.country,
+                    zip: user.zip,
+                    company: user.company,
+                    website: user.website,
+                    status: user.status,
+                },
             });
         } else {
+            console.log("[fetchUserByKey] User not found.");
             res.status(404).json({
-                responseStatus: "Error",
+                responseStatus: "FAILED",
                 responseMsg: "User not found!",
                 responseCode: "404",
             });
         }
     } catch (error) {
+        console.error("[fetchUserByKey] Error fetching user:", error.message);
         res.status(500).json({
-            responseStatus: "Error",
+            responseStatus: "FAILED",
             responseMsg: "Error fetching user: " + error.message,
             responseCode: "500",
         });
@@ -307,40 +433,52 @@ exports.fetchUserByKey = async (req, res) => {
 
 // Update User by ID
 exports.updateUser = async (req, res) => {
+    console.log("[updateUser] Updating user...");
     try {
         const userId = req.body.id; // Extract the `id` field from the request body
+        console.log("[updateUser] User ID:", userId);
 
         // Validate the `id` field
         if (!userId) {
+            console.log("[updateUser] User ID is missing.");
             return res.status(400).json({
-                responseStatus: "Error",
+                responseStatus: "FAILED",
                 responseMsg: "User ID is required",
                 responseCode: "400",
             });
         }
 
         const updatedData = req.body; // Extract the updated data from the request body
+        console.log("[updateUser] Updated data:", updatedData);
 
-        // Update the user in the database using the `id` field
-        const user = await User.findOneAndUpdate({ id: userId }, updatedData, { new: true, runValidators: true });
+        // Update the user in the database using Sequelize
+        console.log("[updateUser] Updating user in database...");
+        const [updatedRowsCount] = await User.update(updatedData, { where: { id: userId } });
 
-        if (!user) {
+        if (updatedRowsCount === 0) {
+            console.log("[updateUser] User not found.");
             return res.status(404).json({
-                responseStatus: "Error",
+                responseStatus: "FAILED",
                 responseMsg: "User not found",
                 responseCode: "404",
             });
         }
 
+        // Fetch the updated user details
+        console.log("[updateUser] Fetching updated user details...");
+        const updatedUser = await User.findOne({ where: { id: userId } });
+
+        console.log("[updateUser] User updated successfully.");
         res.status(200).json({
-            responseStatus: "Success",
+            responseStatus: "SUCCESS",
             responseMsg: "User updated successfully",
-            updatedUser: user, // Return the updated user
             responseCode: "200",
+            updatedUser, // Return the updated user
         });
     } catch (error) {
+        console.error("[updateUser] Error updating user:", error.message);
         res.status(500).json({
-            responseStatus: "Error",
+            responseStatus: "FAILED",
             responseMsg: "Error updating user: " + error.message,
             responseCode: "500",
         });
@@ -349,36 +487,48 @@ exports.updateUser = async (req, res) => {
 
 // Delete User by ID
 exports.deleteUser = async (req, res) => {
+    console.log("[deleteUser] Deleting user...");
     try {
         const userId = req.params.id;
-        const user = await User.findByIdAndDelete(userId);
+        console.log("[deleteUser] User ID:", userId);
+
+        // Delete the user
+        console.log("[deleteUser] Deleting user from database...");
+        const user = await User.destroy({ where: { id: userId } });
+
         if (!user) {
+            console.log("[deleteUser] User not found.");
             return res.status(404).json({
-                responseStatus: "Error",
+                responseStatus: "FAILED",
                 responseMsg: "User not found",
                 responseCode: "404",
             });
         }
+
+        console.log("[deleteUser] User deleted successfully.");
         res.status(200).json({
-            responseStatus: "Success",
-            responseMsg: `User deleted successfully: ${user.name}`,
-            deletedUser: user, // Optional: Include deleted user details
+            responseStatus: "SUCCESS",
+            responseMsg: `User deleted successfully`,
             responseCode: "200",
         });
     } catch (error) {
+        console.error("[deleteUser] Error deleting user:", error.message);
         res.status(500).json({
-            responseStatus: "Error",
+            responseStatus: "FAILED",
             responseMsg: "Error deleting user: " + error.message,
             responseCode: "500",
         });
     }
 };
 
+// Generate OTP
 exports.generateOtp = async (req, res) => {
     try {
+        console.log("[generateOtp] Request received:", req.body);
         const { mobile, type } = req.body;
 
         if (!mobile) {
+            console.log("[generateOtp] Mobile number is missing.");
             return res.status(400).json({
                 responseStatus: "FAILED",
                 responseMsg: "Mobile number is required",
@@ -386,9 +536,11 @@ exports.generateOtp = async (req, res) => {
             });
         }
 
-        const user = await User.findOne({ mobile });
+        console.log("[generateOtp] Finding user by mobile...");
+        const user = await User.findOne({ where: { mobile } });
         // Find the user by mobile
         if (!user) {
+            console.log("[generateOtp] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
                 responseMsg: "User not found",
@@ -396,8 +548,8 @@ exports.generateOtp = async (req, res) => {
             });
         }
 
-        const isNotActive = await User.findOne({ mobile, status: "Active" });
-        if (!isNotActive) {
+        if (user.status !== "Active") {
+            console.log("[generateOtp] User is not active.");
             return res.status(403).json({
                 responseStatus: "FAILED",
                 responseMsg: "User not active",
@@ -406,9 +558,11 @@ exports.generateOtp = async (req, res) => {
         }
 
         // Generate a 6-digit OTP
+        console.log("[generateOtp] Generating OTP...");
         const otp = crypto.randomInt(100000, 999999).toString();
 
         // Save OTP in the database
+        console.log("[generateOtp] Marking existing OTPs as inactive...");
         const collectionName = type === 'loginOTP' ? LoginOTP : ForgotPIN;
 
         await collectionName.updateMany(
@@ -416,6 +570,7 @@ exports.generateOtp = async (req, res) => {
             { $set: { status: "inActive" } }
         );
 
+        console.log("[generateOtp] Saving new OTP...");
         const newOtpEntry = new collectionName({
             mobile,
             otp,
@@ -427,7 +582,7 @@ exports.generateOtp = async (req, res) => {
 
         const formattedMobile = mobile.startsWith('+') ? mobile : `+91${mobile}`;
 
-        console.log(`OTP for ${formattedMobile}: ${otp}`);
+        console.log(`[generateOtp] OTP for ${formattedMobile}: ${otp}`);
 
         res.status(200).json({
             type,
@@ -437,6 +592,7 @@ exports.generateOtp = async (req, res) => {
             responseCode: "200",
         });
     } catch (error) {
+        console.error("[generateOtp] Error generating OTP:", error.message);
         res.status(500).json({
             responseStatus: "FAILED",
             responseMsg: "Error generating OTP: " + error.message,
@@ -445,12 +601,15 @@ exports.generateOtp = async (req, res) => {
     }
 };
 
+// Verify OTP
 exports.verifyOtp = async (req, res) => {
     try {
+        console.log("[verifyOtp] Request received:", req.body);
         const { mobile, otp } = req.body;
 
         // Validate input
         if (!mobile || !otp) {
+            console.log("[verifyOtp] Mobile number or OTP is missing.");
             return res.status(400).json({
                 responseStatus: "FAILED",
                 responseMsg: "Mobile number and OTP are required",
@@ -459,8 +618,10 @@ exports.verifyOtp = async (req, res) => {
         }
 
         // Find the user by mobile
-        const user = await User.findOne({ mobile });
+        console.log("[verifyOtp] Finding user by mobile...");
+        const user = await User.findOne({ where: { mobile } });
         if (!user) {
+            console.log("[verifyOtp] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
                 responseMsg: "User not found",
@@ -468,8 +629,8 @@ exports.verifyOtp = async (req, res) => {
             });
         }
 
-        const isNotActive = await User.findOne({ mobile, status: "Active" });
-        if (!isNotActive) {
+        if (user.status !== "Active") {
+            console.log("[verifyOtp] User is not active.");
             return res.status(403).json({
                 responseStatus: "FAILED",
                 responseMsg: "User not active",
@@ -478,9 +639,11 @@ exports.verifyOtp = async (req, res) => {
         }
 
         // Find the active OTP for the mobile
+        console.log("[verifyOtp] Finding active OTP...");
         const forgotPIN = await ForgotPIN.findOne({ mobile, otp, status: "active" });
 
         if (!forgotPIN) {
+            console.log("[verifyOtp] Invalid or expired OTP.");
             return res.status(401).json({
                 responseStatus: "FAILED",
                 responseMsg: "Invalid or expired OTP",
@@ -490,6 +653,7 @@ exports.verifyOtp = async (req, res) => {
 
         // Check if OTP is expired
         if (forgotPIN.otpExpiry < Date.now()) {
+            console.log("[verifyOtp] OTP has expired.");
             // Mark the OTP as expired
             forgotPIN.status = "expired";
             await forgotPIN.save();
@@ -502,16 +666,19 @@ exports.verifyOtp = async (req, res) => {
         }
 
         // Clear OTP after successful verification
+        console.log("[verifyOtp] Marking OTP as verified...");
         forgotPIN.status = "verified";
         await forgotPIN.save();
 
         // Generate JWT token
+        console.log("[verifyOtp] Generating JWT token...");
         const token = jwt.sign(
             { id: user.id, userType: user.userType }, // Payload
             process.env.JWT_SECRET, // Secret key
             { algorithm: "HS256", expiresIn: "1h" } // Token expiration time
         );
 
+        console.log("[verifyOtp] OTP verified successfully.");
         res.status(200).json({
             responseStatus: "SUCCESS",
             responseMsg: "OTP verified successfully",
@@ -524,6 +691,7 @@ exports.verifyOtp = async (req, res) => {
             },
         });
     } catch (error) {
+        console.error("[verifyOtp] Error verifying OTP:", error.message);
         res.status(500).json({
             responseStatus: "FAILED",
             responseMsg: "Error verifying OTP: " + error.message,
@@ -532,14 +700,18 @@ exports.verifyOtp = async (req, res) => {
     }
 };
 
+// Change User PIN
 exports.changePin = async (req, res) => {
     try {
+        console.log("[changePin] Request received:", req.body);
         const { mobile, pin, confirmPin } = req.body;
 
         // Find the user by mobile
+        console.log("[changePin] Finding user by mobile...");
         const user = await User.findOne({ mobile });
 
         if (!user) {
+            console.log("[changePin] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
                 responseMsg: "User not found",
@@ -549,6 +721,7 @@ exports.changePin = async (req, res) => {
 
         // Validate the new PIN and confirm PIN
         if (pin !== confirmPin) {
+            console.log("[changePin] New PIN and Confirm PIN do not match.");
             return res.status(400).json({
                 responseStatus: "FAILED",
                 responseMsg: "New PIN and Confirm PIN do not match",
@@ -556,9 +729,11 @@ exports.changePin = async (req, res) => {
             });
         }
 
+        console.log("[changePin] Checking if new PIN is the same as the old PIN...");
         const isSamePin = await bcrypt.compare(pin, user.pin);
 
         if (isSamePin) {
+            console.log("[changePin] New PIN cannot be the same as the old PIN.");
             return res.status(402).json({
                 responseStatus: "FAILED",
                 responseMsg: "New PIN cannot be same as old PIN",
@@ -567,18 +742,22 @@ exports.changePin = async (req, res) => {
         }
 
         // Hash the new PIN
+        console.log("[changePin] Hashing new PIN...");
         const hashedPin = await bcrypt.hash(pin, 10);
 
         // Update the user's PIN
+        console.log("[changePin] Updating user's PIN...");
         user.pin = hashedPin;
         await user.save();
 
+        console.log("[changePin] PIN updated successfully.");
         res.status(200).json({
             responseStatus: "SUCCESS",
             responseMsg: "PIN updated successfully",
             responseCode: "200",
         });
     } catch (error) {
+        console.error("[changePin] Error updating PIN:", error.message);
         res.status(500).json({
             responseStatus: "FAILED",
             responseMsg: "Error updating PIN: " + error.message,

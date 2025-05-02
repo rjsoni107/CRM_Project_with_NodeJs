@@ -31,10 +31,10 @@ const AddUserDTO = ({setShowLoader, setDialogState, fetchData, basePathAction}) 
                                 <button className='btn btn-primary'
                                     onClick={(e) => {
                                         setDialogState({ dialog: { isDialogOpen: false } });
-                                        window.location.reload();
+                                        if (responseStatus === "SUCCESS") window.location.reload();
                                     }}
                                 >
-                                    Close It
+                                    Ok
                                 </button>
                             </>
                         )

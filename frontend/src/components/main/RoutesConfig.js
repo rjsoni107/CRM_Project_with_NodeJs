@@ -8,6 +8,8 @@ import ErrorPage from "../pages/ErrorPage/ErrorPage";
 import { ENDPOINTS } from "../../utility/ApiEndpoints";
 import VerifyOtp from "../pages/VerifyOtp/VerifyOtp";
 import ChangePin from "../pages/ChangePin/ChangePin";
+import Signup from "../pages/Signup/Signup";
+import Chat from "../pages/RealTimeChat/RealTimeChat";
 const RoutesConfig = [
     // Public Routes
     {
@@ -26,6 +28,11 @@ const RoutesConfig = [
         isProtected: false,
     },
     {
+        path: ENDPOINTS.SIGNUP,
+        element: <Signup />,
+        isProtected: false,
+    },
+    {
         path: ENDPOINTS.VERIFY_OTP_ACTION,
         element: <VerifyOtp />,
         isProtected: false,
@@ -36,6 +43,11 @@ const RoutesConfig = [
         element: <ChangePin />,
         isProtected: false,
     },
+    // {
+    //     path: ENDPOINTS.CHAT,
+    //     element: <Chat />,
+    //     isProtected: false,
+    // },
 
     // Protected Routes
     {
@@ -49,7 +61,7 @@ const RoutesConfig = [
         isProtected: true,
     },
     {
-        path: ENDPOINTS.ADD_USER_ACTION,
+        path: ENDPOINTS.ADD_USER,
         element: <AddUser />,
         isProtected: true,
     },

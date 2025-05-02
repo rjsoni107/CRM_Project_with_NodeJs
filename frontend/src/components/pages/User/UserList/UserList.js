@@ -6,6 +6,10 @@ import { ENDPOINTS } from '../../../../utility/ApiEndpoints';
 import UserListDTO from './UserListDTO';
 import '../../../componentsCSS/dataTableStyle.css'
 import Loader from '../../../loader/Loader';
+import { SelectBox, TextInput } from '../../../formElements/FormElementsImport';
+import ValidationHandler from '../../../../utility/ValidationHandler';
+import DialogBox from '../../../dialogBox/DialogBox';
+import ConfimationContent from '../../../dialogBox/ConfirmationContent';
 function UserList() {
     const { fetchData, invokePaginationMethod, basePathAction } = Base();
 
@@ -24,10 +28,39 @@ function UserList() {
         start: 0,
         length: 10,
         forceUpdate: new Date(),
+        status_list: [
+            { value: 'ALL', label: 'ALL' },
+            { value: 'Active', label: 'Active' },
+            { value: 'Inactive', label: 'Inactive' },
+            { value: 'Pending', label: 'Pending' },
+            { value: 'Blocked', label: 'Blocked' },
+            { value: 'Suspended', label: 'Suspended' },
+            { value: 'Blacklisted', label: 'Blacklisted' },
+        ],
+        status: [{ value: 'ALL', label: 'ALL' }],
     });
 
-    const { payload, countPerPage, length, row } = state;
-    const { fetchUsers, deleteUser } = UserListDTO(fetchData, setState, setShowLoader);
+    const [dialogState, setDialogState] = useState({
+        dialog: {
+            isDialogOpen: false,
+            dialogBoxType: 'confirmation',
+            dialogBoxMsg: null,
+            dialogFooter: null
+        },
+    });
+
+
+    const { payload, countPerPage, length, row, status_list, status } = state;
+    const { isDialogOpen, dialogBoxMsg, dialogBoxType, dialogFooter } = dialogState.dialog;
+    const { fetchUsers, deleteUser } = UserListDTO(fetchData, setState, setShowLoader, state, setDialogState);
+    const {
+        inputChangeHandler,
+        inputMessageHandler,
+        validateInputHandler,
+        removeLeadingEmailChar,
+        allowOnlyOnce,
+        selectBoxChangeHandler
+    } = ValidationHandler();
 
     // Fetch users on component mount
     useEffect(() => {
@@ -37,7 +70,7 @@ function UserList() {
     // Handler for Edit Button
     const editListHandler = (evt, userId) => {
         evt.preventDefault();
-        setShowLoader({ showLoader: true });
+        setShowLoader(true);
         // Perform navigation after updating state
         navigate(`${basePathAction(ENDPOINTS.USER)}/${userId}`);
     };
@@ -50,8 +83,6 @@ function UserList() {
         { name: "lastName", label: "Last Name", options: { filter: true, sort: false } },
         { name: "emailId", label: "Email", options: { filter: true, sort: false } },
         { name: "mobile", label: "Mobile", options: { filter: true, sort: false } },
-        { name: "company", label: "Company", options: { filter: true, sort: false } },
-        { name: "website", label: "Website", options: { filter: true, sort: false } },
         {
             name: "id", label: "Action", options: {
                 customBodyRender: (value) => (
@@ -64,85 +95,121 @@ function UserList() {
         },
     ];
 
+    let confirmationBox = null;
+    if (isDialogOpen) {
+        confirmationBox = <DialogBox
+            onClose={(e) => setDialogState({ dialog: { isDialogOpen: false } })}
+            open={isDialogOpen}
+            content={<ConfimationContent dialogType={dialogBoxType} content={dialogBoxMsg} />}
+            isFooter={true}
+            footerContent={
+                <div className="content_buttonWrapper">
+                    {dialogFooter}
+                </div>
+            }
+        />
+    }
+
     const loader = showLoader && <Loader processing={true} approvalNotification={false} />;
 
+    const handleBlur = (evt) => {
+        validateInputHandler(evt);
+    };
     return (
-        <div className="container">
-            <div className="row">
-                <div className="col-md-3">
-                    <div className="form-group">
-                        <label htmlFor='mobile'>Mobile</label>
-                        <input
-                            type="text"
-                            id="mobile"
-                            className="form-control"
-                            placeholder="Enter mobile number"
-                            onChange={(e) => setState({ ...state, payload: { ...state.payload, mobile: e.target.value } })}
-                        />
-                    </div>
-                </div>
-                <div className="col-md-3">
-                    <div className="form-group">
-                        <label htmlFor='email'>Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            className="form-control"
-                            placeholder="Enter email address"
-                            onChange={(e) => setState({ ...state, payload: { ...state.payload, emailId: e.target.value } })}
-                        />
-                    </div>
-                </div>
-
-                <div className="col-md-3">
-                    <div className="form-group">
-                        <label htmlFor='status'>Status</label>
-                        <select
-                            className="form-control"
-                            onChange={(e) => setState({ ...state, payload: { ...state.payload, status: e.target.value } })}
-                        >
-                            <option value="All">All</option>
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div className='col-md-3 d-flex justify-content-center align-items-center'>
-                    <button className="btn btn-primary" onClick={() => { fetchUsers(payload); }}>Search</button>
-                </div>
-            </div>
-
-            <div className="row">
-                <div className="col-md-12">
-                    <div className="table table-striped table-bordered">
-                        <MUIDataTable
-                            data={row}
-                            columns={columns}
-                            options={{
-                                selectableRows: "none",
-                                filter: false,
-                                rowsPerPageOptions: [10, 25, 50, 100],
-                                download: false,
-                                print: false,
-                                search: false,
-                                responsive: "standard",
-                                viewColumns: false,
-                                count: countPerPage,
-                                serverSide: true,
-                                onChangePage: (page) => {
-                                    invokePaginationMethod(page, length, 'onChangePage', setState, fetchUsers);
-                                },
-                                onChangeRowsPerPage: (rowsPerPage) => {
-                                    invokePaginationMethod(0, rowsPerPage, 'onChangeRowsPerPage', setState, fetchUsers);
-                                },
+        <main>
+            <div className="container mt-80">
+                <div className="row form-group">
+                    <div className="col-12 col-sm-6 col-md-3 mb-20">
+                        <SelectBox
+                            inputLable="Status"
+                            selectpickerId="status"
+                            name="status"
+                            placeholder="Select Status"
+                            value={status || ''}
+                            options={status_list}
+                            className="input-field is-required"
+                            changeSelection={(that, name) => {
+                                selectBoxChangeHandler(that, name, 'payload', setState);
+                                inputMessageHandler(document.getElementById(name), 'HIDE', 'error');
                             }}
                         />
                     </div>
+                    <div className="col-12 col-sm-6 col-md-3 mb-20">
+                        <TextInput
+                            label="Mobile"
+                            name="mobile"
+                            id="mobile"
+                            placeholder="Enter Mobile Number"
+                            value={payload.mobile || ''}
+                            className="form-control input-field"
+                            maxLength={10}
+                            onChange={evt => {
+                                inputChangeHandler(evt, setState);
+                                inputMessageHandler(evt, 'HIDE', 'error');
+                            }}
+                            onBlur={handleBlur}
+                            dataType="MOBILE"
+                            dataValidation="MOBILE"
+                        />
+                    </div>
+
+                    <div className="col-12 col-sm-6 col-md-3 mb-20">
+                        <TextInput
+                            label="Email"
+                            name="emailId"
+                            id="emailId"
+                            placeholder="Enter Email ID"
+                            value={payload.emailId || ''}
+                            className="form-control input-field"
+                            maxLength={100}
+                            onInput={e => {
+                                inputChangeHandler(e, setState);
+                                removeLeadingEmailChar(e);
+                                inputMessageHandler(e, 'HIDE', 'error');
+                            }}
+                            onKeyDown={e => allowOnlyOnce({ event: e, allowedChar: '@', keyCode: 50 })}
+                            onBlur={handleBlur}
+                            dataType="EMAIL"
+                            dataValidation="EMAIL"
+                        />
+                    </div>
+                    <div className='col-md-3 d-flex justify-content-center align-items-center'>
+                        <button className="btn btn-primary" onClick={(e) => fetchUsers(state)}>Search</button>
+                    </div>
                 </div>
+
+                <div className="row">
+                    <div className="col-md-12">
+                        <div className="table table-striped table-bordered">
+                            <MUIDataTable
+                                data={row || []}
+                                columns={columns}
+                                options={{
+                                    selectableRows: "none",
+                                    filter: false,
+                                    rowsPerPageOptions: [10, 25, 50, 100],
+                                    download: false,
+                                    print: false,
+                                    search: false,
+                                    responsive: "standard",
+                                    viewColumns: false,
+                                    count: countPerPage,
+                                    serverSide: true,
+                                    onChangePage: (page) => {
+                                        invokePaginationMethod(page, length, 'onChangePage', setState, fetchUsers);
+                                    },
+                                    onChangeRowsPerPage: (rowsPerPage) => {
+                                        invokePaginationMethod(0, rowsPerPage, 'onChangeRowsPerPage', setState, fetchUsers);
+                                    },
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
+                {loader}
+                {confirmationBox}
             </div>
-            {loader}
-        </div>
+        </main>
     );
 }
 

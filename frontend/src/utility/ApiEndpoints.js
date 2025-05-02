@@ -3,6 +3,8 @@ export const ENDPOINTS = {
     INDEX: 'index',
     LOGIN: 'login',
     LOGIN_ACTION: 'loginAction',
+    SIGNUP: 'signup',
+    SIGNUP_ACTION: 'signupAction',
     HOME: 'home',
     LOGOUT: 'logout',
     GENERATE_OTP_ACTION: 'generateOtpAction',
@@ -17,6 +19,7 @@ export const ENDPOINTS = {
     USER : 'user',
     USER_LIST: 'userList',
     ADD_USER_ACTION: 'addUserAction',
+    ADD_USER: 'addUser',
     GET_USER_LIST_ACTION: 'getUserListAction',
     GET_USER_DETAILS_ACTION: 'getUserDetailsAction',
     UPDATE_USER_ACTION: 'updateUserAction',
@@ -24,5 +27,6 @@ export const ENDPOINTS = {
     GET_COUNTRY_LIST: 'getCountryList',
     GET_STATE_LIST: 'getStateList',
     GET_CITY_LIST: 'getCityList',
-    PROFILE: 'profile'
+    PROFILE: 'profile',
+    CHAT: 'chat'
 }

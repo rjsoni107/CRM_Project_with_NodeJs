@@ -32,7 +32,6 @@ const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setSho
                     setError(responseMsg);
                 }
             } catch (err) {
-                setError(err.message);
                 console.error("Error during login:", err);
             } finally {
                 setShowLoader(false)

@@ -23,7 +23,7 @@ const AddUserDetails = forwardRef((props, ref) => {
             zip: '',
         },
         status_list: [
-            { value: '', label: 'Select Status'},
+            { value: '', label: 'Select Status' },
             { value: 'Active', label: 'Active' },
             { value: 'Inactive', label: 'Inactive' },
             { value: 'Pending', label: 'Pending' },
@@ -31,7 +31,7 @@ const AddUserDetails = forwardRef((props, ref) => {
             { value: 'Suspended', label: 'Suspended' },
             { value: 'Blacklisted', label: 'Blacklisted' },
         ],
-        status: [{ value: '', label: 'Select Status'}],
+        status: [{ value: '', label: 'Select Status' }],
         city: [{ value: '', label: 'Select city' }],
         state: [{ value: '', label: 'Select state' }],
         country: [{ value: '', label: 'Select country' }],
@@ -161,6 +161,26 @@ const AddUserDetails = forwardRef((props, ref) => {
                 </div>
                 <div className="col-12 col-sm-6 col-md-3 mb-20">
                     <TextInput
+                        label="Mobile"
+                        name="mobile"
+                        id="mobile"
+                        placeholder="Enter Mobile Number"
+                        value={mobile || ''}
+                        className="form-control input-field"
+                        autoComplete="off"
+                        isRequired={true}
+                        maxLength={10}
+                        onChange={evt => {
+                            inputChangeHandler(evt, setState);
+                            inputMessageHandler(evt, 'HIDE', 'error');
+                        }}
+                        onBlur={handleBlur}
+                        dataType="MOBILE"
+                        dataValidation="MOBILE"
+                    />
+                </div>
+                <div className="col-12 col-sm-6 col-md-3 mb-20">
+                    <TextInput
                         label="PIN"
                         name="pin"
                         type="password"
@@ -169,6 +189,7 @@ const AddUserDetails = forwardRef((props, ref) => {
                         value={payload.pin || ''}
                         className="form-control input-field"
                         isRequired={true}
+                        autoComplete="new-password"
                         maxLength={6}
                         onChange={evt => {
                             inputChangeHandler(evt, setState);
@@ -197,25 +218,6 @@ const AddUserDetails = forwardRef((props, ref) => {
                         onBlur={handleBlur}
                         dataType="NUMBER"
                         dataValidation="PIN"
-                    />
-                </div>
-                <div className="col-12 col-sm-6 col-md-3 mb-20">
-                    <TextInput
-                        label="Mobile"
-                        name="mobile"
-                        id="mobile"
-                        placeholder="Enter Mobile Number"
-                        value={mobile || ''}
-                        className="form-control input-field"
-                        isRequired={true}
-                        maxLength={10}
-                        onChange={evt => {
-                            inputChangeHandler(evt, setState);
-                            inputMessageHandler(evt, 'HIDE', 'error');
-                        }}
-                        onBlur={handleBlur}
-                        dataType="MOBILE"
-                        dataValidation="MOBILE"
                     />
                 </div>
                 <div className="col-12 col-sm-6 col-md-3 mb-20">

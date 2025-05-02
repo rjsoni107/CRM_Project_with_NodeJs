@@ -56,12 +56,6 @@
     color: #666666;
 }
 
-/* Form Styles */
-.login-form .form-group {
-    margin-bottom: 15px;
-    text-align: left;
-}
-
 .login-form label {
     display: block;
     font-size: 14px;
@@ -98,12 +92,4 @@
 
 .login-button:hover {
     background-color: #2a5298;
-}
-
-/* Create Account */
-.create-account {
-    font-size: 14px;
-    color: #007bff;
-    margin-top: 10px;
-    cursor: pointer;
 }

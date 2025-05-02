@@ -29,7 +29,6 @@ const UserEdit = () => {
         execute()
     }, []);
 
-
     let confirmationBox = null;
     if (isDialogOpen) {
         confirmationBox = <DialogBox
@@ -49,7 +48,7 @@ const UserEdit = () => {
         <main>
             {userDetail &&
                 <div className={"container mt-70"}>
-                    <div className={"mb-20 mt-10 sale-filter pc_container"}>
+                    <div className={"mb-20 mt-10"}>
                         <div className="row form-section">
                             <Heading
                                 title="Edit User"
