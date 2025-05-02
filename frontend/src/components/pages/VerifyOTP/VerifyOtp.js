@@ -60,7 +60,7 @@ const VerifyOtp = () => {
     if (redirect) return <Navigate to={redirect} state={redirectState} />;
 
     const loader = showLoader && <Loader processing={true} approvalNotification={false} />;
-    const timer = isTimerActive && <Timer duration={5} onResend={() => getOtpHandler(mobile, type)} />;
+    const timer = isTimerActive && <Timer duration={59} onResend={() => getOtpHandler(mobile, type)} />;
 
     return (
         location.state ? (

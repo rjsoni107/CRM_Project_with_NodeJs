@@ -43,19 +43,17 @@ const AddUser = () => {
     return (
         <main>
             <div className={"container mt-70"}>
-                <div className={"mb-20 mt-10 sale-filter pc_container"}>
-                    <div className="row form-section">
-                        <Heading
-                            title="Add User"
-                            headingClass=""
-                            icon="true"
-                            customClass="col-md-12"
-                        />
-                        <AddUserDetails ref={userAddDetailsRef} data={userDetail} setShowLoader={setShowLoader} />
+                <div className="row form-section">
+                    <Heading
+                        title="Add User"
+                        headingClass=""
+                        icon="true"
+                        customClass="col-md-12"
+                    />
+                    <AddUserDetails ref={userAddDetailsRef} data={userDetail} setShowLoader={setShowLoader} />
 
-                        <div className='d-flex justify-content-center mt-15'>
-                            <button className='btn btn-primary' onClick={evt => submitHandler(evt)}>Save</button>
-                        </div>
+                    <div className='d-flex justify-content-center mt-15'>
+                        <button className='btn btn-primary' onClick={evt => submitHandler(evt)}>Save</button>
                     </div>
                 </div>
             </div>

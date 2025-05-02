@@ -5,7 +5,6 @@ import SidebarPanal from "../sidebar/SidebarPanal";
 const Layout = ({ forceUpdate }) => {
     const { userType, permissions } = JSON.parse(localStorage.getItem("globalObj") || "{}");
 
-    console.log(permissions)
     const [isSidebarVisible, setSidebarVisible] = useState(true);
 
     const toggleSidebar = () => {

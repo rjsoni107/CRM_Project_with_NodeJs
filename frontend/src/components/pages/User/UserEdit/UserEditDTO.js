@@ -3,14 +3,14 @@ import { ENDPOINTS } from "../../../../utility/ApiEndpoints";
 import ValidationHandler from "../../../../utility/ValidationHandler";
 import { useRef } from "react";
 
-const UserEditDTO = ({setShowLoader, setUserDetails, id, setDialogState, fetchData, basePathAction}) => {
+const UserEditDTO = ({ setShowLoader, setUserDetails, id, setDialogState, fetchData, basePathAction }) => {
     const { validateFormHandler } = ValidationHandler();
     const userDetailsRef = useRef(null);
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
     const execute = async () => {
         getUserDetail()
     }
-    
+
     // Fetch all users
     const getUserDetail = async () => {
         const payload = { id: id };
@@ -33,25 +33,25 @@ const UserEditDTO = ({setShowLoader, setUserDetails, id, setDialogState, fetchDa
         }
     };
 
-    const submitHandler = (evt) => {
+    const submitHandler = async (evt) => {
         evt.preventDefault();
-
         const that = evt.target;
 
         if (validateFormHandler(that)) {
             const userPayload = userDetailsRef.current.getPayload();
-            const userId = {'id': id}
+            const userId = { 'id': id }
             const payload = { ...userPayload, ...userId };
             const actionName = basePathAction(ENDPOINTS.UPDATE_USER_ACTION);
 
             setShowLoader(true);
-            fetchData('PUT', actionName, payload).then(responseJson => {
+            try {
+                const responseJson = await fetchData('PUT', actionName, payload)
                 const { responseStatus, responseMsg } = responseJson;
                 setDialogState(prevState => ({
                     ...prevState,
                     dialog: {
                         ...prevState.dialog,
-                        dialogBoxType: responseStatus === "Success" ? 'success' : 'error',
+                        dialogBoxType: responseStatus === "SUCCESS" ? 'success' : 'error',
                         dialogBoxMsg: <h5>{responseMsg}</h5>,
                         isDialogOpen: true,
                         dialogFooter: (
@@ -59,7 +59,7 @@ const UserEditDTO = ({setShowLoader, setUserDetails, id, setDialogState, fetchDa
                                 <button className='btn btn-primary'
                                     onClick={(e) => {
                                         setDialogState({ dialog: { isDialogOpen: false } });
-                                        window.history.back();
+                                        if (responseStatus === "SUCCESS") window.history.back();
                                     }}>
                                     Close It
                                 </button>
@@ -67,26 +67,13 @@ const UserEditDTO = ({setShowLoader, setUserDetails, id, setDialogState, fetchDa
                         )
                     },
                 }));
+            } catch (error) {
+                console.error("Error update user:", error)
+            } finally {
                 setShowLoader(false);
-            });
+            }
         }
     }
-
-    // Update an existing user
-    // const updateUser = async (id, updatedData) => {
-    //     try {
-    //         const responseJson = await fetchData('PUT', `${ENDPOINTS.UPDATE_USER_ACTION}/${id}`, updatedData);
-    //         if (responseJson && responseJson.responseStatus === 'Success') {
-    //             alert(responseJson.responseMsg);
-    //             setUserList(userList => userList.map(user => (user._id === id ? { ...user, ...updatedData } : user)));
-    //         }
-    //         return null;
-    //     } catch (error) {
-    //         console.error('Error updating user:', error);
-    //         return null;
-    //     }
-    // };
-
 
     return { execute, submitHandler, userDetailsRef };
 };
