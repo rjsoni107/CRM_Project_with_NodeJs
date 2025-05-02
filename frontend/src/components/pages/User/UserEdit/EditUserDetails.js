@@ -45,6 +45,7 @@ const EditUserDetails = forwardRef((props, ref) => {
         removeLeadingDot,
         decimalLimit,
         removeLeadingEmailChar,
+        isValueExist
     } = ValidationHandler();
     const { getCountryList, getStateList, getCityList, handleCountryChange, handleStateChange } = Base();
 
@@ -87,20 +88,20 @@ const EditUserDetails = forwardRef((props, ref) => {
             };
 
             Object.entries(data).forEach(([key, value]) => {
+                const isExistValue = isValueExist(value) ? value : ''
                 if (payload[key] !== undefined) {
-                    const isValueExist = value !== undefined && value !== null && value !== 'NA';
-                    updatedPayload[key] = isValueExist ? value : '';
+                    updatedPayload[key] = isExistValue;
                 }
 
                 if (key === 'status') {
                     status_list.forEach((option) => {
-                        if (option.value.toLowerCase() === value.toLowerCase()) {
+                        if (option.value.toLowerCase() === isExistValue.toLowerCase()) {
                             listPayload.status = [option];
                         }
                     });
                 } else if (key === 'country') {
                     countries_list.forEach((option) => {
-                        if (option.value.toLowerCase() === value.toLowerCase()) {
+                        if (option.value.toLowerCase() === isExistValue.toLowerCase()) {
                             listPayload.country = [option];
                         }
                     });

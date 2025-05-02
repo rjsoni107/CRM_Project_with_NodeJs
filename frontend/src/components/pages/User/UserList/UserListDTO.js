@@ -1,13 +1,13 @@
 import { ENDPOINTS } from "../../../../utility/ApiEndpoints";
 
-const UserListDTO = (fetchData, setState, setShowLoader) => {
+const UserListDTO = (fetchData, setState, setShowLoader, state, setDialogState) => {
     // Fetch all users
-    const fetchUsers = async (state) => {
+    const fetchUsers = async (propsState) => {
         setShowLoader(true);
         const payload = {
-            ...state.payload,
-            start: state.start,
-            length: state.length,
+            ...propsState.payload,
+            start: propsState.start,
+            length: propsState.length,
         };
         try {
             const responseJson = await fetchData('POST', ENDPOINTS.GET_USER_LIST_ACTION, payload);
@@ -26,50 +26,40 @@ const UserListDTO = (fetchData, setState, setShowLoader) => {
         }
     };
 
-    // Add a new user
-    const addUser = async (newData) => {
-        try {
-            const responseJson = await fetchData('POST', ENDPOINTS.ADD_USER_ACTION, newData);
-            if (responseJson && responseJson.responseStatus === 'Success') {
-                alert(responseJson.responseMsg);
-                // setUserList(userList => [...userList, responseJson.user]);
-            }
-        } catch (error) {
-            console.error('Error adding user:', error);
-            return null;
-        }
-    };
-
-    // Update an existing user
-    const updateUser = async (id, updatedData) => {
-        try {
-            const responseJson = await fetchData('PUT', `${ENDPOINTS.UPDATE_USER_ACTION}/${id}`, updatedData);
-            if (responseJson && responseJson.responseStatus === 'Success') {
-                alert(responseJson.responseMsg);
-                // setUserList(userList => userList.map(user => (user._id === id ? { ...user, ...updatedData } : user)));
-            }
-            return null;
-        } catch (error) {
-            console.error('Error updating user:', error);
-            return null;
-        }
-    };
-
     // Delete a user
     const deleteUser = async (id) => {
+        setShowLoader(true)
         try {
             const responseJson = await fetchData('DELETE', `${ENDPOINTS.DELETE_USER_ACTION}/${id}`);
-            if (responseJson && responseJson.responseStatus === 'Success') {
-                alert(responseJson.responseMsg);
-                // setUserList(userList => userList.filter(user => user._id !== id));
-                return true;
-            }
+            const { responseStatus, responseMsg } = responseJson;
+            setDialogState(prevState => ({
+                ...prevState,
+                dialog: {
+                    ...prevState.dialog,
+                    dialogBoxType: responseStatus === "SUCCESS" ? 'success' : 'error',
+                    dialogBoxMsg: <h5>{responseMsg}</h5>,
+                    isDialogOpen: true,
+                    dialogFooter: (
+                        <>
+                            <button className='btn btn-primary'
+                                onClick={(e) => {
+                                    setDialogState({ dialog: { isDialogOpen: false } });
+                                    if (responseStatus === "SUCCESS") fetchUsers(state);
+                                }}>
+                                Ok
+                            </button>
+                        </>
+                    )
+                },
+            }));
         } catch (error) {
             console.error('Error deleting user:', error);
+        } finally {
+            setShowLoader(false)
         }
     };
 
-    return { fetchUsers, deleteUser, addUser, updateUser };
+    return { fetchUsers, deleteUser };
 };
 
 export default UserListDTO;

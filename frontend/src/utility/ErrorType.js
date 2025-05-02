@@ -27,6 +27,10 @@ const ERROR_TYPE = {
         IS_BLANK: "Please enter last name",
         IS_INVALID: "Invalid last name",
     },
+    businessName: {
+        IS_BLANK: "Please enter business name",
+        IS_INVALID: "Invalid business name",
+    },
     customerName: {
         IS_BLANK: "Please enter customer name",
         IS_INVALID: "Invalid customer name",

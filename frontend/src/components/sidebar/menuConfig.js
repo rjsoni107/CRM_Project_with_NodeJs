@@ -1,5 +1,6 @@
-import { FaChartPie, FaUser, FaAddressBook } from "react-icons/fa";
+import { FaChartPie, FaUser, FaAddressBook, FaFile } from "react-icons/fa";
 import { ENDPOINTS } from "../../utility/ApiEndpoints";
+import Chat from "../pages/RealTimeChat/RealTimeChat";
 
 // Centralized menu configuration
 const menuConfig = [
@@ -10,7 +11,7 @@ const menuConfig = [
     },
     {
         label: "Report",
-        icon: <FaUser />,
+        icon: <FaFile />,
         children: [
             { label: "Sale Report", path: ENDPOINTS.ADD_USER_ACTION },
             { label: "Failed Report", path: ENDPOINTS.USER_LIST },
@@ -20,7 +21,7 @@ const menuConfig = [
         label: "User",
         icon: <FaUser />,
         children: [
-            { label: "Add User", path: ENDPOINTS.ADD_USER_ACTION },
+            { label: "Add User", path: ENDPOINTS.ADD_USER },
             { label: "User List", path: ENDPOINTS.USER_LIST },
         ],
     },
@@ -28,6 +29,11 @@ const menuConfig = [
         label: "Profile",
         path: ENDPOINTS.PROFILE,
         icon: <FaAddressBook />,
+    },
+    {
+        label: "Chat",
+        path: ENDPOINTS.CHAT,
+        icon: <Chat />,
     },
 ];
 

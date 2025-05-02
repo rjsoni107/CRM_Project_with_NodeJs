@@ -38,6 +38,18 @@ const userPermissions = {
         "getCityList",
         "profile",
     ],
+    MERCHANT: [
+        "dashboard",
+        "home",
+        "logout",
+        "userList",
+        "getUserList",
+        "getCountryList",
+        "getStateList",
+        "getCityList",
+        "profile",
+        "chat"
+    ],
 };
 
 module.exports = { userPermissions };
