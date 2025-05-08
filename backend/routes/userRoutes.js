@@ -1,10 +1,6 @@
 const express = require("express");
 const commonController = require('../controllers/commonController')
-<<<<<<< Updated upstream
-const mainController = require("../controllers/mainControllerMongo");
-=======
 const mainController = require("../controllers/mainController");
->>>>>>> Stashed changes
 const { validateUser } = require("../middlewares/validation");
 const { verifyToken } = require("../middlewares/authMiddleware");
 const router = express.Router();
