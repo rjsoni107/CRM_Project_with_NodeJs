@@ -1,4 +1,4 @@
-const User = require("../modules/userModel");
+const User = require("../modules/userModelMongo");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
@@ -20,7 +20,7 @@ const isValueExist = (data) => data !== null && data !== undefined && data !== '
 exports.createDefaultAdmin = async () => {
     try {
         console.log("[createDefaultAdmin] Checking if default admin exists...");
-        const existingAdmin = await User.findOne({ where: { userType: "ADMIN" } });
+        const existingAdmin = await User.findOne({ userType: "ADMIN" });
         if (existingAdmin) {
             console.log("[createDefaultAdmin] Default admin already exists.");
             return;
@@ -54,8 +54,8 @@ exports.login = async (req, res) => {
         const { mobile, pin, type, otp } = req.body;
 
         console.log("[loginUser] Finding user by mobile...");
-        const user = await User.findOne({ where: { mobile } });
-        const isNotActive = await User.findOne({ where: { mobile, status: "Active" } });
+        const user = await User.findOne({ mobile });
+        const isNotActive = await User.findOne({ mobile, status: "Active" });
 
         if (!user) {
             console.log("[loginUser] User not found.");
@@ -177,8 +177,9 @@ exports.signup = async (req, res) => {
         const { emailId, mobile, pin, confirmPin } = req.body;
         console.log("[signup] Checking for duplicate email or mobile...");
         const existingUser = await User.findOne({
-            where: { [Sequelize.Op.or]: [{ emailId }, { mobile }] },
-        });
+            [Sequelize.Op.or]: [{ emailId }, { mobile }]
+        },
+        );
 
         if (existingUser) {
             console.log("[signup] Duplicate entry detected.");
@@ -252,8 +253,9 @@ exports.addUser = async (req, res) => {
         const { emailId, mobile, pin, confirmPin } = req.body;
         console.log("[addUser] Checking for duplicate email or mobile...");
         const existingUser = await User.findOne({
-            where: { [Sequelize.Op.or]: [{ emailId }, { mobile }] },
-        });
+            [Sequelize.Op.or]: [{ emailId }, { mobile }]
+        },
+        );
 
         if (existingUser) {
             console.log("[addUser] Duplicate entry detected.");
@@ -332,20 +334,10 @@ exports.fetchAllUsers = async (req, res) => {
         // Add a filter to only fetch users with userType = 'USER'
         query.userType = 'USER';
 
-        // Build Sequelize query options
-        const whereClause = {};
-        for (const [key, value] of Object.entries(query)) {
-            whereClause[key] = value;
-        }
-        console.log("[fetchAllUsers] Where clause:", whereClause);
-
-        // Fetch users with pagination using Sequelize
+        // Fetch users with pagination
         console.log("[fetchAllUsers] Fetching users from database...");
-        const { count, rows: users } = await User.findAndCountAll({
-            where: whereClause, // Apply filters
-            offset: start, // Pagination start
-            limit: length, // Pagination length
-        });
+        const users = await User.find(query).skip(start).limit(length);
+        const count = await User.countDocuments(query);
 
         console.log("[fetchAllUsers] Users fetched successfully. Count:", count);
         res.json({
@@ -388,7 +380,7 @@ exports.fetchUserByKey = async (req, res) => {
 
         // Search for the user
         console.log("[fetchUserByKey] Searching for user...");
-        const user = await User.findOne({ where: query });
+        const user = await User.findOne(query);
         console.log("[fetchUserByKey] User found:", user);
 
         if (user) {
@@ -396,22 +388,7 @@ exports.fetchUserByKey = async (req, res) => {
                 responseStatus: "SUCCESS",
                 responseMsg: "User fetched successfully",
                 responseCode: "200",
-                user: {
-                    id: user.id,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    emailId: user.emailId,
-                    mobile: user.mobile,
-                    userType: user.userType,
-                    address: user.address,
-                    city: user.city,
-                    state: user.state,
-                    country: user.country,
-                    zip: user.zip,
-                    company: user.company,
-                    website: user.website,
-                    status: user.status,
-                },
+                user,
             });
         } else {
             console.log("[fetchUserByKey] User not found.");
@@ -451,11 +428,15 @@ exports.updateUser = async (req, res) => {
         const updatedData = req.body; // Extract the updated data from the request body
         console.log("[updateUser] Updated data:", updatedData);
 
-        // Update the user in the database using Sequelize
+        // Update the user in the database
         console.log("[updateUser] Updating user in database...");
-        const [updatedRowsCount] = await User.update(updatedData, { where: { id: userId } });
+        const updatedUser = await User.findOneAndUpdate(
+            { id: userId },
+            updatedData,
+            { new: true } // Return the updated document
+        );
 
-        if (updatedRowsCount === 0) {
+        if (!updatedUser) {
             console.log("[updateUser] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
@@ -463,10 +444,6 @@ exports.updateUser = async (req, res) => {
                 responseCode: "404",
             });
         }
-
-        // Fetch the updated user details
-        console.log("[updateUser] Fetching updated user details...");
-        const updatedUser = await User.findOne({ where: { id: userId } });
 
         console.log("[updateUser] User updated successfully.");
         res.status(200).json({
@@ -494,9 +471,9 @@ exports.deleteUser = async (req, res) => {
 
         // Delete the user
         console.log("[deleteUser] Deleting user from database...");
-        const user = await User.destroy({ where: { id: userId } });
+        const user = await User.deleteOne({ id: userId });
 
-        if (!user) {
+        if (result.deletedCount === 0) {
             console.log("[deleteUser] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
@@ -537,7 +514,7 @@ exports.generateOtp = async (req, res) => {
         }
 
         console.log("[generateOtp] Finding user by mobile...");
-        const user = await User.findOne({ where: { mobile } });
+        const user = await User.findOne({ mobile });
         // Find the user by mobile
         if (!user) {
             console.log("[generateOtp] User not found.");
@@ -619,7 +596,7 @@ exports.verifyOtp = async (req, res) => {
 
         // Find the user by mobile
         console.log("[verifyOtp] Finding user by mobile...");
-        const user = await User.findOne({ where: { mobile } });
+        const user = await User.findOne({ mobile });
         if (!user) {
             console.log("[verifyOtp] User not found.");
             return res.status(404).json({
