@@ -6,10 +6,10 @@ import Profile from "../pages/Profile/Profile";
 import Login from "../pages/Login/Login";
 import ErrorPage from "../pages/ErrorPage/ErrorPage";
 import { ENDPOINTS } from "../../utility/ApiEndpoints";
-import VerifyOtp from "../pages/VerifyOtp/VerifyOtp";
+import VerifyOtp from "../pages/VerifyOTP/VerifyOtp";
 import ChangePin from "../pages/ChangePin/ChangePin";
 import Signup from "../pages/Signup/Signup";
-import Chat from "../pages/RealTimeChat/RealTimeChat";
+// import Chat from "../pages/RealTimeChat/RealTimeChat";
 const RoutesConfig = [
     // Public Routes
     {
