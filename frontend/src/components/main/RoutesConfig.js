@@ -6,7 +6,7 @@ import Profile from "../pages/Profile/Profile";
 import Login from "../pages/Login/Login";
 import ErrorPage from "../pages/ErrorPage/ErrorPage";
 import { ENDPOINTS } from "../../utility/ApiEndpoints";
-import VerifyOtp from "../pages/VerifyOTP/VerifyOtp";
+// import VerifyOtp from "../pages/VerifyOTP/VerifyOtp";
 import ChangePin from "../pages/ChangePin/ChangePin";
 import Signup from "../pages/Signup/Signup";
 // import Chat from "../pages/RealTimeChat/RealTimeChat";
@@ -32,11 +32,11 @@ const RoutesConfig = [
         element: <Signup />,
         isProtected: false,
     },
-    {
-        path: ENDPOINTS.VERIFY_OTP_ACTION,
-        element: <VerifyOtp />,
-        isProtected: false,
-    },
+    // {
+    //     path: ENDPOINTS.VERIFY_OTP_ACTION,
+    //     element: <VerifyOtp />,
+    //     isProtected: false,
+    // },
 
     {
         path: ENDPOINTS.CHANGE_PIN,
