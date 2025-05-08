@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const userRoutes = require("./routes/userRoutes");
 // const { createDefaultAdmin } = require("./controllers/mainControllerSQL");
-const { createDefaultAdmin } = require("./controllers/mainControllerSQL");
+const { createDefaultAdmin } = require("./controllers/mainControllerMongo");
 // const sequelize = require("./config/postgresDatabase");
 
 const app = express();
