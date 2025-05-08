@@ -1,6 +1,6 @@
 import React from 'react';
 import Select, { components } from 'react-select'
-import { MultiSelect } from "react-multi-select-component";
+// import { MultiSelect } from "react-multi-select-component";
 const customStyles = {
     control: base => ({
         ...base,
@@ -81,16 +81,16 @@ const SelectBox = (props) => {
 
 export default SelectBox;
 
-export const MultiSelectBox = (props) => {
-    return (
-        <div className='pc-form_group lpay_input_group'>
-            <SelectLabel {...props} />
-            <MultiSelect
-                // ClearSelectedIcon={<BiX />}
-                ClearSelectedIcon={<React.Fragment />}
-                {...generateAttributes(props)}
-            />
-            <SelectErrorMsg {...props} />
-        </div>
-    )
-}
+// export const MultiSelectBox = (props) => {
+//     return (
+//         <div className='pc-form_group lpay_input_group'>
+//             <SelectLabel {...props} />
+//             <MultiSelect
+//                 // ClearSelectedIcon={<BiX />}
+//                 ClearSelectedIcon={<React.Fragment />}
+//                 {...generateAttributes(props)}
+//             />
+//             <SelectErrorMsg {...props} />
+//         </div>
+//     )
+// }
