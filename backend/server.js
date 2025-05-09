@@ -21,11 +21,14 @@ app.use((req, res, next) => {
 // Routes
 app.use("/crm", userRoutes);
 
+const PORT = process.env.PORT || 3005; // Default to 3005 if PORT is not set
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
+
 // MongoDB Connection
-const MONGO_SERVER = process.env.MONGO_SERVER
-    .replace("<db_username>", process.env.MONGO_USER)
-    .replace("<db_password>", process.env.MONGO_PASSWORD);
-mongoose.connect(MONGO_SERVER, { dbName: process.env.DB_NAME })
+const MONGO_SERVER = process.env.MONGO_SERVER;
+mongoose.connect(MONGO_SERVER)
     .then(() => {
         console.log("MongoDB Connected");
         createDefaultAdmin();
