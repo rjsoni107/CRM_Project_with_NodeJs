@@ -1,0 +1,6 @@
+{
+    "basePath": "/crm",
+    "rewrites": [
+      { "source": "/**", "destination": "/index.html" }
+    ]
+  }

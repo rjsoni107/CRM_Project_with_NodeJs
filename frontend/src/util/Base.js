@@ -2,12 +2,11 @@ import { ENDPOINTS } from "../utility/ApiEndpoints";
 import { jwtDecode } from "jwt-decode";
 
 const Base = () => {
-    console.log(window.apiPath, 'window.apiPath')
     let isAutoLogoutHandled = false
     const authToken = localStorage.getItem('authToken');
 
     const basePathAction = (action) => {
-        const basePathAction = `${window.basePath}/${action}`
+        const basePathAction = `/${action}`
         return basePathAction;
     };
 

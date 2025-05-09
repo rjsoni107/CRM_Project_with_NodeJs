@@ -16,7 +16,7 @@
             "dest": "backend/server.js"
         },
         {
-            "src": "/crm/(.*)",
+            "src": "/(.*)",
             "dest": "frontend/build/index.html"
         },
         {
