@@ -33,7 +33,7 @@ const ChangePin = () => {
     const { isDialogOpen, dialogBoxMsg, dialogBoxType, dialogFooter } = dialogState.dialog;
 
     const { inputChangeHandler, inputMessageHandler, validateInputHandler, validateFormHandler } = ValidationHandler();
-    const { fetchData, basePathAction } = Base();
+    const { fetchData, basePathAction, apiPathAction } = Base();
 
     const stateContext = {
         setError,
@@ -43,7 +43,8 @@ const ChangePin = () => {
         validateFormHandler,
         fetchData,
         basePathAction,
-        setDialogState
+        setDialogState,
+        apiPathAction,
     }
     const { handleChangePin } = ChangePinDTO(stateContext);
 

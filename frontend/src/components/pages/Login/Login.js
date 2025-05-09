@@ -22,7 +22,7 @@ const Login = () => {
         redirectState: null,
     });
 
-    const { fetchData, basePathAction } = Base();
+    const { fetchData, basePathAction, apiPathAction } = Base();
     const { validateInputHandler, inputChangeHandler, inputMessageHandler, validateFormHandler } = ValidationHandler();
     const { payload, redirect, redirectState } = state;
 
@@ -33,7 +33,8 @@ const Login = () => {
         setState,
         state,
         setShowLoader,
-        validateFormHandler
+        validateFormHandler,
+        apiPathAction,
     }
 
     const { handleLogin, handleGenerateOtp } = LoginDTO(stateContext);

@@ -11,7 +11,7 @@ import ValidationHandler from '../../../../utility/ValidationHandler';
 import DialogBox from '../../../dialogBox/DialogBox';
 import ConfimationContent from '../../../dialogBox/ConfirmationContent';
 function UserList() {
-    const { fetchData, invokePaginationMethod, basePathAction } = Base();
+    const { fetchData, invokePaginationMethod, basePathAction, apiPathAction } = Base();
 
     const navigate = useNavigate();
     const [showLoader, setShowLoader] = useState(false);
@@ -52,7 +52,7 @@ function UserList() {
 
     const { payload, countPerPage, length, row, status_list, status } = state;
     const { isDialogOpen, dialogBoxMsg, dialogBoxType, dialogFooter } = dialogState.dialog;
-    const { fetchUsers, deleteUser } = UserListDTO(fetchData, setState, setShowLoader, state, setDialogState);
+    const { fetchUsers, deleteUser } = UserListDTO(fetchData, setState, setShowLoader, state, setDialogState, apiPathAction);
     const {
         inputChangeHandler,
         inputMessageHandler,

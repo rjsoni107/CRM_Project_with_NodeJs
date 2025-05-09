@@ -1,6 +1,6 @@
 import { ENDPOINTS } from "../../../utility/ApiEndpoints";
 
-const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setShowLoader, validateFormHandler }) => {
+const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setShowLoader, validateFormHandler, apiPathAction }) => {
     const { mobile, pin } = state.payload;
 
     const openPage = (pathName, obj) => {
@@ -17,7 +17,7 @@ const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setSho
 
         if (validateFormHandler(that)) {
             const payload = { mobile, pin };
-            const fetchAction = basePathAction(ENDPOINTS.LOGIN_ACTION);
+            const fetchAction = apiPathAction(ENDPOINTS.LOGIN_ACTION);
             const redirectAction = basePathAction(ENDPOINTS.DASHBOARD);
             setShowLoader(true)
             try {
@@ -47,8 +47,8 @@ const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setSho
         }
         
         const payload = { mobile, type };
-        const fetchAction = basePathAction(ENDPOINTS.GENERATE_OTP_ACTION);
-        const redirectAction = basePathAction(ENDPOINTS.VERIFY_OTP_ACTION);
+        const fetchAction = apiPathAction(ENDPOINTS.GENERATE_OTP_ACTION);
+        const redirectAction = apiPathAction(ENDPOINTS.VERIFY_OTP_ACTION);
         setShowLoader(true)
         try {
             const response = await fetchData('POST', fetchAction, payload);

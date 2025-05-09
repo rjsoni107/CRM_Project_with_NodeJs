@@ -1,6 +1,6 @@
 import { ENDPOINTS } from "../../../../utility/ApiEndpoints";
 
-const UserListDTO = (fetchData, setState, setShowLoader, state, setDialogState) => {
+const UserListDTO = (fetchData, setState, setShowLoader, state, setDialogState, apiPathAction) => {
     // Fetch all users
     const fetchUsers = async (propsState) => {
         setShowLoader(true);
@@ -10,7 +10,7 @@ const UserListDTO = (fetchData, setState, setShowLoader, state, setDialogState) 
             length: propsState.length,
         };
         try {
-            const responseJson = await fetchData('POST', ENDPOINTS.GET_USER_LIST_ACTION, payload);
+            const responseJson = await fetchData('POST', apiPathAction(ENDPOINTS.GET_USER_LIST_ACTION), payload);
             const { userList, countPerPage } = responseJson || {};
 
             if (responseJson && responseJson.responseStatus === 'SUCCESS') {

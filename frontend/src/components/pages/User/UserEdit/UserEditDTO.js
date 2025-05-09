@@ -3,7 +3,7 @@ import { ENDPOINTS } from "../../../../utility/ApiEndpoints";
 import ValidationHandler from "../../../../utility/ValidationHandler";
 import { useRef } from "react";
 
-const UserEditDTO = ({ setShowLoader, setUserDetails, id, setDialogState, fetchData, basePathAction }) => {
+const UserEditDTO = ({ setShowLoader, setUserDetails, id, setDialogState, fetchData, basePathAction, apiPathAction }) => {
     const { validateFormHandler } = ValidationHandler();
     const userDetailsRef = useRef(null);
     const navigate = useNavigate();
@@ -14,7 +14,7 @@ const UserEditDTO = ({ setShowLoader, setUserDetails, id, setDialogState, fetchD
     // Fetch all users
     const getUserDetail = async () => {
         const payload = { id: id };
-        const actionName = basePathAction(ENDPOINTS.GET_USER_DETAILS_ACTION);
+        const actionName = apiPathAction(ENDPOINTS.GET_USER_DETAILS_ACTION);
 
         setShowLoader(true);
         try {
@@ -41,7 +41,7 @@ const UserEditDTO = ({ setShowLoader, setUserDetails, id, setDialogState, fetchD
             const userPayload = userDetailsRef.current.getPayload();
             const userId = { 'id': id }
             const payload = { ...userPayload, ...userId };
-            const actionName = basePathAction(ENDPOINTS.UPDATE_USER_ACTION);
+            const actionName = apiPathAction(ENDPOINTS.UPDATE_USER_ACTION);
 
             setShowLoader(true);
             try {

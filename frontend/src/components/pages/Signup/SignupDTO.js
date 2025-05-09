@@ -1,7 +1,7 @@
 import { redirect } from "react-router-dom";
 import { ENDPOINTS } from "../../../utility/ApiEndpoints";
 
-const SignupDTO = ({ state, setState, setShowLoader, fetchData, validateFormHandler, basePathAction, setError, setRedirect, setDialogState }) => {
+const SignupDTO = ({ state, setState, setShowLoader, fetchData, validateFormHandler, basePathAction, setError, setRedirect, setDialogState, apiPathAction }) => {
 
     const submitHandler = async (evt) => {
         evt.preventDefault()
@@ -9,7 +9,7 @@ const SignupDTO = ({ state, setState, setShowLoader, fetchData, validateFormHand
 
         if (validateFormHandler(that)) {
             const payload = state.payload;
-            const actionName = basePathAction(ENDPOINTS.SIGNUP_ACTION);
+            const actionName = apiPathAction(ENDPOINTS.SIGNUP_ACTION);
             setShowLoader(true)
             try {
                 const responseJson = await fetchData('POST', actionName, payload);
