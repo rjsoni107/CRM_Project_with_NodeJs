@@ -23,8 +23,8 @@ app.use("/crm", userRoutes);
 
 // MongoDB Connection
 const MONGO_SERVER = process.env.MONGO_SERVER
-    .replace("<username>", process.env.MONGO_USER)
-    .replace("<password>", process.env.MONGO_PASSWORD);
+    .replace("<db_username>", process.env.MONGO_USER)
+    .replace("<db_password>", process.env.MONGO_PASSWORD);
 mongoose.connect(MONGO_SERVER, { dbName: process.env.DB_NAME })
     .then(() => {
         console.log("MongoDB Connected");
