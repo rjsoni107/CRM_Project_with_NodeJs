@@ -1,11 +1,12 @@
-const User = require("../modules/userModelMongo");
+const { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, where } = require('firebase/firestore');
+const db = require('../db');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 const { userPermissions } = require("../util/Base");
 const crypto = require("crypto");
-const ForgotPIN = require("../modules/forgotPinModel");
-const LoginOTP = require("../modules/loginOtpModel");
+// const ForgotPIN = require("../modules/forgotPinModel");
+// const LoginOTP = require("../modules/loginOtpModel");
 
 // Generate Unique ID
 // This function generates a unique 16-digit ID for the user.
@@ -19,23 +20,25 @@ const isValueExist = (data) => data !== null && data !== undefined && data !== '
 exports.createDefaultAdmin = async () => {
     try {
         console.log("[createDefaultAdmin] Checking if default admin exists...");
-        const existingAdmin = await User.findOne({ userType: "ADMIN" });
-        if (existingAdmin) {
+        const adminQuery = query(collection(db, "users"), where("userType", "==", "ADMIN"));
+        const adminSnapshot = await getDocs(adminQuery);
+
+        if (!adminSnapshot.empty) {
             console.log("[createDefaultAdmin] Default admin already exists.");
             return;
         }
 
         console.log("[createDefaultAdmin] Creating default admin...");
         const hashedPin = await bcrypt.hash("111111", 10); // Default PIN (hashed)
-        await User.create({
+        await addDoc(collection(db, "users"), {
             id: generateUniqueId(),
             firstName: "Default",
-            status: "Active",
             lastName: "Admin",
             emailId: "admin@example.com",
             mobile: "1111111111",
             pin: hashedPin,
             userType: "ADMIN",
+            status: "Active",
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
         });
@@ -53,10 +56,10 @@ exports.login = async (req, res) => {
         const { mobile, pin, type, otp } = req.body;
 
         console.log("[loginUser] Finding user by mobile...");
-        const user = await User.findOne({ mobile });
-        const isNotActive = await User.findOne({ mobile, status: "Active" });
+        const userQuery = query(collection(db, "users"), where("mobile", "==", mobile));
+        const userSnapshot = await getDocs(userQuery);
 
-        if (!user) {
+        if (userSnapshot.empty) {
             console.log("[loginUser] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
@@ -65,7 +68,9 @@ exports.login = async (req, res) => {
             });
         }
 
-        if (!isNotActive) {
+        const user = userSnapshot.docs[0].data();
+
+        if (user.status !== "Active") {
             console.log("[loginUser] User is not active.");
             return res.status(403).json({
                 responseStatus: "FAILED",
@@ -76,9 +81,10 @@ exports.login = async (req, res) => {
 
         if (type === 'loginOTP') {
             console.log("[loginUser] Validating OTP...");
-            const loginOtp = await LoginOTP.findOne({ mobile, otp, status: "active" });
+            const otpQuery = query(collection(db, "loginOtps"), where("mobile", "==", mobile), where("otp", "==", otp), where("status", "==", "active"));
+            const otpSnapshot = await getDocs(otpQuery);
 
-            if (!loginOtp) {
+            if (otpSnapshot.empty) {
                 console.log("[loginUser] Invalid or expired OTP.");
                 return res.status(401).json({
                     responseStatus: "FAILED",
@@ -87,10 +93,12 @@ exports.login = async (req, res) => {
                 });
             }
 
-            if (loginOtp.otpExpiry < Date.now()) {
+            const otpDoc = otpSnapshot.docs[0];
+            const otpData = otpDoc.data();
+
+            if (otpData.otpExpiry < Date.now()) {
                 console.log("[loginUser] OTP has expired.");
-                loginOtp.status = "expired";
-                await loginOtp.save();
+                await updateDoc(doc(db, "loginOtps", otpDoc.id), { status: "expired" });
 
                 return res.status(401).json({
                     responseStatus: "FAILED",
@@ -100,19 +108,9 @@ exports.login = async (req, res) => {
             }
 
             console.log("[loginUser] OTP verified successfully.");
-            loginOtp.status = "verified";
-            await loginOtp.save();
+            await updateDoc(doc(db, "loginOtps", otpDoc.id), { status: "verified" });
         } else {
             console.log("[loginUser] Validating PIN...");
-            if (!user.pin) {
-                console.log("[loginUser] User PIN is not set.");
-                return res.status(400).json({
-                    responseStatus: "FAILED",
-                    responseMsg: "User PIN is not set",
-                    responseCode: "400",
-                });
-            }
-
             const isMatchPin = await bcrypt.compare(pin, user.pin);
             if (!isMatchPin) {
                 console.log("[loginUser] Invalid credentials.");
@@ -141,7 +139,7 @@ exports.login = async (req, res) => {
             token,
             userDetails: {
                 id: user.id,
-                name: `${user.firstName} ${isValueExist(user.lastName) ? user.lastName : ''}`,
+                name: `${user.firstName} ${user.lastName || ''}`,
                 emailId: user.emailId,
                 mobile: user.mobile,
                 userType: user.userType,
