@@ -23,41 +23,39 @@ function Main() {
     setInterval(handleAutoLogout, 60000); // Check every 60 seconds
 
     return (
-        <Router>
-            <Suspense fallback={<Loader />}>
-                <Routes>
-                    {RoutesConfig.map((route, index) => {
-                        if (route.isProtected) {
-                            return (
-                                <Route
-                                    key={index}
-                                    path={basePathAction(route.path)}
-                                    element={
-                                        <ProtectedRoute requiredPermission={route.path}>
-                                            <Layout />
-                                        </ProtectedRoute>}
-                                >
-                                    {/* Nested route for protected routes */}
-                                    <Route index element={route.element} />
-                                </Route>
-                            );
-                        }
-
-                        // Render public routes directly
+        <Suspense fallback={<Loader />}>
+            <Routes>
+                {RoutesConfig.map((route, index) => {
+                    if (route.isProtected) {
                         return (
                             <Route
                                 key={index}
                                 path={basePathAction(route.path)}
-                                element={route.element}
-                            />
+                                element={
+                                    <ProtectedRoute requiredPermission={route.path}>
+                                        <Layout />
+                                    </ProtectedRoute>}
+                            >
+                                {/* Nested route for protected routes */}
+                                <Route index element={route.element} />
+                            </Route>
                         );
-                    })}
+                    }
 
-                    {/* Catch-All Route for Unknown Paths */}
-                    <Route path="*" element={<ErrorPage />} />
-                </Routes>
-            </Suspense>
-        </Router>
+                    // Render public routes directly
+                    return (
+                        <Route
+                            key={index}
+                            path={basePathAction(route.path)}
+                            element={route.element}
+                        />
+                    );
+                })}
+
+                {/* Catch-All Route for Unknown Paths */}
+                <Route path="*" element={<ErrorPage />} />
+            </Routes>
+        </Suspense>
     );
 }
 
