@@ -1,6 +1,7 @@
 {
   "proxy": "http://localhost:3005",
   "name": "frontend",
+  "homepage": "/crm",
   "version": "1.0.0",
   "private": true,
   "dependencies": {
