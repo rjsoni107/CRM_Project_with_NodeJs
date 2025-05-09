@@ -1,6 +1,6 @@
 const express = require("express");
 const commonController = require('../controllers/commonController')
-const mainController = require("../controllers/mainControllerSQL");
+const mainController = require("../controllers/mainController");
 const { validateUser } = require("../middlewares/validation");
 const { verifyToken } = require("../middlewares/authMiddleware");
 const router = express.Router();

@@ -6,7 +6,6 @@ const { userPermissions } = require("../util/Base");
 const crypto = require("crypto");
 const ForgotPIN = require("../modules/forgotPinModel");
 const LoginOTP = require("../modules/loginOtpModel");
-const { Sequelize } = require("sequelize");
 
 // Generate Unique ID
 // This function generates a unique 16-digit ID for the user.
@@ -177,7 +176,7 @@ exports.signup = async (req, res) => {
         const { emailId, mobile, pin, confirmPin } = req.body;
         console.log("[signup] Checking for duplicate email or mobile...");
         const existingUser = await User.findOne({
-            [Sequelize.Op.or]: [{ emailId }, { mobile }]
+            $or: [{ emailId }, { mobile }]
         },
         );
 
@@ -253,7 +252,7 @@ exports.addUser = async (req, res) => {
         const { emailId, mobile, pin, confirmPin } = req.body;
         console.log("[addUser] Checking for duplicate email or mobile...");
         const existingUser = await User.findOne({
-            [Sequelize.Op.or]: [{ emailId }, { mobile }]
+            or: [{ emailId }, { mobile }]
         },
         );
 
