@@ -31,7 +31,7 @@ const Signup = () => {
         },
     });
     const { payload } = state;
-    const { fetchData, basePathAction } = Base();
+    const { fetchData, basePathAction, apiPathAction } = Base();
     const {
         validateFormHandler,
         inputChangeHandler,
@@ -50,7 +50,8 @@ const Signup = () => {
         basePathAction,
         setError,
         setRedirect,
-        setDialogState
+        setDialogState,
+        apiPathAction
     }
     const { submitHandler } = SignupDTO(stateContext);
     const handleBlur = (evt) => {

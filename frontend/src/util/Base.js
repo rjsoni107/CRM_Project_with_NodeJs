@@ -2,11 +2,17 @@ import { ENDPOINTS } from "../utility/ApiEndpoints";
 import { jwtDecode } from "jwt-decode";
 
 const Base = () => {
+    console.log(window.apiPath, 'window.apiPath')
     let isAutoLogoutHandled = false
     const authToken = localStorage.getItem('authToken');
 
     const basePathAction = (action) => {
         const basePathAction = `${window.basePath}/${action}`
+        return basePathAction;
+    };
+
+    const apiPathAction = (action) => {
+        const basePathAction = `${window.apiPath}/${action}`
         return basePathAction;
     };
 
@@ -70,7 +76,7 @@ const Base = () => {
     }
 
     const getCountryList = async (setState, setShowLoader) => {
-        const actionName = basePathAction(ENDPOINTS.GET_COUNTRY_LIST);
+        const actionName = apiPathAction(ENDPOINTS.GET_COUNTRY_LIST);
         setShowLoader(true);
         try {
             const responseJson = await fetchData("GET", actionName);
@@ -98,7 +104,7 @@ const Base = () => {
     const getStateList = async (setState, selectedCountry, setShowLoader) => {
         if (!selectedCountry) return; // Exit if no country code is selected
 
-        const actionName = basePathAction(ENDPOINTS.GET_STATE_LIST);
+        const actionName = apiPathAction(ENDPOINTS.GET_STATE_LIST);
         setShowLoader(true);
         try {
             const responseJson = await fetchData("GET", `${actionName}/${selectedCountry}`);
@@ -135,7 +141,7 @@ const Base = () => {
         const { state, country } = payload;
         if (!state && !country) return; // Exit if no state code and country code is selected
 
-        const actionName = basePathAction(ENDPOINTS.GET_CITY_LIST);
+        const actionName = apiPathAction(ENDPOINTS.GET_CITY_LIST);
         setShowLoader(true);
         try {
             const responseJson = await fetchData("GET", `${actionName}/${country}/${state}`);
@@ -246,7 +252,8 @@ const Base = () => {
         getCityList,
         handleCountryChange,
         handleStateChange,
-        handleLogout
+        handleLogout,
+        apiPathAction
     };
 };
 

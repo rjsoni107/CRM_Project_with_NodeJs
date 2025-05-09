@@ -2,7 +2,7 @@ import { ENDPOINTS } from "../../../../utility/ApiEndpoints";
 import ValidationHandler from "../../../../utility/ValidationHandler";
 import { useRef } from "react";
 
-const AddUserDTO = ({setShowLoader, setDialogState, fetchData, basePathAction}) => {
+const AddUserDTO = ({setShowLoader, setDialogState, fetchData, apiPathAction}) => {
     const { validateFormHandler } = ValidationHandler();
     const userAddDetailsRef = useRef(null);
     
@@ -14,7 +14,7 @@ const AddUserDTO = ({setShowLoader, setDialogState, fetchData, basePathAction}) 
         if (validateFormHandler(that)) {
             const userPayload = userAddDetailsRef.current.getPayload();
             const payload = { ...userPayload};
-            const actionName = basePathAction(ENDPOINTS.ADD_USER_ACTION);
+            const actionName = apiPathAction(ENDPOINTS.ADD_USER_ACTION);
 
             setShowLoader(true);
             fetchData('POST', actionName, payload).then(responseJson => {

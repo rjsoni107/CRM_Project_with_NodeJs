@@ -20,8 +20,8 @@ const UserEdit = () => {
             dialogFooter: null
         },
     });
-    const { fetchData, basePathAction } = Base();
-    const userContext = { setShowLoader, setUserDetails, id, setDialogState, fetchData, basePathAction };
+    const { fetchData, basePathAction, apiPathAction } = Base();
+    const userContext = { setShowLoader, setUserDetails, id, setDialogState, fetchData, basePathAction, apiPathAction };
     const { execute, submitHandler, userDetailsRef } = UserEditDTO(userContext);
     const { isDialogOpen, dialogBoxMsg, dialogBoxType, dialogFooter } = dialogState.dialog;
 

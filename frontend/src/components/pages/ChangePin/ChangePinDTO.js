@@ -1,6 +1,6 @@
 import { ENDPOINTS } from "../../../utility/ApiEndpoints";
 
-const ChangePinDTO = ({ setError, setState, state, setShowLoader, validateFormHandler, fetchData, basePathAction, setDialogState }) => {
+const ChangePinDTO = ({ setError, setState, state, setShowLoader, validateFormHandler, fetchData, basePathAction, setDialogState, apiPathAction }) => {
     // const { pin, confirmPin } = state.payload;
 
     const handleChangePin = async (event) => {
@@ -9,7 +9,7 @@ const ChangePinDTO = ({ setError, setState, state, setShowLoader, validateFormHa
 
         if (validateFormHandler(that)) {
             const payload = state.payload
-            const actionName = basePathAction(ENDPOINTS.CHANGE_PIN_ACTION);
+            const actionName = apiPathAction(ENDPOINTS.CHANGE_PIN_ACTION);
             setShowLoader(true);
             try {
                 const response = await fetchData("POST", actionName, payload);

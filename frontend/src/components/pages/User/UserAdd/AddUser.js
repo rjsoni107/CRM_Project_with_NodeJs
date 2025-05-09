@@ -20,8 +20,8 @@ const AddUser = () => {
             dialogFooter: null
         },
     });
-    const { fetchData, basePathAction } = Base();
-    const userContext = { setShowLoader, setUserDetails, id, setDialogState, fetchData, basePathAction };
+    const { fetchData, apiPathAction } = Base();
+    const userContext = { setShowLoader, setUserDetails, id, setDialogState, fetchData, apiPathAction };
     const { submitHandler, userAddDetailsRef } = AddUserDTO(userContext);
     const { isDialogOpen, dialogBoxMsg, dialogBoxType, dialogFooter } = dialogState.dialog;
 
