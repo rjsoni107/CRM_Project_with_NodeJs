@@ -17,6 +17,11 @@ const RoutesConfig = [
         isProtected: false,
     },
     {
+        path: '/',
+        element: <Login />,
+        isProtected: false,
+    },
+    {
         path: ENDPOINTS.LOGIN,
         element: <Login />,
         isProtected: false,

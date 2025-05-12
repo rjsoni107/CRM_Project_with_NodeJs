@@ -26,7 +26,7 @@ const Base = () => {
         const requestMetadata = {
             method: method,
             headers: {
-                ...(authToken && { "Authorization": `Bearer ${authToken}` }), // Add Authorization header if token exists
+                ...(authToken && { "Authorization": `Bearer ${authToken}` }),
                 'Accept': 'application/json',
                 ...(isContentType && { 'Content-Type': 'application/json' })
             }
@@ -36,17 +36,22 @@ const Base = () => {
             requestMetadata.body = isStringify ? JSON.stringify(payload) : payload;
         }
 
+        console.log('Fetching URL:', actionName); // Debug
+        console.log('Request Metadata:', requestMetadata); // Debug
+
         try {
             const response = await fetch(actionName, requestMetadata);
+            console.log('Response Status:', response.status); // Debug
+            console.log('Response Headers:', response.headers.get('content-type')); // Debug
 
             const data = await response.json();
+            console.log('Response Data:', data); // Debug
 
             if (data.redirectUrl) window.location.href = basePathAction(data.redirectUrl);
 
             return data;
         } catch (error) {
             console.error("Error in fetchData:", error);
-            window.location.href = basePathAction(ENDPOINTS.ERROR);
             return { error: true, message: error.message };
         }
     };

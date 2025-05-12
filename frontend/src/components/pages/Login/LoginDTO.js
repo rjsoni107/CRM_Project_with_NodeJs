@@ -23,6 +23,7 @@ const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setSho
             try {
                 const response = await fetchData('POST', fetchAction, payload);
                 const { responseStatus, responseMsg, userDetails, token } = response;
+                console.log(response)
 
                 if (response && responseStatus === "SUCCESS") {
                     localStorage.setItem("authToken", token);
