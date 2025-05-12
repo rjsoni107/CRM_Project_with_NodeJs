@@ -12,7 +12,7 @@
     }
   ],
   "routes": [
-    { "source": "/api/(.*)", "destination": "/backend/server.js" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "src": "/api/(.*)", "dest": "/backend/server.js" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
