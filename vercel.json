@@ -11,9 +11,8 @@
       "use": "@vercel/node"
     }
   ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/backend/server.js" },
-    { "src": "/index", "dest": "/index.html", "headers": { "Cache-Control": "no-cache" } },
-    { "src": "/(.*)", "dest": "/index.html", "headers": { "Cache-Control": "no-cache" } }
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/backend/server.js" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
