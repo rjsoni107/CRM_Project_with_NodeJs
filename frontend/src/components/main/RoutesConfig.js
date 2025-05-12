@@ -1,13 +1,15 @@
-import Dashboard from "../pages/Dashboard/Dashboard";
-import AddUser from "../pages/User/UserAdd/AddUser";
-import UserList from "../pages/User/UserList/UserList";
-import UserEdit from "../pages/User/UserEdit/UserEdit";
-import Profile from "../pages/Profile/Profile";
-import Login from "../pages/Login/Login";
-import ErrorPage from "../pages/ErrorPage/ErrorPage";
+import React from "react";
 import { ENDPOINTS } from "../../utility/ApiEndpoints";
-import ChangePin from "../pages/ChangePin/ChangePin";
-import Signup from "../pages/Signup/Signup";
+const VerifyOtp = React.lazy(() => import("../pages/VerifyOtp/VerifyOtp"));
+const AddUser = React.lazy(() => import("../pages/User/UserAdd/AddUser"));
+const UserList = React.lazy(() => import("../pages/User/UserList/UserList"));
+const UserEdit = React.lazy(() => import("../pages/User/UserEdit/UserEdit"));
+const Profile = React.lazy(() => import("../pages/Profile/Profile"));
+const Login = React.lazy(() => import("../pages/Login/Login"));
+const ErrorPage = React.lazy(() => import("../pages/ErrorPage/ErrorPage"));
+const ChangePin = React.lazy(() => import("../pages/ChangePin/ChangePin"));
+const Signup = React.lazy(() => import("../pages/Signup/Signup"));
+const Dashboard = React.lazy(() => import("../pages/Dashboard/Dashboard"));
 // import Chat from "../pages/RealTimeChat/RealTimeChat";
 const RoutesConfig = [
     // Public Routes
@@ -37,6 +39,11 @@ const RoutesConfig = [
         isProtected: false,
     },
 
+    {
+        path: ENDPOINTS.VERIFY_OTP,
+        element: <VerifyOtp />,
+        isProtected: false,
+    },
     {
         path: ENDPOINTS.CHANGE_PIN,
         element: <ChangePin />,

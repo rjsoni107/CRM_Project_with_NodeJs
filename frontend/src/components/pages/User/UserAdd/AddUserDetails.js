@@ -104,6 +104,24 @@ const AddUserDetails = forwardRef((props, ref) => {
                 </div>
                 <div className="col-12 col-sm-6 col-md-3 mb-20">
                     <TextInput
+                        label="Business Name"
+                        name="businessName"
+                        id="businessName"
+                        placeholder="Enter Business Name"
+                        value={payload.businessName || ''}
+                        className="form-control input-field"
+                        isRequired={true}
+                        maxLength={200}
+                        onChange={evt => {
+                            inputChangeHandler(evt, setState);
+                            inputMessageHandler(evt, 'HIDE', 'error');
+                        }}
+                        onBlur={handleBlur}
+                        dataType="ALPHA_NUMERIC_SPACE"
+                    />
+                </div>
+                <div className="col-12 col-sm-6 col-md-3 mb-20">
+                    <TextInput
                         label="First Name"
                         name="firstName"
                         id="firstName"
@@ -128,7 +146,6 @@ const AddUserDetails = forwardRef((props, ref) => {
                         placeholder="Enter Last Name"
                         value={lastName || ''}
                         className="form-control input-field"
-                        isRequired={true}
                         maxLength={100}
                         onChange={evt => {
                             inputChangeHandler(evt, setState);
@@ -140,13 +157,13 @@ const AddUserDetails = forwardRef((props, ref) => {
                 </div>
                 <div className="col-12 col-sm-6 col-md-3 mb-20">
                     <TextInput
-                        label="Email"
+                        label="Email ID"
+                        optlable={true}
                         name="emailId"
                         id="emailId"
                         placeholder="Enter Email ID"
                         value={emailId || ''}
                         className="form-control input-field"
-                        isRequired={true}
                         maxLength={100}
                         onInput={e => {
                             inputChangeHandler(e, setState);

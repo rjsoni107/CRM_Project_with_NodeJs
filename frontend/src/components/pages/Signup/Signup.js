@@ -138,13 +138,13 @@ const Signup = () => {
                         </div>
                         <div className="col-12 mb-20">
                             <TextInput
-                                label="Email"
+                                label="Email ID"
+                                optlable={true}
                                 name="emailId"
                                 id="emailId"
                                 placeholder="Enter Email ID"
                                 value={payload.emailId || ''}
                                 className="form-control input-field"
-                                isRequired={true}
                                 autoComplete="off"
                                 maxLength={100}
                                 onInput={e => {

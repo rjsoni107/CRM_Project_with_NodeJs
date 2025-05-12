@@ -10,6 +10,7 @@ export const ENDPOINTS = {
     GENERATE_OTP_ACTION: 'generateOtpAction',
     FORGOT_PIN: 'forgotPin',
     LOGIN_OTP: 'loginOtp',
+    VERIFY_OTP :"verifyOtp",
     VERIFY_OTP_ACTION :"verifyOtpAction",
     CHANGE_PIN: 'changePin',
     CHANGE_PIN_ACTION: 'changePinAction',

@@ -1,4 +1,4 @@
-const { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, where } = require('firebase/firestore');
+const { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, where, writeBatch} = require('firebase/firestore');
 const db = require('../db');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -173,12 +173,14 @@ exports.signup = async (req, res) => {
 
         const { emailId, mobile, pin, confirmPin } = req.body;
         console.log("[signup] Checking for duplicate email or mobile...");
-        const existingUser = await User.findOne({
-            $or: [{ emailId }, { mobile }]
-        },
+        const userQuery = query(
+            collection(db, "users"),
+            where("emailId", "==", emailId),
+            where("mobile", "==", mobile)
         );
+        const userSnapshot = await getDocs(userQuery);
 
-        if (existingUser) {
+        if (!userSnapshot.empty) {
             console.log("[signup] Duplicate entry detected.");
             return res.status(400).json({
                 responseStatus: "FAILED",
@@ -200,13 +202,17 @@ exports.signup = async (req, res) => {
         const hashedPin = await bcrypt.hash(pin, 10);
 
         console.log("[signup] Creating new account...");
-        const newUser = await User.create({
+        const newUser = {
             ...req.body,
             id: generateUniqueId(),
             pin: hashedPin,
-            userType: 'MERCHANT',
+            userType: 'USER',
             status: 'Active',
-        });
+            created: new Date().toISOString(),
+            updated: new Date().toISOString(),
+        };
+
+        await addDoc(collection(db, "users"), newUser);
 
         console.log("[signup] Account created successfully.");
         res.status(201).json({
@@ -249,12 +255,14 @@ exports.addUser = async (req, res) => {
 
         const { emailId, mobile, pin, confirmPin } = req.body;
         console.log("[addUser] Checking for duplicate email or mobile...");
-        const existingUser = await User.findOne({
-            or: [{ emailId }, { mobile }]
-        },
+        const userQuery = query(
+            collection(db, "users"),
+            where("emailId", "==", emailId),
+            where("mobile", "==", mobile)
         );
+        const userSnapshot = await getDocs(userQuery);
 
-        if (existingUser) {
+        if (!userSnapshot.empty) {
             console.log("[addUser] Duplicate entry detected.");
             return res.status(400).json({
                 responseStatus: "FAILED",
@@ -276,13 +284,17 @@ exports.addUser = async (req, res) => {
         const hashedPin = await bcrypt.hash(pin, 10);
 
         console.log("[addUser] Creating new user...");
-        const newUser = await User.create({
+        const newUser = {
             ...req.body,
             id: generateUniqueId(),
             pin: hashedPin,
-            userType: 'USER',
-            status: 'Active',
-        });
+            userType: "USER",
+            status: "Active",
+            created: new Date().toISOString(),
+            updated: new Date().toISOString(),
+        };
+
+        await addDoc(collection(db, "users"), newUser);
 
         console.log("[addUser] User added successfully.");
         res.status(201).json({
@@ -312,16 +324,16 @@ exports.addUser = async (req, res) => {
 exports.fetchAllUsers = async (req, res) => {
     console.log("[fetchAllUsers] Fetching users...");
     try {
-        const query = {};
+        const filters = {};
 
-        // Dynamically build the query object based on the request payload
-        console.log("[fetchAllUsers] Building query object...");
+        // Dynamically build the filters object based on the request payload
+        console.log("[fetchAllUsers] Building filters object...");
         for (const [key, value] of Object.entries(req.body)) {
             if (value && value !== "All" && key !== "start" && key !== "length") {
-                query[key] = value;
+                filters[key] = value;
             }
         }
-        console.log("[fetchAllUsers] Query object:", query);
+        console.log("[fetchAllUsers] Filters object:", filters);
 
         // Extract pagination parameters
         const start = parseInt(req.body.start) || 0; // Default to 0 if not provided
@@ -329,12 +341,25 @@ exports.fetchAllUsers = async (req, res) => {
         console.log("[fetchAllUsers] Pagination parameters - Start:", start, "Length:", length);
 
         // Add a filter to only fetch users with userType = 'USER'
-        query.userType = 'USER';
+        filters.userType = 'USER';
 
-        // Fetch users with pagination
-        console.log("[fetchAllUsers] Fetching users from database...");
-        const users = await User.find(query).skip(start).limit(length);
-        const count = await User.countDocuments(query);
+        // Build Firestore query
+        console.log("[fetchAllUsers] Building Firestore query...");
+        let userQuery = collection(db, "users");
+        for (const [key, value] of Object.entries(filters)) {
+            userQuery = query(userQuery, where(key, "==", value));
+        }
+
+        console.log("[fetchAllUsers] Fetching users from Firestore...");
+        const userSnapshot = await getDocs(userQuery);
+
+        // Apply pagination manually
+        const users = userSnapshot.docs.slice(start, start + length).map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+
+        const count = userSnapshot.size; // Total number of users matching the query
 
         console.log("[fetchAllUsers] Users fetched successfully. Count:", count);
         res.json({
@@ -345,6 +370,7 @@ exports.fetchAllUsers = async (req, res) => {
                 id: user.id,
                 firstName: user.firstName,
                 lastName: user.lastName,
+                businessName: user.businessName,
                 emailId: user.emailId,
                 mobile: user.mobile,
                 userType: user.userType,
@@ -369,32 +395,44 @@ exports.fetchUserByKey = async (req, res) => {
         const { id, emailId, mobile } = req.body;
         console.log("[fetchUserByKey] Request body:", req.body);
 
-        const query = {};
-        if (id) query.id = id;
-        if (emailId) query.emailId = emailId;
-        if (mobile) query.mobile = mobile;
-        console.log("[fetchUserByKey] Query object:", query);
-
-        // Search for the user
-        console.log("[fetchUserByKey] Searching for user...");
-        const user = await User.findOne(query);
-        console.log("[fetchUserByKey] User found:", user);
-
-        if (user) {
-            res.json({
-                responseStatus: "SUCCESS",
-                responseMsg: "User fetched successfully",
-                responseCode: "200",
-                user,
-            });
+        // Build Firestore query
+        let userQuery = collection(db, "users");
+        if (id) {
+            userQuery = query(userQuery, where("id", "==", id));
+        } else if (emailId) {
+            userQuery = query(userQuery, where("emailId", "==", emailId));
+        } else if (mobile) {
+            userQuery = query(userQuery, where("mobile", "==", mobile));
         } else {
+            console.log("[fetchUserByKey] No valid key provided.");
+            return res.status(400).json({
+                responseStatus: "FAILED",
+                responseMsg: "At least one key (id, emailId, or mobile) is required",
+                responseCode: "400",
+            });
+        }
+
+        console.log("[fetchUserByKey] Searching for user...");
+        const userSnapshot = await getDocs(userQuery);
+
+        if (userSnapshot.empty) {
             console.log("[fetchUserByKey] User not found.");
-            res.status(404).json({
+            return res.status(404).json({
                 responseStatus: "FAILED",
                 responseMsg: "User not found!",
                 responseCode: "404",
             });
         }
+
+        const user = userSnapshot.docs[0].data();
+        console.log("[fetchUserByKey] User found:", user);
+
+        res.json({
+            responseStatus: "SUCCESS",
+            responseMsg: "User fetched successfully",
+            responseCode: "200",
+            user,
+        });
     } catch (error) {
         console.error("[fetchUserByKey] Error fetching user:", error.message);
         res.status(500).json({
@@ -425,15 +463,12 @@ exports.updateUser = async (req, res) => {
         const updatedData = req.body; // Extract the updated data from the request body
         console.log("[updateUser] Updated data:", updatedData);
 
-        // Update the user in the database
-        console.log("[updateUser] Updating user in database...");
-        const updatedUser = await User.findOneAndUpdate(
-            { id: userId },
-            updatedData,
-            { new: true } // Return the updated document
-        );
+        // Update the user in Firestore
+        console.log("[updateUser] Updating user in Firestore...");
+        const userRef = doc(db, "users", userId); // Reference to the user document
+        const userSnapshot = await getDocs(query(collection(db, "users"), where("id", "==", userId)));
 
-        if (!updatedUser) {
+        if (userSnapshot.empty) {
             console.log("[updateUser] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
@@ -442,12 +477,14 @@ exports.updateUser = async (req, res) => {
             });
         }
 
+        await updateDoc(userRef, updatedData); // Update the user document
+
         console.log("[updateUser] User updated successfully.");
         res.status(200).json({
             responseStatus: "SUCCESS",
             responseMsg: "User updated successfully",
             responseCode: "200",
-            updatedUser, // Return the updated user
+            updatedUser: { id: userId, ...updatedData }, // Return the updated user
         });
     } catch (error) {
         console.error("[updateUser] Error updating user:", error.message);
@@ -463,14 +500,27 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
     console.log("[deleteUser] Deleting user...");
     try {
-        const userId = req.params.id;
+        const userId = req.params.id; // Extract the user ID from the request parameters
         console.log("[deleteUser] User ID:", userId);
 
-        // Delete the user
-        console.log("[deleteUser] Deleting user from database...");
-        const user = await User.deleteOne({ id: userId });
+        // Validate the user ID
+        if (!userId) {
+            console.log("[deleteUser] User ID is missing.");
+            return res.status(400).json({
+                responseStatus: "FAILED",
+                responseMsg: "User ID is required",
+                responseCode: "400",
+            });
+        }
 
-        if (result.deletedCount === 0) {
+        // Reference to the user document in Firestore
+        const userRef = doc(db, "users", userId);
+
+        // Check if the user exists
+        console.log("[deleteUser] Checking if user exists...");
+        const userSnapshot = await getDocs(query(collection(db, "users"), where("id", "==", userId)));
+
+        if (userSnapshot.empty) {
             console.log("[deleteUser] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
@@ -479,10 +529,14 @@ exports.deleteUser = async (req, res) => {
             });
         }
 
+        // Delete the user document
+        console.log("[deleteUser] Deleting user from Firestore...");
+        await deleteDoc(userRef);
+
         console.log("[deleteUser] User deleted successfully.");
         res.status(200).json({
             responseStatus: "SUCCESS",
-            responseMsg: `User deleted successfully`,
+            responseMsg: "User deleted successfully",
             responseCode: "200",
         });
     } catch (error) {
@@ -496,6 +550,7 @@ exports.deleteUser = async (req, res) => {
 };
 
 // Generate OTP
+
 exports.generateOtp = async (req, res) => {
     try {
         console.log("[generateOtp] Request received:", req.body);
@@ -511,9 +566,10 @@ exports.generateOtp = async (req, res) => {
         }
 
         console.log("[generateOtp] Finding user by mobile...");
-        const user = await User.findOne({ mobile });
-        // Find the user by mobile
-        if (!user) {
+        const userQuery = query(collection(db, "users"), where("mobile", "==", mobile));
+        const userSnapshot = await getDocs(userQuery);
+
+        if (userSnapshot.empty) {
             console.log("[generateOtp] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
@@ -521,6 +577,8 @@ exports.generateOtp = async (req, res) => {
                 responseCode: "404",
             });
         }
+
+        const user = userSnapshot.docs[0].data();
 
         if (user.status !== "Active") {
             console.log("[generateOtp] User is not active.");
@@ -535,24 +593,32 @@ exports.generateOtp = async (req, res) => {
         console.log("[generateOtp] Generating OTP...");
         const otp = crypto.randomInt(100000, 999999).toString();
 
-        // Save OTP in the database
+        // Save OTP in Firestore
         console.log("[generateOtp] Marking existing OTPs as inactive...");
-        const collectionName = type === 'loginOTP' ? LoginOTP : ForgotPIN;
+        const otpCollection = type === 'loginOTP' ? "loginOtps" : "forgotPins";
 
-        await collectionName.updateMany(
-            { mobile, status: "active" },
-            { $set: { status: "inActive" } }
+        const otpQuery = query(
+            collection(db, otpCollection),
+            where("mobile", "==", mobile),
+            where("status", "==", "active")
         );
+        const otpSnapshot = await getDocs(otpQuery);
+
+        // Mark existing OTPs as inactive
+        const batch = writeBatch(db); // Use writeBatch instead of db.batch()
+        otpSnapshot.forEach((doc) => {
+            batch.update(doc.ref, { status: "inActive" });
+        });
+        await batch.commit();
 
         console.log("[generateOtp] Saving new OTP...");
-        const newOtpEntry = new collectionName({
+        await addDoc(collection(db, otpCollection), {
             mobile,
             otp,
-            otpExpiry: Date.now() + 5 * 60 * 1000,
+            otpExpiry: Date.now() + 5 * 60 * 1000, // OTP valid for 5 minutes
             status: "active",
             created: new Date().toISOString(),
         });
-        await newOtpEntry.save();
 
         const formattedMobile = mobile.startsWith('+') ? mobile : `+91${mobile}`;
 
@@ -593,8 +659,10 @@ exports.verifyOtp = async (req, res) => {
 
         // Find the user by mobile
         console.log("[verifyOtp] Finding user by mobile...");
-        const user = await User.findOne({ mobile });
-        if (!user) {
+        const userQuery = query(collection(db, "users"), where("mobile", "==", mobile));
+        const userSnapshot = await getDocs(userQuery);
+
+        if (userSnapshot.empty) {
             console.log("[verifyOtp] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
@@ -602,6 +670,8 @@ exports.verifyOtp = async (req, res) => {
                 responseCode: "404",
             });
         }
+
+        const user = userSnapshot.docs[0].data();
 
         if (user.status !== "Active") {
             console.log("[verifyOtp] User is not active.");
@@ -614,9 +684,15 @@ exports.verifyOtp = async (req, res) => {
 
         // Find the active OTP for the mobile
         console.log("[verifyOtp] Finding active OTP...");
-        const forgotPIN = await ForgotPIN.findOne({ mobile, otp, status: "active" });
+        const otpQuery = query(
+            collection(db, "forgotPins"),
+            where("mobile", "==", mobile),
+            where("otp", "==", otp),
+            where("status", "==", "active")
+        );
+        const otpSnapshot = await getDocs(otpQuery);
 
-        if (!forgotPIN) {
+        if (otpSnapshot.empty) {
             console.log("[verifyOtp] Invalid or expired OTP.");
             return res.status(401).json({
                 responseStatus: "FAILED",
@@ -625,12 +701,13 @@ exports.verifyOtp = async (req, res) => {
             });
         }
 
+        const otpDoc = otpSnapshot.docs[0];
+        const otpData = otpDoc.data();
+
         // Check if OTP is expired
-        if (forgotPIN.otpExpiry < Date.now()) {
+        if (otpData.otpExpiry < Date.now()) {
             console.log("[verifyOtp] OTP has expired.");
-            // Mark the OTP as expired
-            forgotPIN.status = "expired";
-            await forgotPIN.save();
+            await updateDoc(doc(db, "forgotPins", otpDoc.id), { status: "expired" });
 
             return res.status(401).json({
                 responseStatus: "FAILED",
@@ -641,8 +718,7 @@ exports.verifyOtp = async (req, res) => {
 
         // Clear OTP after successful verification
         console.log("[verifyOtp] Marking OTP as verified...");
-        forgotPIN.status = "verified";
-        await forgotPIN.save();
+        await updateDoc(doc(db, "forgotPins", otpDoc.id), { status: "verified" });
 
         // Generate JWT token
         console.log("[verifyOtp] Generating JWT token...");
@@ -680,11 +756,22 @@ exports.changePin = async (req, res) => {
         console.log("[changePin] Request received:", req.body);
         const { mobile, pin, confirmPin } = req.body;
 
+        // Validate input
+        if (!mobile || !pin || !confirmPin) {
+            console.log("[changePin] Missing required fields.");
+            return res.status(400).json({
+                responseStatus: "FAILED",
+                responseMsg: "Mobile, PIN, and Confirm PIN are required",
+                responseCode: "400",
+            });
+        }
+
         // Find the user by mobile
         console.log("[changePin] Finding user by mobile...");
-        const user = await User.findOne({ mobile });
+        const userQuery = query(collection(db, "users"), where("mobile", "==", mobile));
+        const userSnapshot = await getDocs(userQuery);
 
-        if (!user) {
+        if (userSnapshot.empty) {
             console.log("[changePin] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
@@ -692,6 +779,9 @@ exports.changePin = async (req, res) => {
                 responseCode: "404",
             });
         }
+
+        const userDoc = userSnapshot.docs[0];
+        const user = userDoc.data();
 
         // Validate the new PIN and confirm PIN
         if (pin !== confirmPin) {
@@ -710,7 +800,7 @@ exports.changePin = async (req, res) => {
             console.log("[changePin] New PIN cannot be the same as the old PIN.");
             return res.status(402).json({
                 responseStatus: "FAILED",
-                responseMsg: "New PIN cannot be same as old PIN",
+                responseMsg: "New PIN cannot be the same as the old PIN",
                 responseCode: "402",
             });
         }
@@ -719,10 +809,10 @@ exports.changePin = async (req, res) => {
         console.log("[changePin] Hashing new PIN...");
         const hashedPin = await bcrypt.hash(pin, 10);
 
-        // Update the user's PIN
+        // Update the user's PIN in Firestore
         console.log("[changePin] Updating user's PIN...");
-        user.pin = hashedPin;
-        await user.save();
+        const userRef = doc(db, "users", userDoc.id);
+        await updateDoc(userRef, { pin: hashedPin });
 
         console.log("[changePin] PIN updated successfully.");
         res.status(200).json({

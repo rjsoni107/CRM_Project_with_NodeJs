@@ -49,7 +49,7 @@ const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setSho
         
         const payload = { mobile, type };
         const fetchAction = apiPathAction(ENDPOINTS.GENERATE_OTP_ACTION);
-        const redirectAction = apiPathAction(ENDPOINTS.VERIFY_OTP_ACTION);
+        const redirectAction = basePathAction(ENDPOINTS.VERIFY_OTP);
         setShowLoader(true)
         try {
             const response = await fetchData('POST', fetchAction, payload);

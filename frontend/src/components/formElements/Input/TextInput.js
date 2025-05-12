@@ -43,12 +43,15 @@ const TextInput = (props) => {
     let textLabel = null;
     if (props.label !== '' && props.label !== null && props.label !== undefined) {
         textLabel = <label className={`fw-medium ${props.labelclass !== undefined ? props.labelclass : ''}`} htmlFor={props.id}>
-            {props.label} {props.isRequired && <span className="text-danger">*</span>}
+            {props.label}
+            {props.isRequired && <span className="text-danger">*</span>} 
+            {props.optlable && <span className="text-light-gray fs-10"> (Optional)</span>}
         </label>
     }
 
     let fieldType = <input
         ref={props.ref}
+        optlable={props.optlable}
         type={props.type !== undefined ? props.type : 'text'}
         id={props.id}
         data-regex={props.dataRegex}
