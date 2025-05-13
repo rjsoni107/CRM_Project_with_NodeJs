@@ -158,7 +158,7 @@ const AddUserDetails = forwardRef((props, ref) => {
                 <div className="col-12 col-sm-6 col-md-3 mb-20">
                     <TextInput
                         label="Email ID"
-                        optlable={true}
+                        sublable="true"
                         name="emailId"
                         id="emailId"
                         placeholder="Enter Email ID"

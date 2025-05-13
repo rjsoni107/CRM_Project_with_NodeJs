@@ -45,13 +45,13 @@ const TextInput = (props) => {
         textLabel = <label className={`fw-medium fs-12 fs-md-14 ${props.labelclass !== undefined ? props.labelclass : ''}`} htmlFor={props.id}>
             {props.label}
             {props.isRequired && <span className="text-danger">*</span>} 
-            {props.optlable && <span className="text-light-gray fs-10"> (Optional)</span>}
+            {props.sublable && <span className="text-light-gray fs-10"> (Optional)</span>}
         </label>
     }
 
     let fieldType = <input
         ref={props.ref}
-        optlable={props.optlable}
+        sublable={props.sublable}
         type={props.type !== undefined ? props.type : 'text'}
         id={props.id}
         data-regex={props.dataRegex}

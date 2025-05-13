@@ -139,7 +139,7 @@ const Signup = () => {
                         <div className="col-12 mb-10 mb-md-20">
                             <TextInput
                                 label="Email ID"
-                                optlable={true}
+                                sublable="true"
                                 name="emailId"
                                 id="emailId"
                                 placeholder="Enter Email ID"
