@@ -17,12 +17,10 @@
 }
 
 .login-left-content h1 {
-    font-size: 36px;
     margin-bottom: 10px;
 }
 
 .login-left-content p {
-    font-size: 16px;
     line-height: 1.5;
 }
 
@@ -44,15 +42,12 @@
 }
 
 .login-title {
-    font-size: 24px;
     font-weight: 700;
     margin-bottom: 10px;
 }
 
 .login-subtitle {
-    font-size: 16px;
     font-weight: 400;
-    margin-bottom: 20px;
     color: #666666;
 }
 
@@ -80,7 +75,6 @@
 .login-button {
     width: 100%;
     padding: 10px;
-    font-size: 16px;
     font-weight: 600;
     color: #ffffff;
     background-color: #1e3c72;
@@ -92,4 +86,45 @@
 
 .login-button:hover {
     background-color: #2a5298;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .login-wrapper {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .login-left {
+        flex: none;
+        height: 200px;
+        padding: 20px;
+    }
+
+    .login-right {
+        flex: none;
+        padding: 10px;
+    }
+
+    .login-card {
+        width: 100%;
+        max-width: 100%;
+        padding: 20px;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    .login-button {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-left {
+        height: 150px;
+    }
+
+    .login-button {
+        padding: 6px;
+    }
 }

@@ -28,7 +28,7 @@ const TextInput = (props) => {
         document.execCommand("copy");
     }
 
-    const errorMsg = <span className={`text-danger position-absolute left-0 bottom-n-15 fs-11`} id={`error-${props.name}`}>{props.errorMessage}</span>
+    const errorMsg = <span className={`text-danger position-absolute left-0 bottom-n-15 fs-sm-10 fs-md-11 fs-11`} id={`error-${props.name}`}>{props.errorMessage}</span>
 
     let statusImg = null;
     if (props.isStatusImg) {
@@ -42,7 +42,7 @@ const TextInput = (props) => {
 
     let textLabel = null;
     if (props.label !== '' && props.label !== null && props.label !== undefined) {
-        textLabel = <label className={`fw-medium ${props.labelclass !== undefined ? props.labelclass : ''}`} htmlFor={props.id}>
+        textLabel = <label className={`fw-medium fs-12 fs-md-14 ${props.labelclass !== undefined ? props.labelclass : ''}`} htmlFor={props.id}>
             {props.label}
             {props.isRequired && <span className="text-danger">*</span>} 
             {props.optlable && <span className="text-light-gray fs-10"> (Optional)</span>}
@@ -57,7 +57,7 @@ const TextInput = (props) => {
         data-regex={props.dataRegex}
         name={props.name}
         maxLength={props.maxLength}
-        className={`lpay_input bg-white fs-13 ${props.className !== undefined ? props.className : ''}`}
+        className={`lpay_input bg-white fs-11 fs-md-13 ${props.className !== undefined ? props.className : ''}`}
         autoComplete={props.autoComplete}
         onBlur={props.onBlur}
         onInput={props.onInput}

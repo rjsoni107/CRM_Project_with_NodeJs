@@ -85,23 +85,23 @@ const Signup = () => {
             {/* Left Section with Background */}
             <div className="login-left">
                 <div className="login-left-content">
-                    <h1 className="fs-24 fw-700">Come join us!</h1>
-                    <p className="fs-16 fw-400">Welcome back! We are so happy to have you here. It's great to see you again. We hope you had a safe and enjoyable time away</p>
+                    <h1 className="fs-20 fs-sm-24 fs-md-36 fw-700">Come join us!</h1>
+                    <p className="fs-12 fs-sm-14 fs-md-16 fw-400">Welcome back! We are so happy to have you here. It's great to see you again. We hope you had a safe and enjoyable time away</p>
                 </div>
             </div>
 
             {/* Right Section with Login Form */}
             <div className="login-right">
-                <div className="login-card">
+                <div className="login-card p-20">
                     <div className='text-center'>
-                        <h1 className="login-title">Welcome Back</h1>
-                        <p className="login-subtitle">Please signup your account</p>
+                        <h1 className="login-title fs-18 fs-sm-20 fs-md-24">Welcome Back</h1>
+                        <p className="login-subtitle fs-12 fs-sm-14 fs-md-16 mb-15 mb-md-20">Please signup your account</p>
                         {error && <p className="error-message">{error}</p>}
                     </div>
                     <form className="form-section">
-                        <div className="col-12 mb-20">
+                        <div className="col-12 mb-15 mb-md-20">
                             <TextInput
-                                label="businessName"
+                                label="Business Name"
                                 name="businessName"
                                 id="businessName"
                                 placeholder="Enter Business Name"
@@ -117,7 +117,7 @@ const Signup = () => {
                                 dataType="ALPHA_NUMERIC_SPACE"
                             />
                         </div>
-                        <div className="col-12 mb-20">
+                        <div className="col-12 mb-10 mb-md-20">
                             <TextInput
                                 label="Mobile"
                                 name="mobile"
@@ -136,7 +136,7 @@ const Signup = () => {
                                 dataValidation="MOBILE"
                             />
                         </div>
-                        <div className="col-12 mb-20">
+                        <div className="col-12 mb-10 mb-md-20">
                             <TextInput
                                 label="Email ID"
                                 optlable={true}
@@ -158,7 +158,7 @@ const Signup = () => {
                                 dataValidation="EMAIL"
                             />
                         </div>
-                        <div className="col-12 mb-20">
+                        <div className="col-12 mb-10 mb-md-20">
                             <TextInput
                                 label="PIN"
                                 name="pin"
@@ -179,7 +179,7 @@ const Signup = () => {
                                 dataValidation="PIN"
                             />
                         </div>
-                        <div className="col-12 mb-20">
+                        <div className="col-12 mb-10 mb-md-20">
                             <TextInput
                                 label="Confirm PIN"
                                 type="password"
@@ -199,8 +199,8 @@ const Signup = () => {
                                 dataValidation="PIN"
                             />
                         </div>
-                        <button type="submit" className="login-button" onClick={e => submitHandler(e)}>Sign Up</button>
-                        <div className='text-center fs-14 mt-10'>
+                        <button type="submit" className="login-button fs-12 fs-sm-14 fs-md-16" onClick={e => submitHandler(e)}>Sign Up</button>
+                        <div className='text-center fs-12 fs-sm-14 fs-md-14 mt-10'>
                             <span>Already have an account?</span>
                             <span className="text-azure cursor-pointer" onClick={e => loginHandler(e)}> Login</span>
                         </div>
