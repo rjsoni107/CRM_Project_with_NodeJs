@@ -86,3 +86,8 @@ label {
     color: red;
     font-size: 14px;
 }
+
+::--password-check-interstitial,
+#password-check-interstitial {
+  display: none !important;
+}
