@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-// import MUIDataTable from "mui-datatables";
-import { DataGrid } from '@mui/x-data-grid';
+import MUIDataTable from "mui-datatables";
 import { useNavigate } from "react-router-dom";
 import Base from '../../../../util/Base';
 import { ENDPOINTS } from '../../../../utility/ApiEndpoints';
@@ -182,8 +181,8 @@ function UserList() {
                 <div className="row">
                     <div className="col-md-12">
                         <div className="table table-striped table-bordered">
-                            <DataGrid
-                                rows={row || []}
+                            <MUIDataTable
+                                data={row || []}
                                 columns={columns}
                                 options={{
                                     selectableRows: "none",
