@@ -1,13 +1,98 @@
-.content_wrapper{ display: flex;align-items: center;max-width: 500px;flex-wrap: wrap;flex-direction: column; }
-.content_wrapper-icon{ font-size: 50px; /* margin-right: 15px; */ line-height: 0; color: #ffba00; margin-bottom: 15px; }
-.content_wrapper-text h5{ font-weight: 500;text-align: center; }
-.content_wrapper-text small{ margin-top: 5px;display: block;color: #474747;font-weight: 400;font-size: 16px; }
-.content_buttonWrapper{ text-align: center;width: 100%;margin-top: 0px;border-top: 1px solid #ddd;margin-bottom: 0px;padding: 10px;padding-right: 5px; }
-.content_wrapper.success .content_wrapper-icon{ color: #08b325; }
-.content_wrapper.error .content_wrapper-icon{ color: #eb0505; }
-.MuiDialog-root{ z-index: 9999 !important; }
-.MuiDialog-paper { overflow-y: visible !important; }
-.MuiDialog-container { overflow-y: scroll !important; }
-.MuiDialog-paperScrollPaper { max-height: none !important; }
-.MuiDialog-paperWidthSm{ min-width: 300px; max-width: 680px !important;}
-.MuiDialogActions-root{ padding: 0 !important; }
+.content_wrapper {
+  display: flex;
+  align-items: center;
+  max-width: 500px;
+  flex-wrap: wrap;
+  flex-direction: column;
+}
+.content_wrapper-icon {
+  font-size: 50px;
+  line-height: 0;
+  color: #ffba00;
+  margin-bottom: 15px;
+}
+.content_wrapper-text h5 {
+  font-weight: 500;
+  text-align: center;
+}
+.content_wrapper-text small {
+  margin-top: 5px;
+  display: block;
+  color: #474747;
+  font-weight: 400;
+  font-size: 16px;
+}
+.content_buttonWrapper {
+  text-align: center;
+  width: 100%;
+  margin-top: 0px;
+  border-top: 1px solid #ddd;
+  margin-bottom: 0px;
+  padding: 10px;
+  padding-right: 5px;
+}
+.content_wrapper.success .content_wrapper-icon {
+  color: #08b325;
+}
+.content_wrapper.error .content_wrapper-icon {
+  color: #eb0505;
+}
+
+/* Overlay for the dialog */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+  z-index: 50;
+}
+
+/* Container to center the dialog */
+.dialog-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+/* Backdrop for the dialog */
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Dialog panel styling */
+.dialog-panel {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 100%;
+  padding: 20px 15px 5px 15px;
+  transform: scale(1);
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+/* Dialog title styling */
+.dialog-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 1rem;
+}
+
+/* Dialog content styling */
+.dialog-content {
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: #555555;
+}
+
+/* Dialog footer styling */
+.dialog-footer {
+  margin-top: 1.5rem;
+  text-align: right;
+  display: flex;
+  justify-content: center;
+}

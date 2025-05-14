@@ -1,56 +1,28 @@
-// import { Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
-// import { GrClose } from 'react-icons/gr';
+import { Dialog, DialogTitle, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
+import { Fragment } from 'react';
 import './confirmationStyle.css';
 
-const DialogBox = props => {    
-    // DIALOG ACTION
-    let dialogAction = null;
-    // if (props.isFooter && props.isAlternateBtn) {
-    //     dialogAction = (
-    //         <DialogActions>
-    //             {props.alternateBtnContent}
-    //             {props.footerContent}
-    //         </DialogActions>
-    //     );
-    // } else if(props.isFooter){
-    //     dialogAction = (
-    //         <DialogActions>
-    //             {props.footerContent}
-    //         </DialogActions>
-    //     );
-    // }
-
+function DialogBox({ open, onClose, title, content, footerContent }) {
     return (
-        <></>
-        // <Dialog className={props.mainClass} scroll="body" maxWidth={props.maxWidth} fullWidth={props.fullWidth} open={props.open} onClose={props.onClose}>
-        //     <DialogTitle>
-        //         {props.title}
-        //         {props.closeIcon ? (
-        //             <GrClose onClick={props.onClose} />
-        //         ) : (null)}
-        //     </DialogTitle>
-        //     <DialogContent className={props.contentClass}>
-        //         {props.content}
-        //     </DialogContent>
+        <Transition appear show={open} as={Fragment}>
+            <Dialog as="div" className="dialog-overlay" onClose={onClose} aria-labelledby="dialog-title">
+                <div className="dialog-container">
+                    <div className="dialog-backdrop" />
 
-        //     {dialogAction}
-        // </Dialog>
-    );
-}
-
-export const ImagePreviewBox = (props) => {
-    return (
-        <></>
-        // <Dialog scroll="body" maxWidth={props.maxWidth} fullWidth={props.fullWidth} open={props.open} onClose={props.onClose}>
-        //     <DialogTitle>
-        //         {props.closeIcon ? (
-        //             <GrClose onClick={props.onClose} />
-        //         ) : (null)}
-        //     </DialogTitle>
-        //     <DialogContent className={props.contentClass}>
-        //         {props.content}
-        //     </DialogContent>
-        // </Dialog>
+                    <TransitionChild >
+                        <DialogPanel className="dialog-panel">
+                            {title && (
+                                <DialogTitle id="dialog-title" className="dialog-title">
+                                    {title}
+                                </DialogTitle>
+                            )}
+                            <div className="dialog-content">{content}</div>
+                            {footerContent && <div className="dialog-footer">{footerContent}</div>}
+                        </DialogPanel>
+                    </TransitionChild>
+                </div>
+            </Dialog>
+        </Transition>
     );
 }
 
