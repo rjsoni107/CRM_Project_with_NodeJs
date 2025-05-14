@@ -186,17 +186,19 @@ exports.signup = async (req, res) => {
             });
         }
 
-        console.log("[signup] Checking for duplicate email...");
-        const emailQuery = query(collection(db, "users"), where("emailId", "==", emailId));
-        const emailSnapshot = await getDocs(emailQuery);
+        if (emailId && emailId.trim() !== "") {
+            console.log("[addUser] Checking for duplicate email...");
+            const emailQuery = query(collection(db, "users"), where("emailId", "==", emailId));
+            const emailSnapshot = await getDocs(emailQuery);
 
-        if (!emailSnapshot.empty) {
-            console.log("[signup] Duplicate email detected.");
-            return res.status(400).json({
-                responseStatus: "FAILED",
-                responseMsg: "Email already exists",
-                responseCode: "400",
-            });
+            if (!emailSnapshot.empty) {
+                console.log("[addUser] Duplicate email detected.");
+                return res.status(400).json({
+                    responseStatus: "FAILED",
+                    responseMsg: "Email already exists",
+                    responseCode: "400",
+                });
+            }
         }
 
         if (pin !== confirmPin) {
@@ -267,12 +269,12 @@ exports.addUser = async (req, res) => {
 
         const { emailId, mobile, pin, confirmPin, ...rest } = req.body;
 
-        console.log("[signup] Checking for duplicate mobile...");
+        console.log("[addUser] Checking for duplicate mobile...");
         const mobileQuery = query(collection(db, "users"), where("mobile", "==", mobile));
         const mobileSnapshot = await getDocs(mobileQuery);
 
         if (!mobileSnapshot.empty) {
-            console.log("[signup] Duplicate mobile detected.");
+            console.log("[addUser] Duplicate mobile detected.");
             return res.status(400).json({
                 responseStatus: "FAILED",
                 responseMsg: "Mobile already exists",
@@ -280,17 +282,19 @@ exports.addUser = async (req, res) => {
             });
         }
 
-        console.log("[signup] Checking for duplicate email...");
-        const emailQuery = query(collection(db, "users"), where("emailId", "==", emailId));
-        const emailSnapshot = await getDocs(emailQuery);
+        if (emailId && emailId.trim() !== "") {
+            console.log("[addUser] Checking for duplicate email...");
+            const emailQuery = query(collection(db, "users"), where("emailId", "==", emailId));
+            const emailSnapshot = await getDocs(emailQuery);
 
-        if (!emailSnapshot.empty) {
-            console.log("[signup] Duplicate email detected.");
-            return res.status(400).json({
-                responseStatus: "FAILED",
-                responseMsg: "Email already exists",
-                responseCode: "400",
-            });
+            if (!emailSnapshot.empty) {
+                console.log("[addUser] Duplicate email detected.");
+                return res.status(400).json({
+                    responseStatus: "FAILED",
+                    responseMsg: "Email already exists",
+                    responseCode: "400",
+                });
+            }
         }
 
         if (pin !== confirmPin) {
@@ -581,7 +585,6 @@ exports.deleteUser = async (req, res) => {
 };
 
 // Generate OTP
-
 exports.generateOtp = async (req, res) => {
     try {
         console.log("[generateOtp] Request received:", req.body);
