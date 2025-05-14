@@ -30,7 +30,7 @@ const UserListDTO = (fetchData, setState, setShowLoader, state, setDialogState, 
     const deleteUser = async (id) => {
         setShowLoader(true)
         try {
-            const responseJson = await fetchData('DELETE', `${ENDPOINTS.DELETE_USER_ACTION}/${id}`);
+            const responseJson = await fetchData('DELETE', apiPathAction(`${ENDPOINTS.DELETE_USER_ACTION}/${id}`));
             const { responseStatus, responseMsg } = responseJson;
             setDialogState(prevState => ({
                 ...prevState,

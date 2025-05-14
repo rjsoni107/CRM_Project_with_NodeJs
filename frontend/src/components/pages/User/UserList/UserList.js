@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-// import MUIDataTable from "mui-datatables";
+import MUIDataTable from "mui-datatables";
 import { useNavigate } from "react-router-dom";
 import Base from '../../../../util/Base';
 import { ENDPOINTS } from '../../../../utility/ApiEndpoints';
@@ -181,7 +181,7 @@ function UserList() {
                 <div className="row">
                     <div className="col-md-12">
                         <div className="table table-striped table-bordered">
-                            {/* <MUIDataTable
+                            <MUIDataTable
                                 data={row || []}
                                 columns={columns}
                                 options={{
@@ -202,7 +202,7 @@ function UserList() {
                                         invokePaginationMethod(0, rowsPerPage, 'onChangeRowsPerPage', setState, fetchUsers);
                                     },
                                 }}
-                            /> */}
+                            />
                         </div>
                     </div>
                 </div>

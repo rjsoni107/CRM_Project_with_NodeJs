@@ -1,4 +1,4 @@
-const { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, where, writeBatch} = require('firebase/firestore');
+const { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, where, writeBatch } = require('firebase/firestore');
 const db = require('../db');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -171,20 +171,30 @@ exports.signup = async (req, res) => {
             });
         }
 
-        const { emailId, mobile, pin, confirmPin } = req.body;
-        console.log("[signup] Checking for duplicate email or mobile...");
-        const userQuery = query(
-            collection(db, "users"),
-            where("emailId", "==", emailId),
-            where("mobile", "==", mobile)
-        );
-        const userSnapshot = await getDocs(userQuery);
+        const { emailId, mobile, pin, confirmPin, ...rest } = req.body;
 
-        if (!userSnapshot.empty) {
-            console.log("[signup] Duplicate entry detected.");
+        console.log("[signup] Checking for duplicate mobile...");
+        const mobileQuery = query(collection(db, "users"), where("mobile", "==", mobile));
+        const mobileSnapshot = await getDocs(mobileQuery);
+
+        if (!mobileSnapshot.empty) {
+            console.log("[signup] Duplicate mobile detected.");
             return res.status(400).json({
                 responseStatus: "FAILED",
-                responseMsg: "Email or Mobile already exists",
+                responseMsg: "Mobile already exists",
+                responseCode: "400",
+            });
+        }
+
+        console.log("[signup] Checking for duplicate email...");
+        const emailQuery = query(collection(db, "users"), where("emailId", "==", emailId));
+        const emailSnapshot = await getDocs(emailQuery);
+
+        if (!emailSnapshot.empty) {
+            console.log("[signup] Duplicate email detected.");
+            return res.status(400).json({
+                responseStatus: "FAILED",
+                responseMsg: "Email already exists",
                 responseCode: "400",
             });
         }
@@ -203,8 +213,10 @@ exports.signup = async (req, res) => {
 
         console.log("[signup] Creating new account...");
         const newUser = {
-            ...req.body,
+            ...rest,
             id: generateUniqueId(),
+            emailId,
+            mobile,
             pin: hashedPin,
             userType: 'USER',
             status: 'Active',
@@ -253,20 +265,30 @@ exports.addUser = async (req, res) => {
             });
         }
 
-        const { emailId, mobile, pin, confirmPin } = req.body;
-        console.log("[addUser] Checking for duplicate email or mobile...");
-        const userQuery = query(
-            collection(db, "users"),
-            where("emailId", "==", emailId),
-            where("mobile", "==", mobile)
-        );
-        const userSnapshot = await getDocs(userQuery);
+        const { emailId, mobile, pin, confirmPin, ...rest } = req.body;
 
-        if (!userSnapshot.empty) {
-            console.log("[addUser] Duplicate entry detected.");
+        console.log("[signup] Checking for duplicate mobile...");
+        const mobileQuery = query(collection(db, "users"), where("mobile", "==", mobile));
+        const mobileSnapshot = await getDocs(mobileQuery);
+
+        if (!mobileSnapshot.empty) {
+            console.log("[signup] Duplicate mobile detected.");
             return res.status(400).json({
                 responseStatus: "FAILED",
-                responseMsg: "Duplicate entry detected: Email or Mobile already exists",
+                responseMsg: "Mobile already exists",
+                responseCode: "400",
+            });
+        }
+
+        console.log("[signup] Checking for duplicate email...");
+        const emailQuery = query(collection(db, "users"), where("emailId", "==", emailId));
+        const emailSnapshot = await getDocs(emailQuery);
+
+        if (!emailSnapshot.empty) {
+            console.log("[signup] Duplicate email detected.");
+            return res.status(400).json({
+                responseStatus: "FAILED",
+                responseMsg: "Email already exists",
                 responseCode: "400",
             });
         }
@@ -285,8 +307,10 @@ exports.addUser = async (req, res) => {
 
         console.log("[addUser] Creating new user...");
         const newUser = {
-            ...req.body,
+            ...rest,
             id: generateUniqueId(),
+            emailId,
+            mobile,
             pin: hashedPin,
             userType: "USER",
             status: "Active",
@@ -514,11 +538,8 @@ exports.deleteUser = async (req, res) => {
         }
 
         // Reference to the user document in Firestore
-        const userRef = doc(db, "users", userId);
-
-        // Check if the user exists
-        console.log("[deleteUser] Checking if user exists...");
-        const userSnapshot = await getDocs(query(collection(db, "users"), where("id", "==", userId)));
+        const userQuery = query(collection(db, "users"), where("id", "==", userId));
+        const userSnapshot = await getDocs(userQuery);
 
         if (userSnapshot.empty) {
             console.log("[deleteUser] User not found.");
@@ -529,8 +550,12 @@ exports.deleteUser = async (req, res) => {
             });
         }
 
+        // Get the document ID of the user
+        const userDocId = userSnapshot.docs[0].id;
+
         // Delete the user document
         console.log("[deleteUser] Deleting user from Firestore...");
+        const userRef = doc(db, "users", userDocId);
         await deleteDoc(userRef);
 
         console.log("[deleteUser] User deleted successfully.");
