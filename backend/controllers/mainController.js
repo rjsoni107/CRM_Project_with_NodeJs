@@ -487,10 +487,10 @@ exports.updateUser = async (req, res) => {
         const updatedData = req.body; // Extract the updated data from the request body
         console.log("[updateUser] Updated data:", updatedData);
 
-        // Update the user in Firestore
-        console.log("[updateUser] Updating user in Firestore...");
-        const userRef = doc(db, "users", userId); // Reference to the user document
-        const userSnapshot = await getDocs(query(collection(db, "users"), where("id", "==", userId)));
+        // Query Firestore to find the document with the matching `id` field
+        console.log("[updateUser] Searching for user in Firestore...");
+        const userQuery = query(collection(db, "users"), where("id", "==", userId));
+        const userSnapshot = await getDocs(userQuery);
 
         if (userSnapshot.empty) {
             console.log("[updateUser] User not found.");
@@ -501,7 +501,13 @@ exports.updateUser = async (req, res) => {
             });
         }
 
-        await updateDoc(userRef, updatedData); // Update the user document
+        // Get the Firestore document ID
+        const userDocId = userSnapshot.docs[0].id;
+
+        // Update the user document in Firestore
+        console.log("[updateUser] Updating user in Firestore...");
+        const userRef = doc(db, "users", userDocId);
+        await updateDoc(userRef, updatedData);
 
         console.log("[updateUser] User updated successfully.");
         res.status(200).json({

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import MUIDataTable from "mui-datatables";
+import DataTable from 'react-data-table-component';
 import { useNavigate } from "react-router-dom";
 import Base from '../../../../util/Base';
 import { ENDPOINTS } from '../../../../utility/ApiEndpoints';
@@ -59,7 +59,8 @@ function UserList() {
         validateInputHandler,
         removeLeadingEmailChar,
         allowOnlyOnce,
-        selectBoxChangeHandler
+        selectBoxChangeHandler,
+        isValueExist
     } = ValidationHandler();
 
     // Fetch users on component mount
@@ -76,22 +77,38 @@ function UserList() {
     };
 
     const columns = [
-        { name: "id", label: "User ID", options: { filter: true, sort: false } },
-        { name: "userType", label: "User Type", options: { filter: true, sort: false } },
-        { name: "status", label: "User Status", options: { filter: true, sort: false } },
-        { name: "firstName", label: "First Name", options: { filter: true, sort: false } },
-        { name: "lastName", label: "Last Name", options: { filter: true, sort: false } },
-        { name: "emailId", label: "Email", options: { filter: true, sort: false } },
-        { name: "mobile", label: "Mobile", options: { filter: true, sort: false } },
+        { name: 'User ID', selector: row => row.id, sortable: true },
+        { name: 'User Type', selector: row => row.userType, sortable: true },
         {
-            name: "id", label: "Action", options: {
-                customBodyRender: (value) => (
-                    <div className='d-flex justify-content-center align-items-center gap-2'>
-                        <button onClick={(e) => editListHandler(e, value)} className='btn btn-primary'>Edit</button>
-                        <button onClick={(e) => deleteUser(value)} className='btn btn-danger'>Delete</button>
-                    </div>
-                ),
-            },
+            name: 'User Status', selector: row => row.status, sortable: true,
+            conditionalCellStyles: [
+                {
+                    when: row => row.status === 'Active',
+                    classNames: ['text-success'],
+                },
+                {
+                    when: row => row.status === 'Inactive',
+                    classNames: ['text-azure'],
+                },
+            ]
+        },
+        {
+            name: 'First Name',
+            selector: row => `${isValueExist(row.firstName) ? row.firstName : ''} ${isValueExist(row.lastName) ? row.lastName : ''}`,
+            sortable: true
+        },
+        { name: 'Email', selector: row => row.emailId, sortable: true },
+        { name: 'Mobile', selector: row => row.mobile, sortable: true },
+        {
+            name: 'Action',
+            cell: row => (
+                <div className='d-flex justify-content-center align-items-center gap-2'>
+                    <button onClick={(e) => editListHandler(e, row.id)} className='btn btn-primary'>Edit</button>
+                    <button onClick={(e) => deleteUser(row.id)} className='btn btn-danger'>Delete</button>
+                </div>
+            ),
+            ignoreRowClick: true,
+            allowoverflow: true,
         },
     ];
 
@@ -180,28 +197,23 @@ function UserList() {
 
                 <div className="row">
                     <div className="col-md-12">
-                        <div className="table table-striped table-bordered">
-                            <MUIDataTable
+                        <div className="table-bordered">
+                            <DataTable
+                                title="User List"
                                 data={row || []}
                                 columns={columns}
-                                options={{
-                                    selectableRows: "none",
-                                    filter: false,
-                                    rowsPerPageOptions: [10, 25, 50, 100],
-                                    download: false,
-                                    print: false,
-                                    search: false,
-                                    responsive: "standard",
-                                    viewColumns: false,
-                                    count: countPerPage,
-                                    serverSide: true,
-                                    onChangePage: (page) => {
-                                        invokePaginationMethod(page, length, 'onChangePage', setState, fetchUsers);
-                                    },
-                                    onChangeRowsPerPage: (rowsPerPage) => {
-                                        invokePaginationMethod(0, rowsPerPage, 'onChangeRowsPerPage', setState, fetchUsers);
-                                    },
+                                pagination
+                                highlightOnHover
+                                responsive
+                                paginationServer
+                                paginationTotalRows={countPerPage}
+                                onChangePage={(page) => {
+                                    invokePaginationMethod(page, length, 'onChangePage', setState, fetchUsers);
                                 }}
+                                onChangeRowsPerPage={(rowsPerPage) => {
+                                    invokePaginationMethod(0, rowsPerPage, 'onChangeRowsPerPage', setState, fetchUsers);
+                                }}
+                                progressPending={showLoader}
                             />
                         </div>
                     </div>
