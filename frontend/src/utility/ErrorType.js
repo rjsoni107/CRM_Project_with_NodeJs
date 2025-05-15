@@ -19,6 +19,10 @@ const ERROR_TYPE = {
         IS_INVALID: "Invalid email id",
         IS_EXIST: "Email id already exists"
     },
+    name: {
+        IS_BLANK: "Please enter name",
+        IS_INVALID: "Invalid name",
+    },
     firstName: {
         IS_BLANK: "Please enter first name",
         IS_INVALID: "Invalid first name",

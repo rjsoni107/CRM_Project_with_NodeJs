@@ -15,7 +15,7 @@ const Signup = () => {
     const [redirect, setRedirect] = useState(false)
     const [state, setState] = useState({
         payload: {
-            businessName: '',
+            name: '',
             mobile: '',
             emailId: '',
             pin: '',
@@ -99,22 +99,22 @@ const Signup = () => {
                         {error && <p className="error-message">{error}</p>}
                     </div>
                     <form className="form-section">
-                        <div className="col-12 mb-15 mb-md-20">
+                        <div className="col-12 mb-10 mb-md-20">
                             <TextInput
-                                label="Business Name"
-                                name="businessName"
-                                id="businessName"
-                                placeholder="Enter Business Name"
-                                value={payload.businessName || ''}
+                                label="Name"
+                                name="name"
+                                id="name"
+                                placeholder="Enter Your Name"
+                                value={payload.name || ''}
                                 className="form-control input-field"
                                 isRequired={true}
-                                maxLength={200}
+                                maxLength={100}
                                 onChange={evt => {
                                     inputChangeHandler(evt, setState);
                                     inputMessageHandler(evt, 'HIDE', 'error');
                                 }}
                                 onBlur={handleBlur}
-                                dataType="ALPHA_NUMERIC_SPACE"
+                                dataType="ALPHA_SPACE"
                             />
                         </div>
                         <div className="col-12 mb-10 mb-md-20">
@@ -164,7 +164,7 @@ const Signup = () => {
                                 name="pin"
                                 type="password"
                                 id="pin"
-                                placeholder="Enter PIN"
+                                placeholder="Enter 6 Digit PIN"
                                 value={payload.pin || ''}
                                 className="form-control input-field"
                                 isRequired={true}
@@ -185,7 +185,7 @@ const Signup = () => {
                                 type="password"
                                 name="confirmPin"
                                 id="confirmPin"
-                                placeholder="Confirm PIN"
+                                placeholder=" Enter Confirm PIN"
                                 value={payload.confirmPin || ''}
                                 className="form-control input-field"
                                 isRequired={true}

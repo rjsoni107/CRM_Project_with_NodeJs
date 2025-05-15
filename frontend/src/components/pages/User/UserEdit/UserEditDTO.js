@@ -13,7 +13,7 @@ const UserEditDTO = ({ setShowLoader, setUserDetails, id, setDialogState, fetchD
 
     // Fetch all users
     const getUserDetail = async () => {
-        const payload = { id: id };
+        const payload = { userId: id };
         const actionName = apiPathAction(ENDPOINTS.GET_USER_DETAILS_ACTION);
 
         setShowLoader(true);
@@ -39,7 +39,7 @@ const UserEditDTO = ({ setShowLoader, setUserDetails, id, setDialogState, fetchD
 
         if (validateFormHandler(that)) {
             const userPayload = userDetailsRef.current.getPayload();
-            const userId = { 'id': id }
+            const userId = { 'userId': id }
             const payload = { ...userPayload, ...userId };
             const actionName = apiPathAction(ENDPOINTS.UPDATE_USER_ACTION);
 

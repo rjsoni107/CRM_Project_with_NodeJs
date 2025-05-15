@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useImperativeHandle, forwardRef, use } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import ValidationHandler from '../../../../utility/ValidationHandler';
 import Base from '../../../../util/Base';
 import { SelectBox, TextInput } from '../../../formElements/FormElementsImport';
@@ -8,8 +8,7 @@ const EditUserDetails = forwardRef((props, ref) => {
     const [userState, setState] = useState({
         payload: {
             status: '',
-            firstName: '',
-            lastName: '',
+            name: '',
             emailId: '',
             mobile: '',
             company: '',
@@ -50,7 +49,7 @@ const EditUserDetails = forwardRef((props, ref) => {
     const { getCountryList, getStateList, getCityList, handleCountryChange, handleStateChange } = Base();
 
     const { status_list, payload, status, state, country, city, city_list, countries_list, state_list } = userState;
-    const { firstName, lastName, emailId, mobile, company, website, address, zip } = payload;
+    const { name, emailId, mobile, company, website, address, zip } = payload;
 
     useImperativeHandle(ref, () => ({
         getPayload: () => payload
@@ -181,29 +180,11 @@ const EditUserDetails = forwardRef((props, ref) => {
                 </div>
                 <div className="col-12 col-sm-6 col-md-3 mb-20">
                     <TextInput
-                        label="First Name"
-                        name="firstName"
-                        id="firstName"
-                        placeholder="Enter First Name"
-                        value={firstName || ''}
-                        className="form-control input-field"
-                        isRequired={true}
-                        maxLength={100}
-                        onChange={evt => {
-                            inputChangeHandler(evt, setState);
-                            inputMessageHandler(evt, 'HIDE', 'error');
-                        }}
-                        onBlur={handleBlur}
-                        dataType="ALPHA_SPACE"
-                    />
-                </div>
-                <div className="col-12 col-sm-6 col-md-3 mb-20">
-                    <TextInput
-                        label="Last Name"
-                        name="lastName"
-                        id="lastName"
-                        placeholder="Enter Last Name"
-                        value={lastName || ''}
+                        label="Name"
+                        name="name"
+                        id="name"
+                        placeholder="Enter Your Name"
+                        value={name || ''}
                         className="form-control input-field"
                         isRequired={true}
                         maxLength={100}
@@ -223,7 +204,6 @@ const EditUserDetails = forwardRef((props, ref) => {
                         placeholder="Enter Email ID"
                         value={emailId || ''}
                         className="form-control input-field"
-                        isRequired={true}
                         maxLength={100}
                         onInput={e => {
                             inputChangeHandler(e, setState);

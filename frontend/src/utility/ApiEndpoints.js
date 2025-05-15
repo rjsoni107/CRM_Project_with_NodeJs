@@ -29,5 +29,7 @@ export const ENDPOINTS = {
     GET_STATE_LIST: 'getStateList',
     GET_CITY_LIST: 'getCityList',
     PROFILE: 'profile',
-    CHAT: 'chat'
+    CHAT: 'chat',
+    FETCH_CHAT_ACTION: 'fetchChatAction',
+    SEND_CHAT_ACTION: 'sendChatAction',
 }

@@ -1,5 +1,6 @@
 import React from "react";
 import { ENDPOINTS } from "../../utility/ApiEndpoints";
+import Chat from "../pages/LiveChat/Chat";
 const VerifyOtp = React.lazy(() => import("../pages/VerifyOtp/VerifyOtp"));
 const AddUser = React.lazy(() => import("../pages/User/UserAdd/AddUser"));
 const UserList = React.lazy(() => import("../pages/User/UserList/UserList"));
@@ -36,6 +37,11 @@ const RoutesConfig = [
     {
         path: ENDPOINTS.SIGNUP,
         element: <Signup />,
+        isProtected: false,
+    },
+    {
+        path: `${ENDPOINTS.CHAT}/:id`,
+        element: <Chat />,
         isProtected: false,
     },
 

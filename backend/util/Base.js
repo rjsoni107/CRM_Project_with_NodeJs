@@ -16,6 +16,7 @@ const userPermissions = {
         "getCountryList",
         "getStateList",
         "getCityList",
+        "chat",
         "profile",
     ],
     SUBADMIN: [
@@ -36,6 +37,7 @@ const userPermissions = {
         "getCountryList",
         "getStateList",
         "getCityList",
+        "chat",
         "profile",
     ],
     MERCHANT: [

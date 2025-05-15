@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { useNavigate } from "react-router-dom";
 import Base from '../../../../util/Base';
@@ -76,9 +76,25 @@ function UserList() {
         navigate(`${basePathAction(ENDPOINTS.USER)}/${userId}`);
     };
 
+    const handleUserSelect = (evt, userId) => {
+        if (userId) {
+            evt.preventDefault();
+            setShowLoader(true);
+            navigate(`${basePathAction(ENDPOINTS.CHAT)}/${userId}`);
+        } else {
+            console.error('UserId is undefined:', userId);
+        }
+    };
+
     const columns = [
-        { name: 'User ID', selector: row => row.id, sortable: true },
-        { name: 'User Type', selector: row => row.userType, sortable: true },
+        { name: 'User ID', selector: row => row.userId, sortable: true },
+        {
+            name: 'Name',
+            selector: row => `${isValueExist(row.firstName) ? row.firstName : ''} ${isValueExist(row.lastName) ? row.lastName : ''}`,
+            sortable: true
+        },
+        { name: 'Email', selector: row => row.emailId, sortable: true },
+        { name: 'Mobile', selector: row => row.mobile, sortable: true },
         {
             name: 'User Status', selector: row => row.status, sortable: true,
             conditionalCellStyles: [
@@ -93,18 +109,12 @@ function UserList() {
             ]
         },
         {
-            name: 'First Name',
-            selector: row => `${isValueExist(row.firstName) ? row.firstName : ''} ${isValueExist(row.lastName) ? row.lastName : ''}`,
-            sortable: true
-        },
-        { name: 'Email', selector: row => row.emailId, sortable: true },
-        { name: 'Mobile', selector: row => row.mobile, sortable: true },
-        {
             name: 'Action',
             cell: row => (
                 <div className='d-flex justify-content-center align-items-center gap-2'>
-                    <button onClick={(e) => editListHandler(e, row.id)} className='btn btn-primary'>Edit</button>
-                    <button onClick={(e) => deleteUser(row.id)} className='btn btn-danger'>Delete</button>
+                    <button onClick={(e) => editListHandler(e, row.userId)} className='btn btn-primary'>Edit</button>
+                    <button onClick={(e) => deleteUser(row.userId)} className='btn btn-danger'>Delete</button>
+                    <button onClick={(e) => handleUserSelect(e, row.userId)} className='btn btn-primary'>Chat</button>
                 </div>
             ),
             ignoreRowClick: true,

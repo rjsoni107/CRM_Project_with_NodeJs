@@ -1,0 +1,42 @@
+.chat-container {
+  margin-top: 20px;
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+.chat-title {
+  margin-bottom: 10px;
+}
+
+.chat-error {
+  color: red;
+}
+
+.chat-messages {
+  height: 300px;
+  overflow-y: scroll;
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+.chat-message {
+  margin: 5px 0;
+}
+
+.chat-message.right {
+  text-align: right;
+}
+
+.chat-message.left {
+  text-align: left;
+}
+
+.chat-input {
+  margin: 10px 0;
+  padding: 5px;
+  width: 80%;
+}
+
+.chat-send-btn {
+  padding: 5px 10px;
+}

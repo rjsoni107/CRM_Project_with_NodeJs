@@ -17,11 +17,15 @@ router.post("/getUserListAction", verifyToken, mainController.fetchAllUsers);
 router.post("/addUserAction", validateUser, verifyToken, mainController.addUser);
 router.post("/getUserDetailsAction", verifyToken, mainController.fetchUserByKey);
 router.put("/updateUserAction", verifyToken, mainController.updateUser);
-router.delete("/deleteUserAction/:id", verifyToken, mainController.deleteUser);
+router.delete("/deleteUserAction/:userId", verifyToken, mainController.deleteUser);
 
 // Common Routes
 router.get("/getCountryList", commonController.getCountryList);
 router.get("/getStateList/:countryCode", commonController.getStateList);
 router.get("/getCityList/:countryCode/:stateCode", commonController.getCityList);
+
+//chat
+router.post("/fetchChatAction", verifyToken, mainController.fetchChatMessages);
+router.post("/sendChatAction", verifyToken, mainController.sendChatMessage);
 
 module.exports = router;

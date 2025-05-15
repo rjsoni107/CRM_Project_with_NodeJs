@@ -1,7 +1,6 @@
-import { redirect } from "react-router-dom";
 import { ENDPOINTS } from "../../../utility/ApiEndpoints";
 
-const SignupDTO = ({ state, setState, setShowLoader, fetchData, validateFormHandler, basePathAction, setError, setRedirect, setDialogState, apiPathAction }) => {
+const SignupDTO = ({ state, setShowLoader, fetchData, validateFormHandler, basePathAction, setError, setRedirect, setDialogState, apiPathAction }) => {
 
     const submitHandler = async (evt) => {
         evt.preventDefault()

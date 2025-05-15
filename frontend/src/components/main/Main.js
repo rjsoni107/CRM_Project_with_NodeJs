@@ -8,7 +8,7 @@ import Layout from "./Layout";
 import ErrorPage from "../pages/ErrorPage/ErrorPage";
 
 function Main() {
-    const { basePathAction, handleAutoLogout, apiPathAction } = Base();
+    const { basePathAction, handleAutoLogout } = Base();
 
     const currentUrl = window.location.href;
     const pagepath = currentUrl.slice(currentUrl.lastIndexOf("/") + 1);
