@@ -18,5 +18,6 @@ initializeApp({
 });
 
 const db = getFirestore();
+console.log(db ? 'Firestore initialized' : 'Firestore not initialized');
 
 module.exports = db;

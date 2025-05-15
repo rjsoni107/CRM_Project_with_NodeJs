@@ -876,7 +876,9 @@ exports.fetchChatMessages = async (req, res) => {
 
         // Fetch chat messages from Firestore
         timeLog("[fetchChatMessages] Fetching chat messages...");
-        const chatQuery = db.collection("chats").where("chatId", "==", chatId);
+        const chatQuery = db.collection("chats")
+            .where("chatId", "==", chatId)
+            .orderBy("timestamp", "asc");
         const chatSnapshot = await chatQuery.get();
 
         if (chatSnapshot.empty) {

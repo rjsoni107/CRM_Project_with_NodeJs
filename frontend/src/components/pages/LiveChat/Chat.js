@@ -5,7 +5,7 @@ import './chat.css';
 import { useParams } from 'react-router-dom';
 
 const Chat = () => {
-    const loginDetails =  JSON.parse(localStorage.getItem('globalObj'));
+    const loginDetails = JSON.parse(localStorage.getItem('globalObj'));
     const { id } = useParams();
     const chatId = `chat_${id}`;
     const userId = loginDetails.userId;
@@ -14,14 +14,39 @@ const Chat = () => {
     const [newMessage, setNewMessage] = useState('');
     const [error, setError] = useState(null);
     const { fetchData, apiPathAction } = Base();
-    const { fetchMessages, handleSendMessage } = ChatDTO({ setMessages, setError, fetchData, apiPathAction, chatId, userId, receiverId, newMessage, setNewMessage });
+    const { handleSendMessage } = ChatDTO({ setError, fetchData, apiPathAction, chatId, userId, receiverId, newMessage, setNewMessage });
 
     useEffect(() => {
         if (!chatId) return;
+        console.log(process.env)
+        console.log(window.wsPath)
 
-        fetchMessages();
-        const interval = setInterval(fetchMessages, 5000); // Fetch messages every 5 seconds
-        return () => clearInterval(interval);
+        // Connect to WebSocket
+        const ws = new WebSocket(window.wsPath);
+
+        ws.onopen = () => {
+            console.log('Connected to WebSocket server');
+            // Send chatId to listen to
+            ws.send(JSON.stringify({ chatId }));
+        };
+
+        ws.onmessage = (event) => {
+            const updatedMessages = JSON.parse(event.data);
+            setMessages(updatedMessages);
+        };
+
+        ws.onerror = (err) => {
+            console.error('WebSocket error:', err);
+            setError('WebSocket error: ' + err.message);
+        };
+
+        ws.onclose = () => {
+            console.log('WebSocket connection closed');
+        };
+
+        return () => {
+            ws.close();
+        };
     }, [chatId]);
 
     if (!chatId) {
