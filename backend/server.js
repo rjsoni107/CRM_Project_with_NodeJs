@@ -5,14 +5,12 @@ const { createDefaultAdmin } = require("./controllers/mainController");
 const dotenv = require("dotenv");
 const { WebSocketServer } = require('ws');
 const db = require('./firebase');
-const fs = require('fs');
 const http = require('http');
-const https = require('https');
 const { setUserClients } = require('./util/websocket');
 const { timeLog } = require('./util/logger');
 
 dotenv.config();
-const { FRONTEND_URL, SERVER, PORT, NODE_ENV } = process.env;
+const { FRONTEND_URL, PORT, } = process.env;
 
 const app = express();
 
@@ -23,30 +21,19 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
 }));
-app.use(express.json());
 
+app.use((req, res, next) => {
+    console.log('Request Origin:', req.headers.origin);
+    console.log('Request Method:', req.method);
+    console.log('Request URL:', req.url);
+    next();
+});
+
+app.use(express.json());
 // Routes
 app.use('/api', userRoutes);
-// SERVER is set devlopment and production in the .env file
-
 // Create HTTP server with Express app
-let server;
-if (SERVER === 'production') {
-    console.log('inside production');
-    // In production, use HTTP (let your host handle HTTPS)
-    server = http.createServer(app);
-} else {
-    console.log('inside development');
-    // In development, use HTTPS if certs exist, else fallback to HTTP
-    // try {
-    //     const key = fs.readFileSync('localhost-key.pem');
-    //     const cert = fs.readFileSync('localhost.pem');
-    //     server = https.createServer({ key, cert }, app);
-    // } catch (err) {
-    //     console.warn('SSL certs not found, falling back to HTTP');
-    // }
-    server = http.createServer(app);
-}
+const server = http.createServer(app);
 
 // Create WebSocket server and attach to the same HTTP server
 const ws = new WebSocketServer({ server });
