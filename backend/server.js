@@ -11,22 +11,13 @@ const { setUserClients } = require('./util/websocket');
 const { timeLog } = require('./util/logger');
 
 dotenv.config();
+const { FRONTEND_URL, SERVER, PORT } = process.env;
 
 const app = express();
 
 // Middleware
 app.use(cors({
-    origin: (origin, callback) => {
-        const allowedOrigins = [
-            'http://localhost:3006', // Development
-            process.env.FRONTEND_URL,  // Production
-        ];
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: FRONTEND_URL || 'http://localhost:3006',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -35,10 +26,13 @@ app.use(express.json());
 
 // Routes
 app.use('/api', userRoutes);
+console.log(SERVER)
 // Create HTTP server with Express app
-const server = process.env.SERVER === 'production'
+const server = SERVER === 'production'
   ? https.createServer(app)
-  : http.createServer(app);
+    : http.createServer(app);
+    
+  console.log(server, 'server')
 
 // Create WebSocket server and attach to the same HTTP server
 const wss = new WebSocketServer({ server });
@@ -134,7 +128,6 @@ const interval = setInterval(() => {
 
 wss.on('close', () => clearInterval(interval));
 
-const PORT = process.env.PORT || 3005;
 server.listen(PORT, async () => {
     timeLog(`[server.listen] Server running on port ${PORT}`);
     await createDefaultAdmin();
