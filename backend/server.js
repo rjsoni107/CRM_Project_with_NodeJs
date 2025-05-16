@@ -6,6 +6,7 @@ const dotenv = require("dotenv");
 const { WebSocketServer } = require('ws');
 const db = require('./firebase');
 const http = require('http');
+const https = require('https');
 const { setUserClients } = require('./util/websocket');
 const { timeLog } = require('./util/logger');
 
@@ -15,17 +16,29 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: 'http://localhost:3006',
+    origin: (origin, callback) => {
+        const allowedOrigins = [
+            'http://localhost:3006', // Development
+            process.env.FRONTEND_URL,  // Production
+        ];
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
 }));
 app.use(express.json());
 
 // Routes
 app.use('/api', userRoutes);
-
 // Create HTTP server with Express app
-const server = http.createServer(app);
+const server = process.env.SERVER === 'production'
+  ? https.createServer(app)
+  : http.createServer(app);
 
 // Create WebSocket server and attach to the same HTTP server
 const wss = new WebSocketServer({ server });
