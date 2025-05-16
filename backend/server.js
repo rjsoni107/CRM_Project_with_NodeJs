@@ -30,12 +30,23 @@ app.use('/api', userRoutes);
 // SERVER is set devlopment and production in the .env file
 
 // Create HTTP server with Express app
-const server = SERVER === 'production'
-    ? https.createServer({
-        key: fs.readFileSync('localhost-key.pem'),
-        cert: fs.readFileSync('localhost.pem'),
-    }, app)
-    : http.createServer(app);
+let server;
+if (SERVER === 'production') {
+    console.log('inside production');
+    // In production, use HTTP (let your host handle HTTPS)
+    server = https.createServer(app);
+} else {
+    console.log('inside development');
+    // In development, use HTTPS if certs exist, else fallback to HTTP
+    // try {
+    //     const key = fs.readFileSync('localhost-key.pem');
+    //     const cert = fs.readFileSync('localhost.pem');
+    //     server = https.createServer({ key, cert }, app);
+    // } catch (err) {
+    //     console.warn('SSL certs not found, falling back to HTTP');
+    // }
+    server = http.createServer(app);
+}
 
 // Create WebSocket server and attach to the same HTTP server
 const wss = new WebSocketServer({ server });
