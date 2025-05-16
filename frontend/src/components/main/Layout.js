@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Topbar from "../topbar/Topbar";
 import SidebarPanal from "../sidebar/SidebarPanal";
 const Layout = ({ forceUpdate }) => {
-    const { userType, permissions } = JSON.parse(localStorage.getItem("globalObj") || "{}");
+    const { userType, permissions, name } = JSON.parse(localStorage.getItem("globalObj") || "{}");
 
     const [isSidebarVisible, setSidebarVisible] = useState(true);
 
@@ -31,7 +31,7 @@ const Layout = ({ forceUpdate }) => {
         <div className="layout ">
             <SidebarPanal isSidebarVisible={isSidebarVisible} userType={userType} permissions={permissions} />
             <div className={`main-content ${isSidebarVisible ? "sidebar-open" : "sidebar-close"}`}>
-                <Topbar toggleSidebar={toggleSidebar} isSidebarVisible={isSidebarVisible} userType={userType}/>
+                <Topbar toggleSidebar={toggleSidebar} isSidebarVisible={isSidebarVisible} userType={userType} name={name} />
                 <Outlet />
             </div>
         </div>

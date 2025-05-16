@@ -40,7 +40,7 @@ const RoutesConfig = [
         isProtected: false,
     },
     {
-        path: `${ENDPOINTS.CHAT}/:id`,
+        path: `${ENDPOINTS.CHAT}/:chatId/:senderId/:receiverId`,
         element: <Chat />,
         isProtected: false,
     },

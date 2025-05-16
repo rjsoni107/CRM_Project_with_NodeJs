@@ -27,5 +27,7 @@ router.get("/getCityList/:countryCode/:stateCode", commonController.getCityList)
 //chat
 router.post("/fetchChatAction", verifyToken, mainController.fetchChatMessages);
 router.post("/sendChatAction", verifyToken, mainController.sendChatMessage);
+router.post("/notifications", verifyToken, mainController.fetchNotifications);
+router.post("/notifications/:id", verifyToken, mainController.markReadNotifications);
 
 module.exports = router;

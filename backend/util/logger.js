@@ -1,4 +1,5 @@
-function timeLog(message) {
+
+const timeLog = (...args) => {
     const now = new Date();
     const timestamp = now.toLocaleString('en-US', {
         month: 'short',
@@ -8,7 +9,6 @@ function timeLog(message) {
         second: '2-digit',
         hour12: false,
     });
-    console.log(`${timestamp} ${message}`);
-}
-
+    console.log(timestamp, ...args);
+};
 module.exports = { timeLog };

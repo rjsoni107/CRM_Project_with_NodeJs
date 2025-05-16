@@ -5,6 +5,7 @@ const { validationResult } = require("express-validator");
 const { userPermissions } = require("../util/Base");
 const crypto = require("crypto");
 const { timeLog } = require('../util/logger');
+const { notifyUser } = require('../util/websocket');
 
 // Generate Unique ID- This function generates a unique 16-digit ID for the user.
 function generateUniqueId() {
@@ -26,8 +27,9 @@ exports.createDefaultAdmin = async () => {
 
         timeLog("[createDefaultAdmin] Creating default admin...");
         const hashedPin = await bcrypt.hash("111111", 10);
-        await db.collection("users").add({
-            userId: generateUniqueId(),
+        const userRef = db.collection("users").doc();
+        await userRef.set({
+            userId: userRef.id,
             firstName: "Default",
             lastName: "Admin",
             emailId: "admin@example.com",
@@ -61,6 +63,15 @@ exports.login = async (req, res) => {
                 responseStatus: "FAILED",
                 responseMsg: "User not found",
                 responseCode: "404",
+            });
+        }
+
+        if (userSnapshot.size > 1) {
+            timeLog("[loginUser] Multiple users found with the same mobile number.");
+            return res.status(500).json({
+                responseStatus: "FAILED",
+                responseMsg: "Internal server error: Duplicate mobile number",
+                responseCode: "500",
             });
         }
 
@@ -534,7 +545,6 @@ exports.deleteUser = async (req, res) => {
     timeLog("[deleteUser] Deleting user...");
     try {
         const userId = req.params.userId; // Extract the user ID from the request parameters
-        console.log(userId)
         timeLog("[deleteUser] User ID:", userId);
 
         // Validate the user ID
@@ -925,6 +935,24 @@ exports.sendChatMessage = async (req, res) => {
             });
         }
 
+        if (message.length > 1000) {
+            return res.status(400).json({
+                responseStatus: "FAILED",
+                responseMsg: "Message too long (max 1000 characters)",
+                responseCode: "400",
+            });
+        }
+
+        const receiverQuery = db.collection("users").where("userId", "==", receiverId);
+        const receiverSnapshot = await receiverQuery.get();
+        if (receiverSnapshot.empty) {
+            return res.status(404).json({
+                responseStatus: "FAILED",
+                responseMsg: "Receiver not found",
+                responseCode: "404",
+            });
+        }
+
         // Create a new chat message object
         const newMessage = {
             chatId,
@@ -936,14 +964,17 @@ exports.sendChatMessage = async (req, res) => {
 
         // Save the chat message to Firestore
         timeLog("[sendChatMessage] Saving chat message...");
-        await db.collection("chats").add(newMessage);
+        const chatRef = await db.collection("chats").add(newMessage);
+
+        // Notify the receiver about the new message
+        notifyUser(receiverId, { message: `New message from ${senderId} in chat ${chatId}`, chatId, senderId });
 
         timeLog("[sendChatMessage] Chat message sent successfully.");
-        res.status(201).json({
+        res.status(200).json({
             responseStatus: "SUCCESS",
-            responseMsg: "Chat message sent successfully",
-            responseCode: "201",
-            data: newMessage,
+            responseMsg: "Message sent successfully",
+            responseCode: "200",
+            chatId: chatRef.id
         });
     } catch (error) {
         console.error("[sendChatMessage] Error sending chat message:", error.message);
@@ -952,5 +983,37 @@ exports.sendChatMessage = async (req, res) => {
             responseMsg: "Error sending chat message: " + error.message,
             responseCode: "500",
         });
+    }
+};
+
+exports.fetchNotifications = async (req, res) => {
+    const { userId } = req.body;
+    if (!userId) {
+        return res.status(400).json({ error: 'userId is required' });
+    }
+    try {
+        const notificationsSnapshot = await db.collection('notifications')
+            .where('userId', '==', userId)
+            .where('status', '==', 'unread')
+            .get();
+        const notifications = notificationsSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+        res.status(200).json({ notifications });
+    } catch (err) {
+        console.error('Error fetching notifications:', err);
+        res.status(500).json({ error: 'Failed to fetch notifications' });
+    }
+};
+
+exports.markReadNotifications = async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.collection('notifications').doc(id).update({ status: 'read' });
+        res.status(200).json({ message: 'Notification marked as read' });
+    } catch (err) {
+        console.error('Error marking notification as read:', err);
+        res.status(500).json({ error: 'Failed to mark notification as read' });
     }
 };

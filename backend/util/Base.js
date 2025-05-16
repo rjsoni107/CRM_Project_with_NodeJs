@@ -34,6 +34,7 @@ const userPermissions = {
         "dashboard",
         "home",
         "logout",
+        "userList",
         "getCountryList",
         "getStateList",
         "getCityList",

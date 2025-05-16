@@ -15,8 +15,9 @@ function UserList() {
 
     const navigate = useNavigate();
     const [showLoader, setShowLoader] = useState(false);
+    const [notification, setNotification] = useState(null);
     const [state, setState] = useState({
-        loginDetails: JSON.parse(localStorage.getItem('globalObj')),
+        loginDetails: JSON.parse(localStorage.getItem('globalObj')) || {},
         payload: {
             id: "",
             mobile: "",
@@ -50,9 +51,9 @@ function UserList() {
     });
 
 
-    const { payload, countPerPage, length, row, status_list, status } = state;
+    const { payload, countPerPage, length, row, status_list, status, loginDetails } = state;
     const { isDialogOpen, dialogBoxMsg, dialogBoxType, dialogFooter } = dialogState.dialog;
-    const { fetchUsers, deleteUser } = UserListDTO(fetchData, setState, setShowLoader, state, setDialogState, apiPathAction);
+    const { fetchUsers, deleteUser, fetchNotifications } = UserListDTO(fetchData, setState, setShowLoader, state, setDialogState, apiPathAction, setNotification);
     const {
         inputChangeHandler,
         inputMessageHandler,
@@ -64,9 +65,99 @@ function UserList() {
     } = ValidationHandler();
 
     // Fetch users on component mount
+    const userId = loginDetails.userId || null;
+
     useEffect(() => {
+        if (!userId) {
+            console.error('User not logged in, redirecting to login');
+            navigate(basePathAction(ENDPOINTS.LOGIN));
+            return;
+        }
         fetchUsers(state);
-    }, []);
+        fetchNotifications(userId);
+
+        let ws = new WebSocket(process.env.REACT_APP_WS_URL || 'ws://localhost:3005');
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+        const baseDelay = 5000;
+
+        const reconnect = () => {
+            if (reconnectAttempts >= maxReconnectAttempts) {
+                console.error('Max reconnection attempts reached. Giving up.');
+                setNotification('Unable to reconnect to WebSocket server. Please refresh the page.');
+                return;
+            }
+
+            const delay = baseDelay * Math.pow(2, reconnectAttempts);
+            console.log(`Reconnecting to WebSocket in ${delay / 1000} seconds... (Attempt ${reconnectAttempts + 1})`);
+
+            setTimeout(() => {
+                reconnectAttempts++;
+                const newWs = new WebSocket(process.env.REACT_APP_WS_URL || 'ws://localhost:3005');
+
+                newWs.onopen = () => {
+                    if (newWs.readyState === WebSocket.OPEN) {
+                        console.log('Connected to WebSocket server');
+                        newWs.send(JSON.stringify({ userId }));
+                        reconnectAttempts = 0;
+                    } else {
+                        console.warn('WebSocket is not in OPEN state:', newWs.readyState);
+                    }
+                };
+
+                newWs.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'notification') {
+                        setNotification(data.message);
+                        setTimeout(() => setNotification(null), 5000);
+                    }
+                };
+
+                newWs.onerror = (err) => {
+                    console.error('WebSocket error:', err);
+                    setNotification('Failed to connect to WebSocket server');
+                };
+
+                newWs.onclose = () => {
+                    console.log('WebSocket connection closed');
+                    reconnect();
+                };
+
+                ws = newWs;
+            }, delay);
+        };
+
+        ws.onopen = () => {
+            if (ws.readyState === WebSocket.OPEN) {
+                console.log('Connected to WebSocket server');
+                ws.send(JSON.stringify({ userId }));
+            } else {
+                console.warn('WebSocket is not in OPEN state:', ws.readyState);
+            }
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'notification') {
+                setNotification(data.message);
+                // setTimeout(() => setNotification(null), 5000);
+            }
+        };
+
+        ws.onerror = (err) => {
+            console.error('WebSocket error:', err);
+            setNotification('Failed to connect to WebSocket server');
+        };
+
+        ws.onclose = () => {
+            console.log('WebSocket connection closed');
+            reconnect();
+        };
+
+        return () => {
+            ws.close();
+        };
+    }, [userId, state.forceUpdate]);
 
     // Handler for Edit Button
     const editListHandler = (evt, userId) => {
@@ -76,13 +167,16 @@ function UserList() {
         navigate(`${basePathAction(ENDPOINTS.USER)}/${userId}`);
     };
 
-    const handleUserSelect = (evt, userId) => {
-        if (userId) {
+    const handleUserSelect = (evt, receiverId) => {
+        console.log(receiverId, 'receiverId');
+        if (receiverId && loginDetails.userId) {
             evt.preventDefault();
             setShowLoader(true);
-            navigate(`${basePathAction(ENDPOINTS.CHAT)}/${userId}`);
+            // const chatId = `chat_${loginDetails.userId}${receiverId}`;
+            const chatId = `chat_${Math.min(userId, receiverId)}${Math.max(userId, receiverId)}`;
+            navigate(`${basePathAction(ENDPOINTS.CHAT)}/${chatId}/${loginDetails.userId}/${receiverId}`);
         } else {
-            console.error('UserId is undefined:', userId);
+            console.error('UserId or loginDetails.userId is undefined:', receiverId, loginDetails.userId);
         }
     };
 
@@ -112,9 +206,9 @@ function UserList() {
             name: 'Action',
             cell: row => (
                 <div className='d-flex justify-content-center align-items-center gap-2'>
-                    <button onClick={(e) => editListHandler(e, row.userId)} className='btn btn-primary'>Edit</button>
-                    <button onClick={(e) => deleteUser(row.userId)} className='btn btn-danger'>Delete</button>
-                    <button onClick={(e) => handleUserSelect(e, row.userId)} className='btn btn-primary'>Chat</button>
+                    <button onClick={(e) => editListHandler(e, row.userId)} className='btn btn-primary' aria-label="Edit user">Edit</button>
+                    <button onClick={(e) => deleteUser(row.userId)} className='btn btn-danger' aria-label="Delete user">Delete</button>
+                    <button onClick={(e) => handleUserSelect(e, row.userId)} className='btn btn-primary' aria-label="Chat with user">Chat</button>
                 </div>
             ),
             ignoreRowClick: true,
@@ -205,6 +299,17 @@ function UserList() {
                     </div>
                 </div>
 
+                {notification && (
+                    <div
+                        style={{ color: 'blue', marginBottom: '10px', cursor: 'pointer' }}
+                        onClick={() => {
+                            const { chatId, receiverId } = notification;
+                            navigate(`${basePathAction(ENDPOINTS.CHAT)}/${chatId}/${loginDetails.userId}/${receiverId}`);
+                        }}
+                    >
+                        {notification.message}
+                    </div>
+                )}
                 <div className="row">
                     <div className="col-md-12">
                         <div className="table-bordered">

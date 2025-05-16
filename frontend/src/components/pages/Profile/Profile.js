@@ -28,7 +28,7 @@ const Profile = () => {
                 <h2 className="fs-24 fw-bold text-dark-charcoal">{userData.name}</h2>
             </div>
             <div className="">
-                <ProfileItem label="User ID" value={userData.id} Icon={FaIdBadge}/>
+                <ProfileItem label="User ID" value={userData.userId} Icon={FaIdBadge}/>
                 <ProfileItem label="User Type" value={userData.userType} Icon={FaUser}/>
                 <ProfileItem label="Email ID" value={userData.emailId} Icon={FaEnvelope}/>
                 <ProfileItem label="Mobile No." value={userData.mobile} Icon={FaMobileAlt}/>

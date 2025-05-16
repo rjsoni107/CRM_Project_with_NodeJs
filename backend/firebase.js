@@ -1,5 +1,6 @@
 const { initializeApp, cert } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
+const { timeLog } = require('./util/logger');
 require('dotenv').config();
 
 initializeApp({
@@ -18,6 +19,6 @@ initializeApp({
 });
 
 const db = getFirestore();
-console.log(db ? 'Firestore initialized' : 'Firestore not initialized');
+timeLog(db ? 'Firestore initialized' : 'Firestore not initialized');
 
 module.exports = db;
