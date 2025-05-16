@@ -6,6 +6,7 @@ const dotenv = require("dotenv");
 const { WebSocketServer } = require('ws');
 const db = require('./firebase');
 const fs = require('fs');
+const http = require('http');
 const https = require('https');
 const { setUserClients } = require('./util/websocket');
 const { timeLog } = require('./util/logger');
@@ -17,7 +18,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: FRONTEND_URL || 'https://localhost:3006',
+    origin: FRONTEND_URL || 'http://localhost:3006',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -29,27 +30,26 @@ app.use('/api', userRoutes);
 // SERVER is set devlopment and production in the .env file
 
 // Create HTTP server with Express app
-// let server;
-// if (SERVER === 'production') {
-//     console.log('inside production');
-//     // In production, use HTTP (let your host handle HTTPS)
-//     server = http.createServer(app);
-// } else {
-//     console.log('inside development');
-//     // In development, use HTTPS if certs exist, else fallback to HTTP
-//     // try {
-//     //     const key = fs.readFileSync('localhost-key.pem');
-//     //     const cert = fs.readFileSync('localhost.pem');
-//     //     server = https.createServer({ key, cert }, app);
-//     // } catch (err) {
-//     //     console.warn('SSL certs not found, falling back to HTTP');
-//     // }
-//     server = http.createServer(app);
-// }
-const server = https.createServer(app);
+let server;
+if (SERVER === 'production') {
+    console.log('inside production');
+    // In production, use HTTP (let your host handle HTTPS)
+    server = http.createServer(app);
+} else {
+    console.log('inside development');
+    // In development, use HTTPS if certs exist, else fallback to HTTP
+    // try {
+    //     const key = fs.readFileSync('localhost-key.pem');
+    //     const cert = fs.readFileSync('localhost.pem');
+    //     server = https.createServer({ key, cert }, app);
+    // } catch (err) {
+    //     console.warn('SSL certs not found, falling back to HTTP');
+    // }
+    server = http.createServer(app);
+}
 
 // Create WebSocket server and attach to the same HTTP server
-const wss = new WebSocketServer({ server });
+const ws = new WebSocketServer({ server });
 
 // Map to store chatId -> WebSocket clients
 const clients = new Map();
@@ -57,7 +57,7 @@ const clients = new Map();
 const userClients = new Map();
 
 // WebSocket connection handling
-wss.on('connection', (ws) => {
+ws.on('connection', (ws) => {
     timeLog('[wss.on-connection] New WebSocket client connected');
 
     ws.isAlive = true;
@@ -133,14 +133,14 @@ wss.on('connection', (ws) => {
 
 // Heartbeat to clean up stale clients
 const interval = setInterval(() => {
-    wss.clients.forEach(ws => {
+    ws.clients.forEach(ws => {
         if (!ws.isAlive) return ws.terminate();
         ws.isAlive = false;
         ws.ping();
     });
 }, 30000);
 
-wss.on('close', () => clearInterval(interval));
+ws.on('close', () => clearInterval(interval));
 
 server.listen(PORT, async () => {
     timeLog(`[server.listen] Server running on port ${PORT}`);

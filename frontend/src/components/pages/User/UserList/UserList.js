@@ -93,7 +93,7 @@ function UserList() {
 
             setTimeout(() => {
                 reconnectAttempts++;
-                const newWs = new WebSocket(process.env.REACT_APP_WS_URL || 'wss://localhost:3005');
+                const newWs = new WebSocket(process.env.REACT_APP_WS_URL || 'ws://localhost:3005');
 
                 newWs.onopen = () => {
                     if (newWs.readyState === WebSocket.OPEN) {
