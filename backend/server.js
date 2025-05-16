@@ -5,13 +5,14 @@ const { createDefaultAdmin } = require("./controllers/mainController");
 const dotenv = require("dotenv");
 const { WebSocketServer } = require('ws');
 const db = require('./firebase');
+const fs = require('fs');
 const http = require('http');
 const https = require('https');
 const { setUserClients } = require('./util/websocket');
 const { timeLog } = require('./util/logger');
 
 dotenv.config();
-const { FRONTEND_URL, SERVER, PORT } = process.env;
+const { FRONTEND_URL, SERVER, PORT, NODE_ENV } = process.env;
 
 const app = express();
 
@@ -26,13 +27,15 @@ app.use(express.json());
 
 // Routes
 app.use('/api', userRoutes);
-console.log(SERVER)
+// SERVER is set devlopment and production in the .env file
+
 // Create HTTP server with Express app
 const server = SERVER === 'production'
-  ? https.createServer(app)
+    ? https.createServer({
+        key: fs.readFileSync('localhost-key.pem'),
+        cert: fs.readFileSync('localhost.pem'),
+    }, app)
     : http.createServer(app);
-    
-  console.log(server, 'server')
 
 // Create WebSocket server and attach to the same HTTP server
 const wss = new WebSocketServer({ server });
