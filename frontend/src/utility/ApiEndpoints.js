@@ -33,4 +33,5 @@ export const ENDPOINTS = {
     FETCH_CHAT_ACTION: 'fetchChatAction',
     SEND_CHAT_ACTION: 'sendChatAction',
     NOTIFICATION: 'notifications',
+    FRIENDS_LIST: 'friendsList',
 }

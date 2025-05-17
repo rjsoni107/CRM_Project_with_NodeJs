@@ -231,7 +231,7 @@ exports.signup = async (req, res) => {
             mobile,
             pin: hashedPin,
             userType: 'USER',
-            status: 'Active',
+            status: 'InActive',
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
         };
@@ -328,7 +328,7 @@ exports.addUser = async (req, res) => {
             mobile,
             pin: hashedPin,
             userType: "USER",
-            status: "Active",
+            status: "InActive",
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
         };
@@ -385,8 +385,17 @@ exports.fetchAllUsers = async (req, res) => {
         // Build Firestore query
         timeLog("[fetchAllUsers] Building Firestore query...");
         let userQuery = db.collection("users");
+        
         for (const [key, value] of Object.entries(filters)) {
             userQuery = userQuery.where(key, "==", value);
+        }
+
+        // Exclude the current user (req.user.userId)
+        if (req.user && req.user.userId) {
+            userQuery = userQuery.where('userId', '!=', req.user.userId);
+            timeLog(`[fetchAllUsers] Excluding current user with userId: ${req.user.userId}`);
+        } else {
+            timeLog("[fetchAllUsers] No current user found in req.user");
         }
 
         timeLog("[fetchAllUsers] Fetching users from Firestore...");
@@ -407,8 +416,7 @@ exports.fetchAllUsers = async (req, res) => {
             responseCode: "200",
             userList: users.map(user => ({
                 userId: user.userId,
-                firstName: user.firstName,
-                lastName: user.lastName,
+                name: user.name,
                 businessName: user.businessName,
                 emailId: user.emailId,
                 mobile: user.mobile,

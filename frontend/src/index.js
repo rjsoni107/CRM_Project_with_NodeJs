@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import "./global";
 import { BrowserRouter } from 'react-router-dom';
 import Main from './components/main/Main';
+import './index.css';
 
 const root = createRoot(document.getElementById('root'));
 root.render(

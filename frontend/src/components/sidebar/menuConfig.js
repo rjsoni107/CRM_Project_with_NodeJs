@@ -26,6 +26,13 @@ const menuConfig = [
         ],
     },
     {
+        label: "Friends",
+        icon: <FaUser />,
+        children: [
+            { label: "Friends List", path: ENDPOINTS.FRIENDS_LIST },
+        ],
+    },
+    {
         label: "Profile",
         path: ENDPOINTS.PROFILE,
         icon: <FaAddressBook />,

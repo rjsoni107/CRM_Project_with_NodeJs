@@ -16,8 +16,9 @@ const userPermissions = {
         "getCountryList",
         "getStateList",
         "getCityList",
-        "chat",
+        "chat/:chatId/:senderId/:receiverId",
         "profile",
+        "friendsList"
     ],
     SUBADMIN: [
         "dashboard",
@@ -38,8 +39,9 @@ const userPermissions = {
         "getCountryList",
         "getStateList",
         "getCityList",
-        "chat",
+        "chat/:chatId/:senderId/:receiverId",
         "profile",
+        "friendsList"
     ],
     MERCHANT: [
         "dashboard",

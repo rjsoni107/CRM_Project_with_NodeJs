@@ -40,9 +40,9 @@ const UserListDTO = (fetchData, setState, setShowLoader, state, setDialogState, 
 
             notifications.forEach(notif => {
                 setNotification({ message: notif.message, chatId: notif.chatId });
-                // const actionName = `${apiPathAction(ENDPOINTS.NOTIFICATION)}/${notif.id}`;
-                // // Mark as read via API
-                // fetchData('POST', actionName, {});
+                const actionName = `${apiPathAction(ENDPOINTS.NOTIFICATION)}/${notif.id}`;
+                // Mark as read via API
+                fetchData('POST', actionName, {});
             });
 
         } catch (err) {

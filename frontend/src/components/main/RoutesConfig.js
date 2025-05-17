@@ -1,6 +1,7 @@
 import React from "react";
 import { ENDPOINTS } from "../../utility/ApiEndpoints";
 import Chat from "../pages/LiveChat/Chat";
+import FriendsList from "../pages/FriendsList/FriendsList";
 const VerifyOtp = React.lazy(() => import("../pages/VerifyOtp/VerifyOtp"));
 const AddUser = React.lazy(() => import("../pages/User/UserAdd/AddUser"));
 const UserList = React.lazy(() => import("../pages/User/UserList/UserList"));
@@ -42,7 +43,7 @@ const RoutesConfig = [
     {
         path: `${ENDPOINTS.CHAT}/:chatId/:senderId/:receiverId`,
         element: <Chat />,
-        isProtected: false,
+        isProtected: true,
     },
 
     {
@@ -55,11 +56,6 @@ const RoutesConfig = [
         element: <ChangePin />,
         isProtected: false,
     },
-    // {
-    //     path: ENDPOINTS.CHAT,
-    //     element: <Chat />,
-    //     isProtected: false,
-    // },
 
     // Protected Routes
     {
@@ -80,6 +76,11 @@ const RoutesConfig = [
     {
         path: ENDPOINTS.USER_LIST,
         element: <UserList />,
+        isProtected: true,
+    },
+    {
+        path: ENDPOINTS.FRIENDS_LIST,
+        element: <FriendsList />,
         isProtected: true,
     },
     {

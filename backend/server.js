@@ -8,6 +8,7 @@ const db = require('./firebase');
 const http = require('http');
 const { setUserClients } = require('./util/websocket');
 const { timeLog } = require('./util/logger');
+const rateLimit = require('express-rate-limit');
 
 dotenv.config();
 const { FRONTEND_URL, PORT, } = process.env;
@@ -30,6 +31,15 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.',
+});
+
+app.use('/api', limiter);
+
 // Routes
 app.use('/api', userRoutes);
 // Create HTTP server with Express app
@@ -44,7 +54,16 @@ const clients = new Map();
 const userClients = new Map();
 
 // WebSocket connection handling
-ws.on('connection', (ws) => {
+ws.on('connection', async (ws, req) => {
+    // CORS validation
+    const origin = req.headers.origin;
+    const allowedOrigin = FRONTEND_URL || 'http://localhost:3006';
+    if (origin !== allowedOrigin) {
+        timeLog(`[wss.on-connection] Unauthorized origin: ${origin}`);
+        ws.close(1008, 'CORS policy violation');
+        return;
+    }
+
     timeLog('[wss.on-connection] New WebSocket client connected');
 
     ws.isAlive = true;

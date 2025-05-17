@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "dev": "concurrently \"nodemon server.js\" \"npm start --prefix ../frontend\""
+    "dev": "set NODE_OPTIONS=--openssl-legacy-provider && concurrently \"nodemon server.js\" \"npm start --prefix ../frontend\""
   },
   "author": "Rj Soni",
   "license": "ISC",
@@ -17,6 +17,7 @@
     "country-state-city": "^3.2.1",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
     "express-validator": "^7.2.1",
     "firebase": "^11.7.1",
     "firebase-admin": "^13.4.0",
