@@ -1,6 +1,6 @@
 import { ENDPOINTS } from "../../../utility/ApiEndpoints";
 
-const ChatDTO = ({ setError, fetchData, apiPathAction, chatId, userId, receiverId, newMessage, setNewMessage }) => {
+const ChatDTO = ({ setError, fetchData, apiPathAction, chatId, userId, receiverId, newMessage, setNewMessage, getDateLabel }) => {
 
     const handleSendMessage = async () => {
         console.log(receiverId, 'receiverId');
@@ -43,7 +43,26 @@ const ChatDTO = ({ setError, fetchData, apiPathAction, chatId, userId, receiverI
         }
     };
 
-    return { handleSendMessage };
+    // Group messages by date
+    const groupMessagesByDate = (messages) => {
+        const grouped = [];
+        let currentDate = null;
+
+        messages.forEach((msg) => {
+            const msgDate = new Date(msg.timestamp);
+            const dateLabel = getDateLabel(msgDate);
+
+            if (dateLabel !== currentDate) {
+                grouped.push({ type: 'date', label: dateLabel });
+                currentDate = dateLabel;
+            }
+            grouped.push({ type: 'message', data: msg });
+        });
+
+        return grouped;
+    };
+
+    return { handleSendMessage, groupMessagesByDate };
 }
 
 export default ChatDTO;

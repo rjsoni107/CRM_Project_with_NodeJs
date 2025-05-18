@@ -245,6 +245,32 @@ const Base = () => {
         return dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: 'true' });
     };
 
+    // Helper function to format date labels
+    const getDateLabel = (messageDate) => {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+
+        const msgDate = new Date(messageDate);
+
+        // Reset time part for accurate date comparison
+        const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const yesterdayDate = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
+        const msgDateOnly = new Date(msgDate.getFullYear(), msgDate.getMonth(), msgDate.getDate());
+
+        if (msgDateOnly.getTime() === todayDate.getTime()) {
+            return 'Today';
+        } else if (msgDateOnly.getTime() === yesterdayDate.getTime()) {
+            return 'Yesterday';
+        } else {
+            return msgDate.toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+            });
+        }
+    };
+
     return {
         handleAutoLogout,
         fetchData,
@@ -258,7 +284,8 @@ const Base = () => {
         handleStateChange,
         handleLogout,
         apiPathAction,
-        formatTime
+        formatTime,
+        getDateLabel
     };
 };
 

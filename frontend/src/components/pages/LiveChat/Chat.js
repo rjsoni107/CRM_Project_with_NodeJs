@@ -16,8 +16,8 @@ const Chat = () => {
     const [error, setError] = useState(null);
     const [notification, setNotification] = useState(null);
 
-    const { fetchData, apiPathAction, formatTime } = Base();
-    const { handleSendMessage } = ChatDTO({ setError, fetchData, apiPathAction, chatId, userId, receiverId, newMessage, setNewMessage });
+    const { fetchData, apiPathAction, formatTime, getDateLabel } = Base();
+    const { handleSendMessage, groupMessagesByDate } = ChatDTO({ setError, fetchData, apiPathAction, chatId, userId, receiverId, newMessage, setNewMessage, getDateLabel });
 
     useEffect(() => {
         if (!userId || !chatId || !receiverId) {
@@ -135,6 +135,9 @@ const Chat = () => {
         }
     };
 
+    // Group messages by date
+    const groupedMessages = groupMessagesByDate(messages);
+
     return (
         <main className="flex flex-col h-full bg-gray-100 flex-1 min-h-0">
             {/* Header - static at top */}
@@ -148,24 +151,32 @@ const Chat = () => {
             </div>
 
             {/* Messages - scrollable */}
-            <div className="flex-1 p-2 overflow-y-auto bg-gray-50">
-                {messages.map((msg) => (
-                    <div
-                        key={msg.id}
-                        className={`mb-3 flex ${msg.senderId === userId ? 'justify-end' : 'justify-start'}`}
-                    >
-                        <div
-                            className={`max-w-xs min-w-[90px] px-2 py-1 rounded-lg shadow-sm ${msg.senderId === userId
-                                ? 'bg-blue-500 text-white'
-                                : 'bg-white text-gray-800'
-                                }`}
-                        >
-                            <p>{msg.message}</p>
-                            <p className="text-[10px] mt-1 opacity-75 d-flex justify-content-end">
-                                {formatTime(msg.timestamp)}
-                            </p>
+            <div className="flex-1 p-2 overflow-y-auto bg-gray-50 chat-messages">
+                {groupedMessages.map((item, index) => (
+                    item.type === 'date' ? (
+                        <div key={`date-${index}`} className="text-center my-4">
+                            <span className="inline-block bg-gray-200 text-gray-700 text-sm font-semibold px-4 py-1 rounded-full">
+                                {item.label}
+                            </span>
                         </div>
-                    </div>
+                    ) : (
+                        <div
+                            key={item.data.id}
+                            className={`mb-3 flex ${item.data.senderId === userId ? 'justify-end' : 'justify-start'}`}
+                        >
+                            <div
+                                className={`max-w-xs min-w-[90px] px-2 py-1 rounded-lg shadow-sm ${item.data.senderId === userId
+                                    ? 'bg-blue-500 text-white'
+                                    : 'bg-white text-gray-800'
+                                    }`}
+                            >
+                                <p>{item.data.message}</p>
+                                <p className="text-[10px] mt-1 opacity-75 d-flex justify-content-end">
+                                    {formatTime(item.data.timestamp)}
+                                </p>
+                            </div>
+                        </div>
+                    )
                 ))}
                 <div ref={messagesEndRef} />
             </div>

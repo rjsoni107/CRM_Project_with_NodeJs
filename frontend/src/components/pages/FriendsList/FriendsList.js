@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Base from '../../../util/Base';
 import FriendsListDTO from './FriendsListDTO';
 import { ENDPOINTS } from '../../../utility/ApiEndpoints';
+import Loader from '../../loader/Loader';
 
 const FriendsList = () => {
     const [friends, setFriends] = useState([]);
@@ -30,11 +31,12 @@ const FriendsList = () => {
         }
     };
 
+    const loader = showLoader && <Loader processing={true} approvalNotification={false} />;
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
             <div className="bg-blue-600 p-2 shadow-md">
-                <h1 className="text-2xl font-bold text-white">Chats</h1>
+                <h1 className="text-2xl font-bold text-white text-center">Friends List</h1>
             </div>
 
             {/* Friends List */}
@@ -45,7 +47,7 @@ const FriendsList = () => {
                     friends.map((friend) => (
                         <Link
                             key={friend.userId}
-                            onClick={(e) => handleUserSelect(e, friend.userId)} 
+                            onClick={(e) => handleUserSelect(e, friend.userId)}
                             className="flex items-center p-3 mb-3 bg-white rounded-lg shadow-sm hover:bg-gray-100 transition duration-200"
                         >
                             {/* Avatar */}
@@ -63,6 +65,7 @@ const FriendsList = () => {
                     ))
                 )}
             </div>
+            {loader}
         </div>
     );
 };
