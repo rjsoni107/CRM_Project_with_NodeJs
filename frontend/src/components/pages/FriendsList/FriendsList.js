@@ -19,8 +19,7 @@ const FriendsList = () => {
     }, []);
     const navigate = useNavigate();
 
-    const handleUserSelect = (evt, receiverId) => {
-        console.log(receiverId, 'receiverId');
+    const handleUserSelect = (evt, receiverId, name) => {
         if (receiverId && loginDetails.userId) {
             evt.preventDefault();
             setShowLoader(true);
@@ -47,7 +46,7 @@ const FriendsList = () => {
                     friends.map((friend) => (
                         <Link
                             key={friend.userId}
-                            onClick={(e) => handleUserSelect(e, friend.userId)}
+                            onClick={(e) => handleUserSelect(e, friend.userId, friend.name)}
                             className="flex items-center p-3 mb-3 bg-white rounded-lg shadow-sm hover:bg-gray-100 transition duration-200"
                         >
                             {/* Avatar */}

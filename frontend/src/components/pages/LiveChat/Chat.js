@@ -11,21 +11,23 @@ const Chat = () => {
     const userId = loginDetails.userId || senderId;
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
-    const messagesEndRef = useRef(null);
     const [friend, setFriend] = useState(null);
     const [error, setError] = useState(null);
     const [notification, setNotification] = useState(null);
+    const [isTyping, setIsTyping] = useState(false);
+
+    const messagesEndRef = useRef(null);
 
     const { fetchData, apiPathAction, formatTime, getDateLabel } = Base();
     const { handleSendMessage, groupMessagesByDate } = ChatDTO({ setError, fetchData, apiPathAction, chatId, userId, receiverId, newMessage, setNewMessage, getDateLabel });
 
+    let ws = new WebSocket(process.env.REACT_APP_WS_URL || 'ws://localhost:3005');
     useEffect(() => {
         if (!userId || !chatId || !receiverId) {
             return <div>Error: Missing user ID, chat ID, or receiver ID</div>;
         }
         // Fetch unread notifications from Firestore
 
-        let ws = new WebSocket(process.env.REACT_APP_WS_URL || 'ws://localhost:3005');
         let reconnectAttempts = 0;
         const maxReconnectAttempts = 5;
         const baseDelay = 5000;
@@ -59,6 +61,9 @@ const Chat = () => {
                     if (data.type === 'notification') {
                         setNotification(data.message);
                         // setTimeout(() => setNotification(null), 5000);
+                    } else if (data.type === 'typing' && data.chatId === chatId && data.userId !== userId) {
+                        setIsTyping(true);
+                        setTimeout(() => setIsTyping(false), 3000); // Reset after 3 seconds
                     } else {
                         setMessages(prev => {
                             const newMessages = data.filter(newMsg => !prev.some(msg => msg.id === newMsg.id));
@@ -135,6 +140,12 @@ const Chat = () => {
         }
     };
 
+    const handleTyping = () => {
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'typing', chatId, userId }));
+        }
+    };
+
     // Group messages by date
     const groupedMessages = groupMessagesByDate(messages);
 
@@ -179,6 +190,11 @@ const Chat = () => {
                     )
                 ))}
                 <div ref={messagesEndRef} />
+                {isTyping && (
+                    <div className="text-gray-500 text-sm italic mb-2">
+                        {friend?.name || 'Friend'} is typing...
+                    </div>
+                )}
             </div>
 
             {/* Input - static at bottom */}
@@ -186,7 +202,10 @@ const Chat = () => {
                 <input
                     type="text"
                     value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
+                    onChange={(e) => {
+                        setNewMessage(e.target.value);
+                        handleTyping();
+                    }}
                     onKeyDown={handleKeyPress}
                     className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Type a message..."
