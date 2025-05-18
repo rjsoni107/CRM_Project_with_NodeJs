@@ -54,7 +54,9 @@ const SidebarPanal = ({ isSidebarVisible, permissions, onClose }) => {
                                                 key={childIndex}
                                                 active={location.pathname === basePathAction(child.path)}
                                                 component={<Link to={`${basePathAction(child.path)}`} />}
-                                                onClick={onClose}
+                                                onClick={() => {
+                                                    if (window.innerWidth <= 768) onClose();
+                                                }}
                                             >
                                                 {child.label}
                                             </MenuItem>
@@ -70,7 +72,9 @@ const SidebarPanal = ({ isSidebarVisible, permissions, onClose }) => {
                                     icon={item.icon}
                                     active={location.pathname === basePathAction(item.path)}
                                     component={<Link to={`${basePathAction(item.path)}`} />}
-                                    onClick={onClose}
+                                    onClick={() => {
+                                        if (window.innerWidth <= 768) onClose();
+                                    }}
                                 >
                                     {item.label}
                                 </MenuItem>

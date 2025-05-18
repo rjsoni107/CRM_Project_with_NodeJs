@@ -92,7 +92,6 @@
 .main-content {
   transition: margin-left 0.3s ease;
   padding-left: 0;
-  margin-top: 60px;
 }
 
 .main-content.sidebar-open {

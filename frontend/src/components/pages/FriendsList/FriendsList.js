@@ -33,7 +33,7 @@ const FriendsList = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <div className="bg-blue-600 p-4 shadow-md">
+            <div className="bg-blue-600 p-2 shadow-md">
                 <h1 className="text-2xl font-bold text-white">Chats</h1>
             </div>
 

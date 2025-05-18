@@ -24,7 +24,9 @@ const Layout = ({ forceUpdate }) => {
             <SidebarPanal isSidebarVisible={isSidebarVisible} userType={userType} permissions={permissions} onClose={closeSidebar}/>
             <div className={`main-content ${isSidebarVisible ? "sidebar-open" : "sidebar-close"}`}>
                 <Topbar toggleSidebar={toggleSidebar} isSidebarVisible={isSidebarVisible} userType={userType} name={name} />
-                <Outlet />
+                <div className="pt-[60px] h-full flex flex-col">
+                    <Outlet />
+                </div>
             </div>
         </div>
     );
