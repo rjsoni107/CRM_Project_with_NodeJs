@@ -8,6 +8,7 @@
 
 /* BACKGROUND */
 .bg-none { background: none !important; }
+.bg-black-tranparent { background: rgba(0,0,0,0.5) !important; }
 
 /* Mobile First */
 

@@ -17,7 +17,7 @@ const Dashboard = () => {
                     <p className="fs-16 fw-400">Manage users and their roles.</p>
                 </div>
                 <div className="dashboard-card">
-                    <h2 className="fs-20 fw-600">Reports</h2>
+                    <h2 className="fs-20 fw-600">Friends</h2>
                     <p className="fs-16 fw-400">View detailed system reports.</p>
                 </div>
                 <div className="dashboard-card">

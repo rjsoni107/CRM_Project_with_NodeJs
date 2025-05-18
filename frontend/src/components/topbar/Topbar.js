@@ -9,11 +9,10 @@ const Topbar = ({ toggleSidebar, isSidebarVisible, userType, name }) => {
 
     const loader = showLoader && <Loader processing={true} approvalNotification={false} />;
 
-    const formattedName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
     return (
-        <div className={`topbar ${isSidebarVisible ? 'w-83' : 'w-94'}`}>
+        <div className={`topbar ${isSidebarVisible ? 'w-83' : 'w-100'}`}>
             <button className="toggle-sidebar-btn" onClick={toggleSidebar}> ☰ </button>
-            <h1 className="topbar-title">Welcome {formattedName} </h1>
+            <h1 className="topbar-title">Welcome {name} </h1>
             <button className="logout-btn" onClick={e => handleLogout(setShowLoader)}> Logout </button>
             {loader}
         </div>

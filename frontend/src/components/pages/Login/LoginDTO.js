@@ -18,11 +18,13 @@ const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setSho
         if (validateFormHandler(that)) {
             const payload = { mobile, pin };
             const fetchAction = apiPathAction(ENDPOINTS.LOGIN_ACTION);
-            const redirectAction = basePathAction(ENDPOINTS.DASHBOARD);
+            const redirectAdminPanal = basePathAction(ENDPOINTS.DASHBOARD);
+            const redirectUserPanal = basePathAction(ENDPOINTS.FRIENDS_LIST);
             setShowLoader(true)
             try {
                 const response = await fetchData('POST', fetchAction, payload);
                 const { responseStatus, responseMsg, userDetails, token } = response;
+                const redirectAction = userDetails?.userType === "ADMIN" ? redirectAdminPanal : redirectUserPanal;
 
                 if (response && responseStatus === "SUCCESS") {
                     localStorage.setItem("authToken", token);
@@ -45,7 +47,7 @@ const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setSho
             alert("Mobile No. can not be blank");
             return;
         }
-        
+
         const payload = { mobile, type };
         const fetchAction = apiPathAction(ENDPOINTS.GENERATE_OTP_ACTION);
         const redirectAction = basePathAction(ENDPOINTS.VERIFY_OTP);

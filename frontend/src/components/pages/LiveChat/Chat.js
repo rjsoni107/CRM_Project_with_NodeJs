@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { FaPaperPlane } from "react-icons/fa";
 import Base from '../../../util/Base';
 import ChatDTO from './ChatDTO';
 import './chat.css';
@@ -15,7 +16,7 @@ const Chat = () => {
     const [error, setError] = useState(null);
     const [notification, setNotification] = useState(null);
 
-    const { fetchData, apiPathAction } = Base();
+    const { fetchData, apiPathAction, formatTime } = Base();
     const { handleSendMessage } = ChatDTO({ setError, fetchData, apiPathAction, chatId, userId, receiverId, newMessage, setNewMessage });
 
     useEffect(() => {
@@ -72,8 +73,8 @@ const Chat = () => {
                     setTimeout(() => setError(null), 5000);
                 };
 
-                newWs.onclose = () => {
-                    console.log('WebSocket connection closed');
+                newWs.onclose = (event) => {
+                    console.log(`WebSocket disconnected. Code: ${event.code}, Reason: ${event.reason}`);
                     reconnect();
                 };
 
@@ -135,82 +136,56 @@ const Chat = () => {
     };
 
     return (
-        <main>
-            {/* <div className="chat-container">
-                <h3 className="chat-title">Chat</h3>
-                {error && <div className="chat-error">{error}</div>}
-                {notification && <div style={{ color: 'blue', marginBottom: '10px' }} className='mb-10 text-blue'>{notification.message}</div>}
-                <div className="chat-messages">
-                    {messages.map((msg) => (
-                        <div key={msg.id} className={`chat-message ${msg.senderId === userId ? 'right' : 'left'}`}>
-                            <strong>{msg.senderId === userId ? 'You' : 'Them'}:</strong> {msg.message}
-                            <small> ({msg.timestamp ? new Date(msg.timestamp).toLocaleString() : 'N/A'})</small>
-                        </div>
-                    ))}
+        <main className="flex flex-col h-full bg-gray-100 flex-1 min-h-0">
+            {/* Header - static at top */}
+            <div className="bg-blue-600 p-2 flex items-center shadow-md flex-shrink-0">
+                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                    {friend ? friend.name[0] : 'F'}
                 </div>
+                <h2 className="ml-3 text-xl font-bold text-white">
+                    {friend ? friend.name : 'Friend'}
+                </h2>
+            </div>
+
+            {/* Messages - scrollable */}
+            <div className="flex-1 p-2 overflow-y-auto bg-gray-50">
+                {messages.map((msg) => (
+                    <div
+                        key={msg.id}
+                        className={`mb-3 flex ${msg.senderId === userId ? 'justify-end' : 'justify-start'}`}
+                    >
+                        <div
+                            className={`max-w-xs min-w-[90px] px-2 py-1 rounded-lg shadow-sm ${msg.senderId === userId
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-white text-gray-800'
+                                }`}
+                        >
+                            <p>{msg.message}</p>
+                            <p className="text-[10px] mt-1 opacity-75 d-flex justify-content-end">
+                                {formatTime(msg.timestamp)}
+                            </p>
+                        </div>
+                    </div>
+                ))}
+                <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input - static at bottom */}
+            <div className="bg-white p-2     flex items-center border-t border-gray-200 flex-shrink-0">
                 <input
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Type a message..."
-                    className="chat-input"
-                    aria-label="Type a message"
                 />
-                <button onClick={handleSendMessage} className="chat-send-btn" aria-label="Send message">Send</button>
-            </div> */}
-
-            <div className="min-h-screen bg-gray-100 flex flex-col">
-                {/* Header */}
-                <div className="bg-blue-600 p-4 flex items-center shadow-md">
-                    <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                        {friend ? friend.name[0] : 'F'}
-                    </div>
-                    <h2 className="ml-3 text-xl font-bold text-white">
-                        {friend ? friend.name : 'Friend'}
-                    </h2>
-                </div>
-
-                {/* Messages */}
-                <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
-                    {messages.map((msg) => (
-                        <div
-                            key={msg.id}
-                            className={`mb-3 flex ${msg.senderId === userId ? 'justify-end' : 'justify-start'
-                                }`}
-                        >
-                            <div
-                                className={`max-w-xs p-3 rounded-lg shadow-sm ${msg.senderId === 'me'
-                                    ? 'bg-blue-500 text-white'
-                                    : 'bg-white text-gray-800'
-                                    }`}
-                            >
-                                <p>{msg.message}</p>
-                                <p className="text-xs mt-1 opacity-75">
-                                    {msg.timestamp ? new Date(msg.timestamp).toLocaleString() : 'Just now'}
-                                </p>
-                            </div>
-                        </div>
-                    ))}
-                    <div ref={messagesEndRef} />
-                </div>
-
-                {/* Message Input */}
-                <div className="bg-white p-4 flex items-center border-t border-gray-200">
-                    <input
-                        type="text"
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        className="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Type a message..."
-                    />
-                    <button
-                        onClick={handleSendMessage}
-                        className="ml-3 bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition duration-200"
-                    >
-                        Send
-                    </button>
-                </div>
+                <button
+                    onClick={handleSendMessage}
+                    className="ml-3 bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition duration-200"
+                >
+                    <FaPaperPlane className="text-lg" />
+                </button>
             </div>
         </main>
     );

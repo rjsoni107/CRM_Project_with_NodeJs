@@ -32,16 +32,16 @@ const userPermissions = {
         "profile",
     ],
     USER: [
-        "dashboard",
-        "home",
         "logout",
-        "userList",
-        "getCountryList",
-        "getStateList",
-        "getCityList",
         "chat/:chatId/:senderId/:receiverId",
         "profile",
         "friendsList"
+        // "dashboard",
+        // "home",
+        // "userList",
+        // "getCountryList",
+        // "getStateList",
+        // "getCityList",
     ],
     MERCHANT: [
         "dashboard",

@@ -5,31 +5,23 @@ import SidebarPanal from "../sidebar/SidebarPanal";
 const Layout = ({ forceUpdate }) => {
     const { userType, permissions, name } = JSON.parse(localStorage.getItem("globalObj") || "{}");
 
-    const [isSidebarVisible, setSidebarVisible] = useState(true);
+    const [isSidebarVisible, setSidebarVisible] = useState(window.innerWidth > 768);
 
-    const toggleSidebar = () => {
-        setSidebarVisible((prevState) => !prevState);
-    };
-
-    const handleResize = () => {
-        if (window.innerWidth <= 768) {
-            setSidebarVisible(false);
-        } else {
-            setSidebarVisible(true);
-        }
-    };
+    const toggleSidebar = () => setSidebarVisible((prev) => !prev);
+    const closeSidebar = () => setSidebarVisible(false);
 
     useEffect(() => {
-        handleResize();
-        window.addEventListener("resize", handleResize);
-        return () => {
-            window.removeEventListener("resize", handleResize);
+        const handleResize = () => {
+            if (window.innerWidth <= 768) setSidebarVisible(false);
+            else setSidebarVisible(true);
         };
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
     }, []);
 
     return (
-        <div className="layout ">
-            <SidebarPanal isSidebarVisible={isSidebarVisible} userType={userType} permissions={permissions} />
+        <div className="layout h-full">
+            <SidebarPanal isSidebarVisible={isSidebarVisible} userType={userType} permissions={permissions} onClose={closeSidebar}/>
             <div className={`main-content ${isSidebarVisible ? "sidebar-open" : "sidebar-close"}`}>
                 <Topbar toggleSidebar={toggleSidebar} isSidebarVisible={isSidebarVisible} userType={userType} name={name} />
                 <Outlet />

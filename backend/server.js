@@ -121,7 +121,7 @@ ws.on('connection', async (ws, req) => {
                 });
 
             ws.on('close', async (code, reason) => {
-                timeLog(`[ws.on-close] WebSocket client disconnected. Code: ${code}, Reason: ${reason}`);
+                timeLog(`[ws.on-close] WebSocket client disconnected. Code: ${code}, Reason: ${reason.toString()}`);
                 clients.get(chatId).delete(ws);
                 if (clients.get(chatId).size === 0) {
                     clients.delete(chatId);

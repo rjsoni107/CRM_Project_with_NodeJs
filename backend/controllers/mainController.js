@@ -149,7 +149,7 @@ exports.login = async (req, res) => {
             token,
             userDetails: {
                 userId: user.userId,
-                name: `${user.firstName} ${user.lastName || ''}`,
+                name: user.name,
                 emailId: user.emailId,
                 mobile: user.mobile,
                 userType: user.userType,
@@ -385,7 +385,7 @@ exports.fetchAllUsers = async (req, res) => {
         // Build Firestore query
         timeLog("[fetchAllUsers] Building Firestore query...");
         let userQuery = db.collection("users");
-        
+
         for (const [key, value] of Object.entries(filters)) {
             userQuery = userQuery.where(key, "==", value);
         }

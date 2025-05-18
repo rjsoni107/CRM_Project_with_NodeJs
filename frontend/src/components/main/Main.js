@@ -6,6 +6,7 @@ import RoutesConfig from "./RoutesConfig";
 import ProtectedRoute from "./ProtectedRoute";
 import Layout from "./Layout";
 import ErrorPage from "../pages/ErrorPage/ErrorPage";
+import ErrorBoundary from "./ErrorBoundary";
 
 function Main() {
     const { basePathAction, handleAutoLogout } = Base();
@@ -23,39 +24,41 @@ function Main() {
     setInterval(handleAutoLogout, 60000); // Check every 60 seconds
 
     return (
-        <Suspense fallback={<Loader />}>
-            <Routes>
-                {RoutesConfig.map((route, index) => {
-                    if (route.isProtected) {
+        <ErrorBoundary>
+            <Suspense fallback={<Loader />}>
+                <Routes>
+                    {RoutesConfig.map((route, index) => {
+                        if (route.isProtected) {
+                            return (
+                                <Route
+                                    key={index}
+                                    path={basePathAction(route.path)}
+                                    element={
+                                        <ProtectedRoute requiredPermission={route.path}>
+                                            <Layout />
+                                        </ProtectedRoute>}
+                                >
+                                    {/* Nested route for protected routes */}
+                                    <Route index element={route.element} />
+                                </Route>
+                            );
+                        }
+
+                        // Render public routes directly
                         return (
                             <Route
                                 key={index}
                                 path={basePathAction(route.path)}
-                                element={
-                                    <ProtectedRoute requiredPermission={route.path}>
-                                        <Layout />
-                                    </ProtectedRoute>}
-                            >
-                                {/* Nested route for protected routes */}
-                                <Route index element={route.element} />
-                            </Route>
+                                element={route.element}
+                            />
                         );
-                    }
+                    })}
 
-                    // Render public routes directly
-                    return (
-                        <Route
-                            key={index}
-                            path={basePathAction(route.path)}
-                            element={route.element}
-                        />
-                    );
-                })}
-
-                {/* Catch-All Route for Unknown Paths */}
-                <Route path="*" element={<ErrorPage />} />
-            </Routes>
-        </Suspense>
+                    {/* Catch-All Route for Unknown Paths */}
+                    <Route path="*" element={<ErrorPage />} />
+                </Routes>
+            </Suspense>
+        </ErrorBoundary>
     );
 }
 

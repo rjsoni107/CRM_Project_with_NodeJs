@@ -238,6 +238,12 @@ const Base = () => {
         }
     };
 
+    // Function to format date and time
+    const formatTime = (date) => {
+        if (!date) return 'Just now';
+        const dateObj = new Date(date);
+        return dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: 'true' });
+    };
 
     return {
         handleAutoLogout,
@@ -251,7 +257,8 @@ const Base = () => {
         handleCountryChange,
         handleStateChange,
         handleLogout,
-        apiPathAction
+        apiPathAction,
+        formatTime
     };
 };
 
