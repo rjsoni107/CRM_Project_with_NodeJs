@@ -34,4 +34,5 @@ export const ENDPOINTS = {
     SEND_CHAT_ACTION: 'sendChatAction',
     NOTIFICATION: 'notifications',
     FRIENDS_LIST: 'friendsList',
+    GET_FRIENDS_LIST_ACTION: 'getFriendsListAction',
 }

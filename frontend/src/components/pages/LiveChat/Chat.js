@@ -58,6 +58,7 @@ const Chat = () => {
 
                 newWs.onmessage = (event) => {
                     const data = JSON.parse(event.data);
+                    console.log(data.type, 'data.type')
                     if (data.type === 'notification') {
                         setNotification(data.message);
                         // setTimeout(() => setNotification(null), 5000);

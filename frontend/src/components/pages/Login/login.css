@@ -8,7 +8,7 @@
 /* Left Section */
 .login-left {
     flex: 1;
-    background: linear-gradient(to bottom, #1e3c72, #2a5298);
+    background: linear-gradient(to bottom, #8ea8d9, #0a1c3e);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -43,7 +43,7 @@
 
 .login-title {
     font-weight: 700;
-    margin-bottom: 10px;
+    margin-bottom: 0px;
 }
 
 .login-subtitle {

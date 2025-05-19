@@ -21,7 +21,7 @@ const EditUserDetails = forwardRef((props, ref) => {
         },
         status_list: [
             { value: 'Active', label: 'Active' },
-            { value: 'Inactive', label: 'Inactive' },
+            { value: 'InActive', label: 'InActive' },
             { value: 'Pending', label: 'Pending' },
             { value: 'Blocked', label: 'Blocked' },
             { value: 'Suspended', label: 'Suspended' },

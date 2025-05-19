@@ -60,8 +60,11 @@ const Login = () => {
             {/* Left Section with Background */}
             <div className="login-left">
                 <div className="login-left-content">
-                    <h1 className="fs-20 fs-sm-24 fs-md-36 fw-700">HELLO!</h1>
-                    <p className="fs-12 fs-sm-14 fs-md-16 fw-400">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                    <div className='d-flex justify-content-center'>
+                        <img src={`${window.basePath}/img/logo192.png`} alt="ChatSync-Logo" className='md:h-[120px] h-[65px]'/>
+                    </div>
+                    <h1 className="fs-20 fs-sm-24 fs-md-36 fw-700">ChatSync</h1>
+                    <p className="fs-12 fs-sm-14 fs-md-16 fw-400">Connect Together With Your Friends</p>
                 </div>
             </div>
 
@@ -118,7 +121,7 @@ const Login = () => {
                             <p className='fs-10 fs-md-12 cursor-pointer' onClick={e => handleGenerateOtp(e, 'forgotPIN')}>Forgot PIN</p>
                             <p className='fs-10 fs-md-12 cursor-pointer' onClick={e => handleGenerateOtp(e, 'loginOTP')}>Login with OTP</p>
                         </div>
-                        <button type="submit" className="login-button fs-12 fs-sm-14 fs-md-16" onClick={e => handleLogin(e)}> Login </button>
+                        <button type="submit" className="login-button fs-12 fs-sm-14 fs-md-16 mt-20" onClick={e => handleLogin(e)}> Login </button>
                         <div className='text-center fs-12 fs-sm-14 fs-md-14 mt-10'>
                             <span>Don't have an account</span>
                             <span className="text-azure cursor-pointer" onClick={e => signupHandler(e)}> Singup</span>

@@ -75,7 +75,7 @@ ws.on('connection', async (ws, req) => {
             data = JSON.parse(message);
             if (data.type === 'typing') {
                 // Broadcast to other users in the same chat
-                wss.clients.forEach((client) => {
+                clients.forEach((client) => {
                     if (client !== ws && client.readyState === WebSocket.OPEN) {
                         client.send(JSON.stringify({ type: 'typing', chatId: data.chatId, userId: data.userId }));
                     }

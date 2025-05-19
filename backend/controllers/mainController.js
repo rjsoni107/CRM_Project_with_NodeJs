@@ -197,12 +197,12 @@ exports.signup = async (req, res) => {
         }
 
         if (emailId && emailId.trim() !== "") {
-            timeLog("[addUser] Checking for duplicate email...");
+            timeLog("[signup] Checking for duplicate email...");
             const emailQuery = db.collection("users").where("emailId", "==", emailId);
             const emailSnapshot = await emailQuery.get();
 
             if (!emailSnapshot.empty) {
-                timeLog("[addUser] Duplicate email detected.");
+                timeLog("[signup] Duplicate email detected.");
                 return res.status(400).json({
                     responseStatus: "FAILED",
                     responseMsg: "Email already exists",
@@ -226,7 +226,7 @@ exports.signup = async (req, res) => {
         timeLog("[signup] Creating new account...");
         const newUser = {
             ...rest,
-            id: generateUniqueId(),
+            userId: generateUniqueId(),
             emailId,
             mobile,
             pin: hashedPin,
@@ -323,7 +323,7 @@ exports.addUser = async (req, res) => {
         timeLog("[addUser] Creating new user...");
         const newUser = {
             ...rest,
-            id: generateUniqueId(),
+            userId: generateUniqueId(),
             emailId,
             mobile,
             pin: hashedPin,
@@ -1023,5 +1023,43 @@ exports.markReadNotifications = async (req, res) => {
     } catch (err) {
         console.error('Error marking notification as read:', err);
         res.status(500).json({ error: 'Failed to mark notification as read' });
+    }
+};
+
+exports.fetchActiveFriendsList = async (req, res) => {
+    timeLog("[fetchActiveFriendsList] Fetching friendsList...");
+    try {
+        const friendsSnapshot = await db.collection('users')
+            .where('userId', '!=', req.user.userId)
+            .where('userType', '==', 'USER')
+            .where('status', '==', 'Active')
+            .get();
+        const friends = friendsSnapshot.docs.map(doc => ({
+            userId: doc.userId,
+            ...doc.data(),
+        }));
+        if (friends.length === 0) {
+            timeLog("[fetchAllUsers] No friends found.");
+            return res.status(404).json({
+                responseStatus: "FAILED",
+                responseMsg: "No friends found",
+                responseCode: "404",
+            });
+        }
+        timeLog("[fetchAllUsers] Users fetched successfully. friends:", friends.length);
+        res.json({
+            responseStatus: "SUCCESS",
+            responseMsg: "Friends fetched successfully",
+            responseCode: "200",
+            friendsList: friends.map(friend => ({
+                userId: friend.userId,
+                name: friend.name,
+                emailId: friend.emailId,
+                mobile: friend.mobile,
+            })),
+        });
+    } catch (err) {
+        console.error('Error fetching friends list:', err);
+        res.status(500).json({ error: 'Failed to fetch friends list' });
     }
 };

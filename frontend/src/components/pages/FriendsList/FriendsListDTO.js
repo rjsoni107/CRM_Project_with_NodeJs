@@ -2,17 +2,14 @@ import { ENDPOINTS } from "../../../utility/ApiEndpoints";
 
 const FriendsListDTO = (fetchData, setShowLoader, apiPathAction, setNotification, setFriends) => {
     // Fetch all users
-    const fetchUsers = async (propsState) => {
+    const fetchFriendsList = async (propsState) => {
         setShowLoader(true);
-        const payload = {
-            ...propsState.payload,
-        };
         try {
-            const responseJson = await fetchData('POST', apiPathAction(ENDPOINTS.GET_USER_LIST_ACTION), payload);
-            const { userList } = responseJson || {};
+            const responseJson = await fetchData('GET', apiPathAction(ENDPOINTS.GET_FRIENDS_LIST_ACTION));
+            const { friendsList } = responseJson || {};
 
             if (responseJson && responseJson.responseStatus === 'SUCCESS') {
-                setFriends(userList);
+                setFriends(friendsList);
             }
             setShowLoader(false);
         } catch (error) {
@@ -45,7 +42,7 @@ const FriendsListDTO = (fetchData, setShowLoader, apiPathAction, setNotification
         }
     };
 
-    return { fetchUsers, fetchNotifications };
+    return { fetchFriendsList, fetchNotifications };
 };
 
 export default FriendsListDTO;

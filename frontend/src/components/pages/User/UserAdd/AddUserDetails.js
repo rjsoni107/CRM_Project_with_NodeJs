@@ -24,7 +24,7 @@ const AddUserDetails = forwardRef((props, ref) => {
         status_list: [
             { value: '', label: 'Select Status' },
             { value: 'Active', label: 'Active' },
-            { value: 'Inactive', label: 'Inactive' },
+            { value: 'InActive', label: 'InActive' },
             { value: 'Pending', label: 'Pending' },
             { value: 'Blocked', label: 'Blocked' },
             { value: 'Suspended', label: 'Suspended' },

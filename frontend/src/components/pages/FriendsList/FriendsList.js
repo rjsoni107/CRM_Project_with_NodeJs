@@ -13,9 +13,9 @@ const FriendsList = () => {
     const userId = loginDetails.userId || 0;
 
     const { fetchData, basePathAction, apiPathAction } = Base();
-    const { fetchUsers, fetchNotifications } = FriendsListDTO(fetchData, setShowLoader, apiPathAction, setNotification, setFriends);
+    const { fetchFriendsList, fetchNotifications } = FriendsListDTO(fetchData, setShowLoader, apiPathAction, setNotification, setFriends);
     useEffect(() => {
-        fetchUsers({ payload: {} });
+        fetchFriendsList();
     }, []);
     const navigate = useNavigate();
 

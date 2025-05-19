@@ -40,8 +40,13 @@ const SidebarPanal = ({ isSidebarVisible, permissions, onClose }) => {
                 <Sidebar collapsed={!isSidebarVisible} image={`${window.basePath}/img/sidebar-bg.jpg`}>
                     <Menu className="pro-sidebar" menuItemStyles={menuItemStyles} >
                         <div className="d-flex justify-content-between align-items-center">
-                            <MenuItem className="menu-toggle cursor-none">ChatSync </MenuItem>
-                            <button className="toggle-sidebar-btn block md:hidden" onClick={onClose}> <FaTimes /> </button>
+                            <MenuItem className="menu-toggle cursor-none">
+                                <div className="d-flex justify-content-center align-items-center">
+                                    <img src={`${window.basePath}/img/logo192.png`} alt="ChatSync-Logo" className='md:h-[30px] h-[25px]' />
+                                    <span className="ml-1">ChatSync</span>
+                                </div>
+                            </MenuItem>
+                            <button className="toggle-sidebar-btn block md:hidden mr-1 mb-1" onClick={onClose}> <FaTimes /> </button>
                         </div>
                         {/* Render menu items dynamically */}
                         {filteredMenuConfig.map((item, index) => {
