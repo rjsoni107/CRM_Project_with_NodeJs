@@ -4,6 +4,8 @@ import Base from '../../../util/Base';
 import ChatDTO from './ChatDTO';
 import './chat.css';
 import { useParams } from 'react-router-dom';
+import FriendsListDTO from '../FriendsList/FriendsListDTO';
+import ChatHeader from './ChatHeader';
 
 const Chat = () => {
     const loginDetails = JSON.parse(localStorage.getItem('globalObj')) || {};
@@ -11,22 +13,42 @@ const Chat = () => {
     const userId = loginDetails.userId || senderId;
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
-    const [friend, setFriend] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [showLoader, setShowLoader] = useState(false);
+    const [friend, setFriends] = useState(null);
     const [error, setError] = useState(null);
-    const [notification, setNotification] = useState(null);
     const [isTyping, setIsTyping] = useState(false);
-
+    const wsRef = useRef(null);
+    const typingTimeoutRef = useRef(null);
+    const lastTypingEventRef = useRef(null);
     const messagesEndRef = useRef(null);
 
     const { fetchData, apiPathAction, formatTime, getDateLabel } = Base();
-    const { handleSendMessage, groupMessagesByDate } = ChatDTO({ setError, fetchData, apiPathAction, chatId, userId, receiverId, newMessage, setNewMessage, getDateLabel });
+    const { handleSendMessage, groupMessagesByDate, isOnline } = ChatDTO({ setError, fetchData, apiPathAction, chatId, userId, receiverId, newMessage, setNewMessage, getDateLabel });
+    const { fetchFriendsList } = FriendsListDTO({ fetchData, setShowLoader, apiPathAction, setFriends });
 
-    let ws = new WebSocket(process.env.REACT_APP_WS_URL || 'ws://localhost:3005');
+    // Fetch friend details
+    useEffect(() => {
+        const fetchFriendDetails = async () => {
+            if (receiverId) {
+                try {
+                    setIsLoading(true);
+                    await fetchFriendsList({ userId: receiverId });
+                } catch (err) {
+                    console.error('Error fetching friend:', err);
+                } finally {
+                    setIsLoading(false);
+                }
+            }
+        };
+        fetchFriendDetails();
+    }, [receiverId]);
+
+    // WebSocket setup
     useEffect(() => {
         if (!userId || !chatId || !receiverId) {
             return <div>Error: Missing user ID, chat ID, or receiver ID</div>;
         }
-        // Fetch unread notifications from Firestore
 
         let reconnectAttempts = 0;
         const maxReconnectAttempts = 5;
@@ -35,7 +57,6 @@ const Chat = () => {
         const reconnect = () => {
             if (reconnectAttempts >= maxReconnectAttempts) {
                 console.error('Max reconnection attempts reached. Giving up.');
-                setError('Unable to reconnect to WebSocket server. Please refresh the page.');
                 return;
             }
 
@@ -44,27 +65,25 @@ const Chat = () => {
 
             setTimeout(() => {
                 reconnectAttempts++;
-                const newWs = new WebSocket(`${process.env.REACT_APP_WS_URL}`);
+                wsRef.current = new WebSocket(process.env.REACT_APP_WS_URL || 'ws://localhost:3005');
 
-                newWs.onopen = () => {
-                    if (newWs.readyState === WebSocket.OPEN) {
-                        console.log('Connected to WebSocket server');
-                        newWs.send(JSON.stringify({ chatId, userId }));
+                wsRef.current.onopen = () => {
+                    if (wsRef.current.readyState === WebSocket.OPEN) {
+                        wsRef.current.send(JSON.stringify({ chatId, userId }));
                         reconnectAttempts = 0;
                     } else {
-                        console.warn('WebSocket is not in OPEN state:', newWs.readyState);
+                        console.warn('WebSocket is not in OPEN state:', wsRef.current.readyState);
                     }
                 };
 
-                newWs.onmessage = (event) => {
+                wsRef.current.onmessage = (event) => {
                     const data = JSON.parse(event.data);
-                    console.log(data.type, 'data.type')
-                    if (data.type === 'notification') {
-                        setNotification(data.message);
-                        // setTimeout(() => setNotification(null), 5000);
-                    } else if (data.type === 'typing' && data.chatId === chatId && data.userId !== userId) {
-                        setIsTyping(true);
-                        setTimeout(() => setIsTyping(false), 3000); // Reset after 3 seconds
+                    if (data.type === 'typing') {
+                        if (data.userId !== userId) {
+                            setIsTyping(true);
+                            clearTimeout(typingTimeoutRef.current);
+                            typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 3000);
+                        }
                     } else {
                         setMessages(prev => {
                             const newMessages = data.filter(newMsg => !prev.some(msg => msg.id === newMsg.id));
@@ -73,59 +92,35 @@ const Chat = () => {
                     }
                 };
 
-                newWs.onerror = (err) => {
+                wsRef.current.onerror = (err) => {
                     console.error('WebSocket error:', err);
                     setError('WebSocket error: ' + err.message);
                     setTimeout(() => setError(null), 5000);
                 };
 
-                newWs.onclose = (event) => {
-                    console.log(`WebSocket disconnected. Code: ${event.code}, Reason: ${event.reason}`);
+                wsRef.current.onclose = (event) => {
                     reconnect();
                 };
 
-                ws = newWs;
+                wsRef.current.onping = () => {
+                    wsRef.current.pong();
+                };
             }, delay);
         };
 
-        ws.onopen = () => {
-            if (ws.readyState === WebSocket.OPEN) {
-                console.log('Connected to WebSocket server');
-                ws.send(JSON.stringify({ chatId, userId }));
-            } else {
-                console.warn('WebSocket is not in OPEN state:', ws.readyState);
-            }
-        };
-
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'notification') {
-                setNotification(data.message);
-                setTimeout(() => setNotification(null), 5000);
-            } else {
-                setMessages(prev => {
-                    const newMessages = data.filter(newMsg => !prev.some(msg => msg.id === newMsg.id));
-                    return [...prev, ...newMessages];
-                });
-            }
-        };
-
-        ws.onerror = (err) => {
-            console.error('WebSocket error:', err);
-            setError('WebSocket error: ' + err.message);
-            setTimeout(() => setError(null), 5000);
-        };
-
-        ws.onclose = () => {
-            console.log('WebSocket connection closed');
-            reconnect();
-        };
+        reconnect();
 
         return () => {
-            ws.close();
+            if (wsRef.current) {
+                wsRef.current.close();
+            }
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
+            }
         };
     }, [chatId, userId]);
 
+    // Auto-scroll to latest message
     useEffect(() => {
         const chatMessages = document.querySelector('.chat-messages');
         if (chatMessages) {
@@ -141,9 +136,14 @@ const Chat = () => {
         }
     };
 
+    // Handle typing event with throttling
     const handleTyping = () => {
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'typing', chatId, userId }));
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+            const now = Date.now();
+            if (!lastTypingEventRef.current || now - lastTypingEventRef.current > 1000) {
+                wsRef.current.send(JSON.stringify({ type: 'typing', chatId, userId }));
+                lastTypingEventRef.current = now;
+            }
         }
     };
 
@@ -153,14 +153,7 @@ const Chat = () => {
     return (
         <main className="flex flex-col h-full bg-gray-100 flex-1 min-h-0">
             {/* Header - static at top */}
-            <div className="bg-blue-600 p-2 flex items-center shadow-md flex-shrink-0">
-                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                    {friend ? friend.name[0] : 'F'}
-                </div>
-                <h2 className="ml-3 text-xl font-bold text-white">
-                    {friend ? friend.name : 'Friend'}
-                </h2>
-            </div>
+            <ChatHeader friend={friend} isLoading={isLoading} isOnline={isOnline} />
 
             {/* Messages - scrollable */}
             <div className="flex-1 p-2 overflow-y-auto bg-gray-50 chat-messages">
@@ -178,7 +171,7 @@ const Chat = () => {
                         >
                             <div
                                 className={`max-w-xs min-w-[90px] px-2 py-1 rounded-lg shadow-sm ${item.data.senderId === userId
-                                    ? 'bg-blue-500 text-white'
+                                    ? 'bg-teal-700 text-white'
                                     : 'bg-white text-gray-800'
                                     }`}
                             >
@@ -190,16 +183,16 @@ const Chat = () => {
                         </div>
                     )
                 ))}
-                <div ref={messagesEndRef} />
                 {isTyping && (
                     <div className="text-gray-500 text-sm italic mb-2">
                         {friend?.name || 'Friend'} is typing...
                     </div>
                 )}
+                <div ref={messagesEndRef} />
             </div>
 
             {/* Input - static at bottom */}
-            <div className="bg-white p-2     flex items-center border-t border-gray-200 flex-shrink-0">
+            <div className="bg-white p-2 flex items-center border-t border-gray-200 flex-shrink-0">
                 <input
                     type="text"
                     value={newMessage}
@@ -208,12 +201,12 @@ const Chat = () => {
                         handleTyping();
                     }}
                     onKeyDown={handleKeyPress}
-                    className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                     placeholder="Type a message..."
                 />
                 <button
                     onClick={handleSendMessage}
-                    className="ml-3 bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition duration-200"
+                    className="ml-3 bg-teal-700 text-white px-3 py-2 rounded-lg hover:bg-teal-800 transition duration-200"
                 >
                     <FaPaperPlane className="text-lg" />
                 </button>

@@ -29,6 +29,6 @@ router.post("/fetchChatAction", verifyToken, mainController.fetchChatMessages);
 router.post("/sendChatAction", verifyToken, mainController.sendChatMessage);
 router.post("/notifications", verifyToken, mainController.fetchNotifications);
 router.post("/notifications/:id", verifyToken, mainController.markReadNotifications);
-router.get("/getFriendsListAction", verifyToken, mainController.fetchActiveFriendsList);
+router.post("/getFriendsListAction", verifyToken, mainController.fetchActiveFriendsList);
 
 module.exports = router;

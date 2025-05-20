@@ -11,7 +11,7 @@ const { timeLog } = require('./util/logger');
 const rateLimit = require('express-rate-limit');
 
 dotenv.config();
-const { FRONTEND_URL, PORT, } = process.env;
+const { FRONTEND_URL, PORT } = process.env;
 
 const app = express();
 
@@ -69,23 +69,33 @@ ws.on('connection', async (ws, req) => {
     ws.isAlive = true;
     ws.on('pong', () => ws.isAlive = true);
 
-    ws.on('message', (message) => {
+    ws.on('message', async (message) => {
         let data;
         try {
-            data = JSON.parse(message);
-            if (data.type === 'typing') {
-                // Broadcast to other users in the same chat
-                clients.forEach((client) => {
-                    if (client !== ws && client.readyState === WebSocket.OPEN) {
-                        client.send(JSON.stringify({ type: 'typing', chatId: data.chatId, userId: data.userId }));
-                    }
-                });
-            }
+            data = JSON.parse(message.toString());
         } catch (err) {
             console.error('Invalid message format:', err);
             return;
         }
         const { chatId, userId } = data;
+
+        if (!chatId || !userId) {
+            console.error('Missing chatId or userId in WebSocket message');
+            return;
+        }
+
+        // Update lastSeen for the user
+        try {
+            const userQuery = db.collection("users").where("userId", "==", userId);
+            const userSnapshot = await userQuery.get();
+            const userDocId = userSnapshot.docs[0].id;
+            await db.collection("users").doc(userDocId).update(
+                { lastSeen: new Date().toISOString() }
+            );
+            timeLog(`Updated lastSeen for user ${userId}`);
+        } catch (err) {
+            console.error('Error updating lastSeen:', err);
+        }
 
         if (chatId && userId) {
             if (!clients.has(chatId)) {
@@ -101,47 +111,68 @@ ws.on('connection', async (ws, req) => {
 
             setUserClients(userClients);
 
-            const unsubscribe = db.collection('chats')
-                .where('chatId', '==', chatId)
-                .orderBy('timestamp', 'asc')
-                .onSnapshot((snapshot) => {
-                    const messages = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-
-                    if (clients.has(chatId)) {
-                        clients.get(chatId).forEach(client => {
-                            if (client.readyState === 1) {
-                                client.send(JSON.stringify(messages));
-                            }
-                        });
-                    }
-                }, (err) => {
-                    console.error('Error listening to messages:', err);
-                    if (clients.has(chatId)) {
-                        clients.get(chatId).forEach(client => {
-                            if (client.readyState === 1) {
-                                client.send(JSON.stringify({ type: 'error', message: 'Failed to fetch messages' }));
-                            }
-                        });
+            if (data.type === 'typing') {
+                const chatClients = clients.get(data.chatId) || new Set();
+                chatClients.forEach((client) => {
+                    if (client !== ws && client.readyState === WebSocket.OPEN) {
+                        client.send(JSON.stringify({
+                            type: 'typing',
+                            chatId: data.chatId,
+                            userId: data.userId,
+                        }));
                     }
                 });
+            } else {
+                const unsubscribe = db.collection('chats')
+                    .where('chatId', '==', chatId)
+                    .orderBy('timestamp', 'asc')
+                    .onSnapshot((snapshot) => {
+                        const messages = snapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data(),
+                        }));
 
-            ws.on('close', async (code, reason) => {
-                timeLog(`[ws.on-close] WebSocket client disconnected. Code: ${code}, Reason: ${reason.toString()}`);
-                clients.get(chatId).delete(ws);
-                if (clients.get(chatId).size === 0) {
-                    clients.delete(chatId);
-                    unsubscribe();
-                }
-                userClients.get(userId).delete(ws);
-                if (userClients.get(userId).size === 0) {
-                    userClients.delete(userId);
-                }
-                setUserClients(userClients);
-            });
+                        if (clients.has(chatId)) {
+                            clients.get(chatId).forEach(client => {
+                                if (client.readyState === WebSocket.OPEN) {
+                                    client.send(JSON.stringify(messages));
+                                }
+                            });
+                        }
+                    }, (err) => {
+                        console.error('Error listening to messages:', err);
+                        if (clients.has(chatId)) {
+                            clients.get(chatId).forEach(client => {
+                                if (client.readyState === WebSocket.OPEN) {
+                                    client.send(JSON.stringify({ type: 'error', message: 'Failed to fetch messages' }));
+                                }
+                            });
+                        }
+                    });
+
+                ws.on('close', (code, reason) => {
+                    timeLog(`[ws.on-close] WebSocket client disconnected. Code: ${code}, Reason: ${reason.toString()}`);
+                    if (clients.has(chatId)) {
+                        clients.get(chatId).delete(ws);
+                        if (clients.get(chatId).size === 0) {
+                            clients.delete(chatId);
+                            unsubscribe();
+                        }
+                    }
+                    if (userClients.has(userId)) {
+                        userClients.get(userId).delete(ws);
+                        if (userClients.get(userId).size === 0) {
+                            userClients.delete(userId);
+                        }
+                    }
+                    setUserClients(userClients);
+                });
+            }
         }
+    });
+
+    ws.on('error', (err) => {
+        console.error('WebSocket error:', err);
     });
 });
 
@@ -154,7 +185,10 @@ const interval = setInterval(() => {
     });
 }, 30000);
 
-ws.on('close', () => clearInterval(interval));
+ws.on('close', () => {
+    clearInterval(interval);
+    timeLog('WebSocket server closed');
+});
 
 server.listen(PORT, async () => {
     timeLog(`[server.listen] Server running on port ${PORT}`);

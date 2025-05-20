@@ -51,6 +51,35 @@ const UserListDTO = (fetchData, setState, setShowLoader, state, setDialogState, 
         }
     };
 
+    const confirmDeleteUser = (userId) => {
+        setDialogState(prevState => ({
+            ...prevState,
+            dialog: {
+                ...prevState.dialog,
+                dialogBoxType: 'confirmation',
+                dialogBoxMsg: <h5>Are you sure you want to delete this user?</h5>,
+                isDialogOpen: true,
+                dialogFooter: (
+                    <>
+                        <button className='btn btn-primary mr-3'
+                            onClick={(e) => {
+                                setDialogState({ dialog: { isDialogOpen: false } });
+                                deleteUser(userId);
+                            }}>
+                            Ok
+                        </button>
+                        <button className='btn btn-secondary'
+                            onClick={(e) => {
+                                setDialogState({ dialog: { isDialogOpen: false } });
+                            }}>
+                            Cancel
+                        </button>
+                    </>
+                )
+            },
+        }));
+    }
+
     // Delete a user
     const deleteUser = async (userId) => {
         setShowLoader(true)
@@ -61,7 +90,7 @@ const UserListDTO = (fetchData, setState, setShowLoader, state, setDialogState, 
                 ...prevState,
                 dialog: {
                     ...prevState.dialog,
-                    dialogBoxType: responseStatus === "SUCCESS" ? 'success' : 'error',
+                    dialogBoxType: responseStatus === "SUCCESS" ? 'confirmation' : 'error',
                     dialogBoxMsg: <h5>{responseMsg}</h5>,
                     isDialogOpen: true,
                     dialogFooter: (
@@ -84,7 +113,7 @@ const UserListDTO = (fetchData, setState, setShowLoader, state, setDialogState, 
         }
     };
 
-    return { fetchUsers, deleteUser, fetchNotifications };
+    return { fetchUsers, deleteUser, confirmDeleteUser, fetchNotifications };
 };
 
 export default UserListDTO;

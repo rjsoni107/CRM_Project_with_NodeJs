@@ -10,6 +10,8 @@ import { SelectBox, TextInput } from '../../../formElements/FormElementsImport';
 import ValidationHandler from '../../../../utility/ValidationHandler';
 import DialogBox from '../../../dialogBox/DialogBox';
 import ConfimationContent from '../../../dialogBox/ConfirmationContent';
+import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
+import Heading from '../../../heading/Heading';
 function UserList() {
     const { fetchData, invokePaginationMethod, basePathAction, apiPathAction } = Base();
 
@@ -51,7 +53,7 @@ function UserList() {
 
     const { payload, countPerPage, length, row, status_list, status, loginDetails } = state;
     const { isDialogOpen, dialogBoxMsg, dialogBoxType, dialogFooter } = dialogState.dialog;
-    const { fetchUsers, deleteUser } = UserListDTO(fetchData, setState, setShowLoader, state, setDialogState, apiPathAction);
+    const { fetchUsers, confirmDeleteUser } = UserListDTO(fetchData, setState, setShowLoader, state, setDialogState, apiPathAction);
     const {
         inputChangeHandler,
         inputMessageHandler,
@@ -95,8 +97,8 @@ function UserList() {
             name: 'Action',
             cell: row => (
                 <div className='d-flex justify-content-center align-items-center gap-2'>
-                    <button onClick={(e) => editListHandler(e, row.userId)} className='btn btn-primary' aria-label="Edit user">Edit</button>
-                    <button onClick={(e) => deleteUser(row.userId)} className='btn btn-danger' aria-label="Delete user">Delete</button>
+                    <button onClick={(e) => confirmDeleteUser(row.userId)} className='btn btn-danger px-3 py-2 fs-14' aria-label="Delete user"><FaTrashAlt /></button>
+                    <button onClick={(e) => editListHandler(e, row.userId)} className='btn btn-primary px-3 py-2 fs-14' aria-label="Edit user"><FaPencilAlt /></button>
                 </div>
             ),
             ignoreRowClick: true,
@@ -126,8 +128,14 @@ function UserList() {
     };
     return (
         <main>
-            <div className="container mt-80">
+            <div className="container mt-5">
                 <div className="row form-group">
+                    <Heading
+                        title="User List"
+                        headingClass=""
+                        icon="true"
+                        customClass="col-md-12"
+                    />
                     <div className="col-12 col-sm-6 col-md-3 mb-20">
                         <SelectBox
                             inputLable="Status"

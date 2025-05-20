@@ -1029,7 +1029,25 @@ exports.markReadNotifications = async (req, res) => {
 exports.fetchActiveFriendsList = async (req, res) => {
     timeLog("[fetchActiveFriendsList] Fetching friendsList...");
     try {
-        const friendsSnapshot = await db.collection('users')
+        const filters = {};
+        // Dynamically build the filters object based on the request payload
+        timeLog("[fetchActiveFriendsList] Building filters object...");
+        for (const [key, value] of Object.entries(req.body)) {
+            if (value && value !== "All") {
+                filters[key] = value;
+            }
+        }
+        timeLog("[fetchActiveFriendsList] Filters object:", filters);
+        // Add a filter to only fetch users with userType = 'USER'
+        filters.userType = 'USER';
+        // Build Firestore query
+        timeLog("[fetchActiveFriendsList] Building Firestore query...");
+        let userQuery = db.collection("users");
+        for (const [key, value] of Object.entries(filters)) {
+            userQuery = userQuery.where(key, "==", value);
+        }
+
+        const friendsSnapshot = await userQuery
             .where('userId', '!=', req.user.userId)
             .where('userType', '==', 'USER')
             .where('status', '==', 'Active')
@@ -1056,6 +1074,7 @@ exports.fetchActiveFriendsList = async (req, res) => {
                 name: friend.name,
                 emailId: friend.emailId,
                 mobile: friend.mobile,
+                lastSeen: friend.lastSeen,
             })),
         });
     } catch (err) {

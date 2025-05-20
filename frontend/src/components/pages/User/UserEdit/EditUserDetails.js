@@ -160,7 +160,6 @@ const EditUserDetails = forwardRef((props, ref) => {
 
     return (
         <>
-            <Heading title="User Details" customClass="col-md-12" headingWrapper="my-10" headingClass="ml-0 fs-15 text-black fw-medium" />
             <div className="row">
                 <div className="col-12 col-sm-6 col-md-3 mb-20">
                     <SelectBox

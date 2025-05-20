@@ -13,9 +13,9 @@ const FriendsList = () => {
     const userId = loginDetails.userId || 0;
 
     const { fetchData, basePathAction, apiPathAction } = Base();
-    const { fetchFriendsList, fetchNotifications } = FriendsListDTO(fetchData, setShowLoader, apiPathAction, setNotification, setFriends);
+    const { fetchFriendsList, fetchNotifications } = FriendsListDTO({ fetchData, setShowLoader, apiPathAction, setNotification, setFriends });
     useEffect(() => {
-        fetchFriendsList();
+        fetchFriendsList({userId: 'All'});
     }, []);
     const navigate = useNavigate();
 
@@ -34,7 +34,7 @@ const FriendsList = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <div className="bg-blue-600 p-2 shadow-md">
+            <div className="bg-teal-900 p-2 shadow-md">
                 <h1 className="text-2xl font-bold text-white text-center">Friends List</h1>
             </div>
 
@@ -50,7 +50,7 @@ const FriendsList = () => {
                             className="flex items-center p-3 mb-3 bg-white rounded-lg shadow-sm hover:bg-gray-100 transition duration-200"
                         >
                             {/* Avatar */}
-                            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                            <div className="w-12 h-12 bg-teal-700 rounded-full flex items-center justify-center text-white font-bold text-lg">
                                 {friend.name ? friend.name[0] : 'U'}
                             </div>
                             {/* Friend Info */}

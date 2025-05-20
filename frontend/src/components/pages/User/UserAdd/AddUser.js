@@ -42,7 +42,7 @@ const AddUser = () => {
 
     return (
         <main>
-            <div className={"container mt-70"}>
+            <div className={"container mt-5"}>
                 <div className="row form-section">
                     <Heading
                         title="Add User"

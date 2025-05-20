@@ -3,8 +3,6 @@ import { ENDPOINTS } from "../../../utility/ApiEndpoints";
 const ChatDTO = ({ setError, fetchData, apiPathAction, chatId, userId, receiverId, newMessage, setNewMessage, getDateLabel }) => {
 
     const handleSendMessage = async () => {
-        console.log(receiverId, 'receiverId');
-        console.log(userId, 'userId');
         if (!newMessage.trim()) return;
         if (!userId || !receiverId) {
             console.error('userId or receiverId is undefined');
@@ -62,7 +60,15 @@ const ChatDTO = ({ setError, fetchData, apiPathAction, chatId, userId, receiverI
         return grouped;
     };
 
-    return { handleSendMessage, groupMessagesByDate };
+    const isOnline = (friend) => {
+        if (!friend || !friend[0].lastSeen) return false;
+        const lastSeenTime = new Date(friend[0].lastSeen).getTime();
+        const currentTime = new Date().getTime();
+        const differenceInSeconds = (currentTime - lastSeenTime) / 1000;
+        return differenceInSeconds < 30;
+    };
+
+    return { handleSendMessage, groupMessagesByDate, isOnline };
 }
 
 export default ChatDTO;
