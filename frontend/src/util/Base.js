@@ -276,7 +276,7 @@ const Base = () => {
         const lastSeenTime = new Date(friend.lastSeen).getTime();
         const currentTime = new Date().getTime();
         const differenceInSeconds = (currentTime - lastSeenTime) / 1000;
-        return differenceInSeconds < 30;
+        return differenceInSeconds < 60;
     };
 
     return {

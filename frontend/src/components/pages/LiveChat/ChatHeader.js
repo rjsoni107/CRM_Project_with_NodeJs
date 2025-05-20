@@ -5,7 +5,7 @@ const ChatHeader = ({ friend, isLoading }) => {
 
     if (isLoading) {
         return (
-            <div className="bg-amber-950 p-2 flex items-center shadow-md flex-shrink-0">
+            <div className="bg-teal-900 p-2 flex items-center shadow-md flex-shrink-0">
                 <div className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
                     <div className="animate-pulse">F</div>
                 </div>
