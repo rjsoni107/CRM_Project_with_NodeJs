@@ -84,7 +84,7 @@ const VerifyOtp = () => {
                                 <p className={`fs-12 ${errorMessage.errorType === 'SUCCESS' ? 'text-success' : 'text-danger'}`} >{errorMessage.otpError}</p>
                             </div>
                             <form className="form-section">
-                                <div className="col-12">
+                                <div className="w-full">
                                     <TextInput
                                         ref={otpPinRef}
                                         label="OTP"
@@ -105,7 +105,7 @@ const VerifyOtp = () => {
                                         dataValidation="PIN"
                                     />
                                 </div>
-                                <div className='d-flex justify-content-end'>
+                                <div className='flex justify-end'>
                                     <p className="fs-12" ref={timerSectionRef}>{timer}</p>
                                 </div>
                                 <button type="submit" className="login-button" onClick={e => handleVerifyOtp(e)}>

@@ -6,6 +6,7 @@ import './chat.css';
 import { useParams } from 'react-router-dom';
 import FriendsListDTO from '../FriendsList/FriendsListDTO';
 import ChatHeader from './ChatHeader';
+import Loader from '../../loader/Loader';
 
 const Chat = () => {
     const loginDetails = JSON.parse(localStorage.getItem('globalObj')) || {};
@@ -15,6 +16,7 @@ const Chat = () => {
     const [newMessage, setNewMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [showLoader, setShowLoader] = useState(false);
+    const [isWebSocketLoading, setIsWebSocketLoading] = useState(false);
     const [friend, setFriends] = useState(null);
     const [error, setError] = useState(null);
     const [isTyping, setIsTyping] = useState(false);
@@ -24,7 +26,7 @@ const Chat = () => {
     const messagesEndRef = useRef(null);
 
     const { fetchData, apiPathAction, formatTime, getDateLabel } = Base();
-    const { handleSendMessage, groupMessagesByDate, isOnline } = ChatDTO({ setError, fetchData, apiPathAction, chatId, userId, receiverId, newMessage, setNewMessage, getDateLabel });
+    const { handleSendMessage, groupMessagesByDate, isOnline } = ChatDTO({ setError, fetchData, apiPathAction, chatId, userId, receiverId, newMessage, setNewMessage, getDateLabel, setShowLoader });
     const { fetchFriendsList } = FriendsListDTO({ fetchData, setShowLoader, apiPathAction, setFriends });
 
     // Fetch friend details
@@ -53,10 +55,14 @@ const Chat = () => {
         let reconnectAttempts = 0;
         const maxReconnectAttempts = 5;
         const baseDelay = 5000;
+        setShowLoader(true);
+        setIsWebSocketLoading(true);
 
         const reconnect = () => {
             if (reconnectAttempts >= maxReconnectAttempts) {
                 console.error('Max reconnection attempts reached. Giving up.');
+                setShowLoader(false);
+                setIsWebSocketLoading(false);
                 return;
             }
 
@@ -78,6 +84,9 @@ const Chat = () => {
 
                 wsRef.current.onmessage = (event) => {
                     const data = JSON.parse(event.data);
+                    console.log(data, 'Received message from WebSocket');
+                    setShowLoader(false);
+                    setIsWebSocketLoading(false);
                     if (data.type === 'typing') {
                         if (data.userId !== userId) {
                             setIsTyping(true);
@@ -96,6 +105,8 @@ const Chat = () => {
                     console.error('WebSocket error:', err);
                     setError('WebSocket error: ' + err.message);
                     setTimeout(() => setError(null), 5000);
+                    setShowLoader(false);
+                    setIsWebSocketLoading(false);
                 };
 
                 wsRef.current.onclose = (event) => {
@@ -117,6 +128,9 @@ const Chat = () => {
             if (typingTimeoutRef.current) {
                 clearTimeout(typingTimeoutRef.current);
             }
+
+            setShowLoader(false);
+            setIsWebSocketLoading(false);
         };
     }, [chatId, userId]);
 
@@ -157,38 +171,52 @@ const Chat = () => {
 
             {/* Messages - scrollable */}
             <div className="flex-1 p-2 overflow-y-auto bg-gray-50 chat-messages">
-                {groupedMessages.map((item, index) => (
-                    item.type === 'date' ? (
-                        <div key={`date-${index}`} className="text-center my-4">
-                            <span className="inline-block bg-gray-200 text-gray-700 text-sm font-semibold px-4 py-1 rounded-full">
-                                {item.label}
-                            </span>
-                        </div>
-                    ) : (
-                        <div
-                            key={item.data.id}
-                            className={`mb-3 flex ${item.data.senderId === userId ? 'justify-end' : 'justify-start'}`}
-                        >
-                            <div
-                                className={`max-w-xs min-w-[90px] px-2 py-1 rounded-lg shadow-sm ${item.data.senderId === userId
-                                    ? 'bg-teal-700 text-white'
-                                    : 'bg-white text-gray-800'
-                                    }`}
-                            >
-                                <p>{item.data.message}</p>
-                                <p className="text-[10px] mt-1 opacity-75 d-flex justify-content-end">
-                                    {formatTime(item.data.timestamp)}
-                                </p>
+                {!isWebSocketLoading ? (
+                    <>
+                        {groupedMessages.map((item, index) => (
+                            item.type === 'date' ? (
+                                <div key={`date-${index}`} className="text-center my-4">
+                                    <span className="inline-block bg-gray-200 text-gray-700 text-sm font-semibold px-4 py-1 rounded-full">
+                                        {item.label}
+                                    </span>
+                                </div>
+                            ) : (
+                                <div
+                                    key={item.data.id}
+                                    className={`mb-3 flex ${item.data.senderId === userId ? 'justify-end' : 'justify-start'}`}
+                                >
+                                    <div
+                                        className={`max-w-xs min-w-[90px] px-2 py-1 rounded-lg shadow-sm ${item.data.senderId === userId
+                                            ? 'bg-teal-700 text-white'
+                                            : 'bg-white text-gray-800'
+                                            }`}
+                                    >
+                                        <p>{item.data.message}</p>
+                                        <p className="text-[10px] mt-1 opacity-75 flex justify-end">
+                                            {formatTime(item.data.timestamp)}
+                                        </p>
+                                    </div>
+                                </div>
+                            )
+                        ))}
+                        {isTyping && (
+                            <div className="text-gray-500 text-sm italic mb-2">
+                                {friend?.name || 'Friend'} is typing...
+                            </div>
+                        )}
+                        <div ref={messagesEndRef} />
+                    </>
+                ) : (
+                    <div className="flex justify-center items-center h-full">
+                        <div className="p-2 flex items-center shadow-md flex-shrink-0">
+                            <div className="ml-3">
+                                <h2 className="text-xl font-bold text-green animate-pulse">
+                                    Loading...
+                                </h2>
                             </div>
                         </div>
-                    )
-                ))}
-                {isTyping && (
-                    <div className="text-gray-500 text-sm italic mb-2">
-                        {friend?.name || 'Friend'} is typing...
                     </div>
                 )}
-                <div ref={messagesEndRef} />
             </div>
 
             {/* Input - static at bottom */}
@@ -211,6 +239,7 @@ const Chat = () => {
                     <FaPaperPlane className="text-lg" />
                 </button>
             </div>
+            {showLoader && <Loader processing={true} approvalNotification={false} />}
         </main>
     );
 };

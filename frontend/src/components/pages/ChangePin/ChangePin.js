@@ -88,7 +88,7 @@ const ChangePin = () => {
                             {error && <p className="error-message">{error}</p>}
                         </div>
                         <form className="form-section">
-                            <div className="col-12 mb-20">
+                            <div className="w-full mb-20">
                                 <TextInput
                                     label="PIN"
                                     name="pin"
@@ -108,7 +108,7 @@ const ChangePin = () => {
                                     dataValidation="PIN"
                                 />
                             </div>
-                            <div className="col-12 mb-20">
+                            <div className="w-full mb-20">
                                 <TextInput
                                     label="Confirm PIN"
                                     type="password"

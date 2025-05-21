@@ -8,7 +8,6 @@ const ChatDTO = ({ setError, fetchData, apiPathAction, chatId, userId, receiverI
             console.error('userId or receiverId is undefined');
             return;
         }
-
         try {
             const payload = {
                 chatId,

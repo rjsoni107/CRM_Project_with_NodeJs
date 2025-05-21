@@ -85,7 +85,7 @@ const Signup = () => {
             {/* Left Section with Background */}
             <div className="login-left">
                 <div className="login-left-content">
-                    <div className='d-flex justify-content-center'>
+                    <div className='flex justify-center'>
                         <img src={`${window.basePath}/img/logo192.png`} alt="ChatSync-Logo" className='md:h-[120px] h-[65px]'/>
                     </div>
                     <h1 className="fs-20 fs-sm-24 fs-md-36 fw-700">Come join us!</h1>
@@ -102,7 +102,7 @@ const Signup = () => {
                         {error && <p className="error-message">{error}</p>}
                     </div>
                     <form className="form-section">
-                        <div className="col-12 mb-10 mb-md-20">
+                        <div className="w-full mb-10 mb-md-20">
                             <TextInput
                                 label="Name"
                                 name="name"
@@ -120,7 +120,7 @@ const Signup = () => {
                                 dataType="ALPHA_SPACE"
                             />
                         </div>
-                        <div className="col-12 mb-10 mb-md-20">
+                        <div className="w-full mb-10 mb-md-20">
                             <TextInput
                                 label="Mobile"
                                 name="mobile"
@@ -139,7 +139,7 @@ const Signup = () => {
                                 dataValidation="MOBILE"
                             />
                         </div>
-                        <div className="col-12 mb-10 mb-md-20">
+                        <div className="w-full mb-10 mb-md-20">
                             <TextInput
                                 label="Email ID"
                                 sublable="true"
@@ -161,7 +161,7 @@ const Signup = () => {
                                 dataValidation="EMAIL"
                             />
                         </div>
-                        <div className="col-12 mb-10 mb-md-20">
+                        <div className="w-full mb-10 mb-md-20">
                             <TextInput
                                 label="PIN"
                                 name="pin"
@@ -182,7 +182,7 @@ const Signup = () => {
                                 dataValidation="PIN"
                             />
                         </div>
-                        <div className="col-12 mb-10 mb-md-20">
+                        <div className="w-full mb-10 mb-md-20">
                             <TextInput
                                 label="Confirm PIN"
                                 type="password"

@@ -9,7 +9,7 @@ const ReportingFilter = ({ parentClass, showFilter }) => {
     return (
         <div className={`row`}>
             {showFilter.includes("gateway") && (
-                <div className="col-md-3 mb-20">
+                <div className="md:w-1/4 mb-20">
                     <div className="lpay_select_group">
                         <SelectBox
                             placeholder={"ALL"}
@@ -26,7 +26,7 @@ const ReportingFilter = ({ parentClass, showFilter }) => {
                 </div>
             )}
             {showFilter.includes("reportingStatus") && (
-                <div className="col-md-3 mb-20">
+                <div className="md:w-1/4 mb-20">
                     <div className="lpay_select_group">
                         <SelectBox
                             placeholder={"ALL"}
@@ -43,7 +43,7 @@ const ReportingFilter = ({ parentClass, showFilter }) => {
                 </div>
             )}
             {showFilter.includes("customerStatus") && (
-                <div className="col-md-3 mb-20 ">
+                <div className="md:w-1/4 mb-20 ">
                     <div className="lpay_select_group">
                         <SelectBox
                             placeholder={"ALL"}
@@ -60,7 +60,7 @@ const ReportingFilter = ({ parentClass, showFilter }) => {
                 </div>
             )}
             {showFilter.includes("payoutStatus") && (
-                <div className="col-md-3 mb-20 ">
+                <div className="md:w-1/4 mb-20 ">
                     <div className="lpay_select_group">
                         <SelectBox
                             placeholder={"ALL"}
@@ -78,7 +78,7 @@ const ReportingFilter = ({ parentClass, showFilter }) => {
             )}
 
             {showFilter.includes("gender") && (
-                <div className="col-md-3 mb-20 ">
+                <div className="md:w-1/4 mb-20 ">
                     <div className="lpay_select_group">
                         <SelectBox
                             placeholder={"ALL"}

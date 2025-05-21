@@ -1,7 +1,7 @@
 import Base from "../../../util/Base";
 
 const ChatHeader = ({ friend, isLoading }) => {
-    const { isOnline } = Base();
+    const { isOnline, getDateLabel } = Base();
 
     if (isLoading) {
         return (
@@ -30,7 +30,7 @@ const ChatHeader = ({ friend, isLoading }) => {
                     <p className="text-sm text-white opacity-75">
                         {isOnline(friend[0])
                             ? 'Online'
-                            : `Last seen at ${new Date(friend[0].lastSeen).toLocaleTimeString()}`}
+                            : `Last seen ${getDateLabel(friend[0].lastSeen)} at ${new Date(friend[0].lastSeen).toLocaleTimeString()}`}
                     </p>
                 )}
             </div>

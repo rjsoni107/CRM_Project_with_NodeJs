@@ -114,8 +114,8 @@ const ReportsFilter = (props) => {
         <div className="row align-items-end">
             <div className="col-md-4 mb-20">
                 {inputSearchFields && (
-                    <div className="multiple-search__wrapper d-flex align-items-center">
-                        <div className="multiple-search__info d-flex justify-content-center" onClick={invokeMethodOnEnter}>
+                    <div className="multiple-search__wrapper flex items-center">
+                        <div className="multiple-search__info flex justify-center" onClick={invokeMethodOnEnter}>
                             <div className="multiple-search__text">
                                 <span className='ml-20 text-white'><FaSearch /></span>
                             </div>
@@ -136,9 +136,9 @@ const ReportsFilter = (props) => {
             </div>
 
             <div className="col-md-8 mb-20 p-0">
-                <div className="filters-wrapper d-flex justify-content-end ">
+                <div className="filters-wrapper flex justify-end ">
                     {payLoad.dateFrom && (
-                        <div className="date-filter__div d-flex align-items-center filters-common_div">
+                        <div className="date-filter__div flex items-center filters-common_div">
                             <div onClick={() => handleFadeContent("dateFilter")}> 
                                 <BiCalendarAlt className='mb-4' />
                                 <span>{datepickerObj.activeDate}</span>
@@ -161,7 +161,7 @@ const ReportsFilter = (props) => {
                     )}
 
                     {props.actions.dataDownloadAction && (
-                        <div className="download-filter filter-button d-flex align-items-center justify-content-center" onClick={requestDownloadMethod}>
+                        <div className="download-filter filter-button flex items-center justify-center" onClick={requestDownloadMethod}>
                             <div>
                                 <BiCloudDownload />
                                 <span>Download</span>
@@ -170,7 +170,7 @@ const ReportsFilter = (props) => {
                     )}
 
                     {props.filterToVisible && (
-                        <div className="more-filters filter-button d-flex align-items-center justify-content-center filters-common_div">
+                        <div className="more-filters filter-button flex items-center justify-center filters-common_div">
                             <div onClick={() => handleFadeContent("selectableFilters")}> 
                                 <BiFilterAlt />
                                 <span>Filters</span>

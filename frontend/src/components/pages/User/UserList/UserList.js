@@ -96,7 +96,7 @@ function UserList() {
         {
             name: 'Action',
             cell: row => (
-                <div className='d-flex justify-content-center align-items-center gap-2'>
+                <div className='flex justify-center items-center gap-2'>
                     <button onClick={(e) => confirmDeleteUser(row.userId)} className='btn btn-danger px-3 py-2 fs-14' aria-label="Delete user"><FaTrashAlt /></button>
                     <button onClick={(e) => editListHandler(e, row.userId)} className='btn btn-primary px-3 py-2 fs-14' aria-label="Edit user"><FaPencilAlt /></button>
                 </div>
@@ -129,69 +129,64 @@ function UserList() {
     return (
         <main>
             <div className="container mt-5">
-                <div className="row form-group">
+                <div className="flex form-group">
                     <Heading
                         title="User List"
                         headingClass=""
                         icon="true"
-                        customClass="col-md-12"
+                        customClass="w-full"
                     />
-                    <div className="col-12 col-sm-6 col-md-3 mb-20">
-                        <SelectBox
-                            inputLable="Status"
-                            selectpickerId="status"
-                            name="status"
-                            placeholder="Select Status"
-                            value={status || ''}
-                            options={status_list}
-                            className="input-field is-required"
-                            changeSelection={(that, name) => {
-                                selectBoxChangeHandler(that, name, 'payload', setState);
-                                inputMessageHandler(document.getElementById(name), 'HIDE', 'error');
-                            }}
-                        />
-                    </div>
-                    <div className="col-12 col-sm-6 col-md-3 mb-20">
-                        <TextInput
-                            label="Mobile"
-                            name="mobile"
-                            id="mobile"
-                            placeholder="Enter Mobile Number"
-                            value={payload.mobile || ''}
-                            className="form-control input-field"
-                            maxLength={10}
-                            onChange={evt => {
-                                inputChangeHandler(evt, setState);
-                                inputMessageHandler(evt, 'HIDE', 'error');
-                            }}
-                            onBlur={handleBlur}
-                            dataType="MOBILE"
-                            dataValidation="MOBILE"
-                        />
-                    </div>
-
-                    <div className="col-12 col-sm-6 col-md-3 mb-20">
-                        <TextInput
-                            label="Email"
-                            name="emailId"
-                            id="emailId"
-                            placeholder="Enter Email ID"
-                            value={payload.emailId || ''}
-                            className="form-control input-field"
-                            maxLength={100}
-                            onInput={e => {
-                                inputChangeHandler(e, setState);
-                                removeLeadingEmailChar(e);
-                                inputMessageHandler(e, 'HIDE', 'error');
-                            }}
-                            onKeyDown={e => allowOnlyOnce({ event: e, allowedChar: '@', keyCode: 50 })}
-                            onBlur={handleBlur}
-                            dataType="EMAIL"
-                            dataValidation="EMAIL"
-                        />
-                    </div>
-                    <div className='col-md-3 d-flex justify-content-center align-items-center'>
-                        <button className="btn btn-primary" onClick={(e) => fetchUsers(state)}>Search</button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+                    <SelectBox
+                        inputLable="Status"
+                        selectpickerId="status"
+                        name="status"
+                        placeholder="Select Status"
+                        value={status || ''}
+                        options={status_list}
+                        className="input-field is-required"
+                        changeSelection={(that, name) => {
+                            selectBoxChangeHandler(that, name, 'payload', setState);
+                            inputMessageHandler(document.getElementById(name), 'HIDE', 'error');
+                        }}
+                    />
+                    <TextInput
+                        label="Mobile"
+                        name="mobile"
+                        id="mobile"
+                        placeholder="Enter Mobile Number"
+                        value={payload.mobile || ''}
+                        className="form-control input-field"
+                        maxLength={10}
+                        onChange={evt => {
+                            inputChangeHandler(evt, setState);
+                            inputMessageHandler(evt, 'HIDE', 'error');
+                        }}
+                        onBlur={handleBlur}
+                        dataType="MOBILE"
+                        dataValidation="MOBILE"
+                    />
+                    <TextInput
+                        label="Email"
+                        name="emailId"
+                        id="emailId"
+                        placeholder="Enter Email ID"
+                        value={payload.emailId || ''}
+                        className="form-control input-field"
+                        maxLength={100}
+                        onInput={e => {
+                            inputChangeHandler(e, setState);
+                            removeLeadingEmailChar(e);
+                            inputMessageHandler(e, 'HIDE', 'error');
+                        }}
+                        onKeyDown={e => allowOnlyOnce({ event: e, allowedChar: '@', keyCode: 50 })}
+                        onBlur={handleBlur}
+                        dataType="EMAIL"
+                        dataValidation="EMAIL"
+                    />
+                    <div className='w-full flex justify-center items-center'>
+                        <button className="btn btn-primary mt-2 md:mt-6" onClick={(e) => fetchUsers(state)}>Search</button>
                     </div>
                 </div>
                 <div className="row">

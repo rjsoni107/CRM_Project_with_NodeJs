@@ -1,5 +1,6 @@
 .profile-container {
     max-width: 600px;
+    min-width: 300px;
     margin: 50px auto;
     position: relative;
     top: 30px;

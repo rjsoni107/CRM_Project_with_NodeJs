@@ -4,9 +4,11 @@ import Select, { components } from 'react-select'
 const customStyles = {
     control: base => ({
         ...base,
-        height: 32,
-        minHeight: 32,
+        height: 31,
+        minHeight: 31,
         fontSize: '13px',
+        boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.1)',
+        borderRadius: '5px',
     }),
     container: (provided, state) => ({
         ...provided,
@@ -24,7 +26,8 @@ const customStyles = {
     }),
     singleValue: (provided) => ({
         ...provided,
-        fontSize: '13px',
+        fontSize: '12px',
+        color: '#333',
     })
 }
 
@@ -64,7 +67,7 @@ const SelectErrorMsg = props => {
 const SelectLabel = props => {
     return (
         <>
-            {props.inputLable && <label htmlFor={props.selectpickerId} className={props.lableClass}>{props.inputLable} {props.required && <span className="text-danger">*</span>}</label>}
+            {props.inputLable && <label htmlFor={props.selectpickerId} className={`fs-12 fs-md-14 ${props.lableClass}`}>{props.inputLable} {props.required && <span className="text-danger">*</span>}</label>}
         </>
     )
 }

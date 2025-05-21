@@ -47,17 +47,17 @@ const UserEdit = () => {
     return (
         <main>
             {userDetail &&
-                <div className={"container mt-5"}>
-                    <div className="row form-section">
+                <div className={"container mt-4"}>
+                    <div className="form-section">
                         <Heading
                             title="Edit User"
                             headingClass=""
                             icon="true"
-                            customClass="col-md-12"
+                            customClass="w-full"
                         />
                         <EditUserDetails ref={userDetailsRef} data={userDetail} setShowLoader={setShowLoader} />
 
-                        <div className='d-flex justify-content-center mt-15'>
+                        <div className='flex justify-center my-4'>
                             <button className='btn btn-primary' onClick={evt => submitHandler(evt)}>Save</button>
                         </div>
                     </div>

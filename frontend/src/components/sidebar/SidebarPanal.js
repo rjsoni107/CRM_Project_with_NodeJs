@@ -39,9 +39,9 @@ const SidebarPanal = ({ isSidebarVisible, permissions, onClose }) => {
             >
                 <Sidebar collapsed={!isSidebarVisible} image={`${window.basePath}/img/sidebar-bg.jpg`}>
                     <Menu className="pro-sidebar" menuItemStyles={menuItemStyles} >
-                        <div className="d-flex justify-content-between align-items-center">
+                        <div className="flex justify-between items-center">
                             <MenuItem className="menu-toggle cursor-none">
-                                <div className="d-flex justify-content-center align-items-center">
+                                <div className="flex justify-center items-center">
                                     <img src={`${window.basePath}/img/logo192.png`} alt="ChatSync-Logo" className='md:h-[30px] h-[25px]' />
                                     <span className="ml-1">ChatSync</span>
                                 </div>
