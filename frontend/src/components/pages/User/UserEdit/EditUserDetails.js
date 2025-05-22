@@ -2,7 +2,6 @@ import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'rea
 import ValidationHandler from '../../../../utility/ValidationHandler';
 import Base from '../../../../util/Base';
 import { SelectBox, TextInput } from '../../../formElements/FormElementsImport';
-import Heading from '../../../heading/Heading';
 
 const EditUserDetails = forwardRef((props, ref) => {
     const [userState, setState] = useState({

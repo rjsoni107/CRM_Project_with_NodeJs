@@ -33,7 +33,6 @@ const Login = () => {
         setState,
         state,
         setShowLoader,
-        validateFormHandler,
         apiPathAction,
     }
 
@@ -92,11 +91,11 @@ const Login = () => {
                                     inputMessageHandler(evt, 'HIDE', 'error');
                                 }}
                                 onBlur={handleBlur}
-                                dataType="MOBILE"
+                                dataType="NUMBER"
                                 dataValidation="MOBILE"
                             />
                         </div>
-                        <div className="w-full mb-10">
+                        <div className="w-full mb-3">
                             <TextInput
                                 label="PIN"
                                 name="pin"
@@ -118,15 +117,14 @@ const Login = () => {
                             />
                         </div>
                         <div className='flex justify-between'>
-                            <p className='fs-10 fs-md-12 cursor-pointer' onClick={e => handleGenerateOtp(e, 'forgotPIN')}>Forgot PIN</p>
-                            <p className='fs-10 fs-md-12 cursor-pointer' onClick={e => handleGenerateOtp(e, 'loginOTP')}>Login with OTP</p>
+                            <p className='fs-11 fs-md-12 cursor-pointer' onClick={e => handleGenerateOtp(e, 'forgotPIN')}>Forgot PIN</p>
+                            <p className='fs-11 fs-md-12 cursor-pointer' onClick={e => handleGenerateOtp(e, 'loginOTP')}>Login with OTP</p>
                         </div>
                         <button type="submit" className="login-button fs-12 fs-sm-14 fs-md-16 mt-5 login-mobile-btn" onClick={e => handleLogin(e)}> Login </button>
-                        <div className='text-center fs-12 fs-sm-14 fs-md-14 mt-10'>
+                        <div className='text-center fs-12 fs-sm-14 fs-md-14 mt-3'>
                             <span>Don't have an account</span>
                             <span className="text-azure cursor-pointer" onClick={e => signupHandler(e)}> Singup</span>
                         </div>
-
                     </form>
                     {loader}
                 </div>

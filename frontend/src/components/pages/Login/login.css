@@ -108,8 +108,8 @@
   }
 
   .login-left {
-    border-bottom-left-radius: 160px;
-    border-bottom-right-radius: 160px;
+    border-bottom-left-radius: 40px;
+    border-bottom-right-radius: 40px;
   }
 
   .login-mobile-logo-container {

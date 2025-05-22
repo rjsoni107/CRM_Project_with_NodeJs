@@ -6,7 +6,7 @@ const TextInput = (props) => {
         e.preventDefault();
 
         const that = e.target;
-        const parentElement = that.closest(".position-relative");
+        const parentElement = that.closest(".relative");
         const inputField = parentElement.querySelector("#" + props.id);
 
         parentElement.classList.remove('verify-success');
@@ -28,12 +28,12 @@ const TextInput = (props) => {
         document.execCommand("copy");
     }
 
-    const errorMsg = <span className={`text-danger position-absolute left-0 bottom-n-15 fs-sm-10 fs-md-11 fs-11`} id={`error-${props.name}`}>{props.errorMessage}</span>
+    const errorMsg = <span className={`text-danger absolute left-0 -bottom-4 fs-sm-10 fs-md-11 fs-11`} id={`error-${props.name}`}>{props.errorMessage}</span>
 
     let statusImg = null;
     if (props.isStatusImg) {
         statusImg = (
-            <div className="position-absolute top-50 end-0 translate-middle-y mr-5 z-index-1">
+            <div className="absolute top-50 end-0 translate-middle-y mr-5 z-index-1">
                 <img src={`${window.basePath}/img/right-tick.png`} alt="/" className="right-tick status-img" />
                 <img src={`${window.basePath}/img/wrong.png`} alt="/" className="wrong-tick status-img" />
             </div>
@@ -89,9 +89,10 @@ const TextInput = (props) => {
     return (
         <>
             <div className={props.wrapper}>
-                <div className="">
+                {/* <div className="">
+                </div> */}
                     {textLabel}
-                    <div className={`position-relative input-container ${verificationStatus}`} ref={props.wrapperRef}>
+                    <div className={`relative input-container ${verificationStatus}`} ref={props.wrapperRef}>
                         {props.isEditBtn && <span onClick={handleClick} className="edit-mobile-email-btn">Edit</span>}
 
                         {fieldType}
@@ -102,7 +103,6 @@ const TextInput = (props) => {
 
                         {errorMsg}
                     </div>
-                </div>
             </div>
         </>
     )

@@ -343,6 +343,21 @@ const ValidationHandler = () => {
         return isInvalidElements.length === 0;
     };
 
+    const validateMobile = (mobile, elementId = 'mobile') => {
+        const trimmedMobile = mobile ? mobile.trim() : '';
+        const isValid = trimmedMobile.length === 10;
+
+        if (!isValid) {
+            const errorMsgType = trimmedMobile.length === 0 ? "IS_BLANK" : "IS_INVALID";
+            const errorMsg = getErrorMessage('mobile', errorMsgType);
+            const that = document.getElementById(elementId);
+            inputMessageHandler(that, 'SHOW', 'error', errorMsg);
+        }
+
+        return isValid;
+    };
+
+
     return {
         isValueExist,
         isValueExistAndBlank,
@@ -360,7 +375,8 @@ const ValidationHandler = () => {
         decimalLimit,
         showMessage,
         hideMessage,
-        validateIsInvalid
+        validateIsInvalid,
+        validateMobile
     };
 };
 

@@ -61,7 +61,7 @@ export const generateAttributes = (props) => {
 }
 
 const SelectErrorMsg = props => {
-    return <span className={`text-danger position-absolute left-0 bottom-n-15 fs-11`} id={`error-${props.name}`}>{props.error}</span>
+    return <span className={`text-danger absolute left-0 bottom-n-15 fs-11`} id={`error-${props.name}`}>{props.error}</span>
 }
 
 const SelectLabel = props => {
@@ -74,7 +74,7 @@ const SelectLabel = props => {
 
 const SelectBox = (props) => {
     return (
-        <div className='pc-form_group lpay_input_group'>
+        <div className='pc-form_group lpay_input_group relative'>
             <SelectLabel {...props} />
             <Select {...generateAttributes(props)} components={{ Input: CustomInput }} />
             <SelectErrorMsg {...props} />

@@ -7,6 +7,7 @@ import ValidationHandler from "../../../utility/ValidationHandler";
 import DialogBox from "../../dialogBox/DialogBox";
 import ConfimationContent from "../../dialogBox/ConfirmationContent";
 import { useLocation } from "react-router-dom";
+import '../Login/login.css'
 
 const ChangePin = () => {
     const location = useLocation();
@@ -28,7 +29,7 @@ const ChangePin = () => {
             dialogFooter: null
         },
     });
-    
+
     const { payload } = state;
     const { isDialogOpen, dialogBoxMsg, dialogBoxType, dialogFooter } = dialogState.dialog;
 
@@ -74,17 +75,20 @@ const ChangePin = () => {
                 {/* Left Section with Background */}
                 <div className="login-left">
                     <div className="login-left-content">
-                        <h1 className="fs-24 fw-700">HELLO!</h1>
-                        <p className="fs-16 fw-400">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                        <div className='flex justify-center login-mobile-logo-container'>
+                            <img src={`${window.basePath}/img/logo192.png`} alt="ChatSync-Logo" className='md:h-[120px] h-[65px] login-mobile-logo' />
+                        </div>
+                        <h1 className="fs-20 fs-sm-24 fs-md-36 fw-700">ChatSync</h1>
+                        <p className="fs-12 fs-sm-14 fs-md-16 fw-400">Connect Together With Your Friends</p>
                     </div>
                 </div>
 
                 {/* Right Section with Login Form */}
                 <div className="login-right">
-                    <div className="login-card">
+                    <div className="login-card p-20">
                         <div className='text-center'>
-                            <h1 className="login-title">Create New Password</h1>
-                            <p className="login-subtitle">Enter a new Password below to change your Password</p>
+                            <h1 className="login-title fs-18 fs-sm-20 fs-md-24 mt-5 md:mt-0 sm:mt-0">Create New Password</h1>
+                            <p className="login-subtitle fs-12 fs-sm-14 fs-md-16 mb-15 md:mb-5">Enter a new Password below to change your Password</p>
                             {error && <p className="error-message">{error}</p>}
                         </div>
                         <form className="form-section">
@@ -128,7 +132,7 @@ const ChangePin = () => {
                                     dataValidation="PIN"
                                 />
                             </div>
-                            <button type="submit" className="login-button" onClick={e => handleChangePin(e)}>
+                            <button type="submit" className="login-button fs-12 fs-sm-14 fs-md-16 login-mobile-btn" onClick={e => handleChangePin(e)}>
                                 Change Password
                             </button>
                         </form>

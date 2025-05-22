@@ -1,6 +1,8 @@
 import { ENDPOINTS } from "../../../utility/ApiEndpoints";
+import ValidationHandler from "../../../utility/ValidationHandler";
 
-const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setShowLoader, validateFormHandler, apiPathAction }) => {
+const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setShowLoader, apiPathAction }) => {
+    const { validateFormHandler, validateMobile } = ValidationHandler();
     const { mobile, pin } = state.payload;
 
     const openPage = (pathName, obj) => {
@@ -43,10 +45,8 @@ const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setSho
 
     const handleGenerateOtp = async (event, type) => {
         event.preventDefault();
-        if (!mobile) {
-            alert("Mobile No. can not be blank");
-            return;
-        }
+
+         if (!validateMobile(mobile)) return;
 
         const payload = { mobile, type };
         const fetchAction = apiPathAction(ENDPOINTS.GENERATE_OTP_ACTION);
@@ -71,10 +71,9 @@ const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setSho
 
     const handleForgotPin = async (event) => {
         event.preventDefault();
-        if (!mobile) {
-            alert("Mobile No. can not be blank");
-            return;
-        }
+        
+        if (!validateMobile(mobile)) return;
+
         const payload = { mobile: mobile };
         setShowLoader(true)
         try {
