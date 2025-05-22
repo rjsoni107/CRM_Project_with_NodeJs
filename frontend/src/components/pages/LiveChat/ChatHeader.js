@@ -1,7 +1,12 @@
+import { useEffect } from "react";
 import Base from "../../../util/Base";
 
-const ChatHeader = ({ friend, isLoading }) => {
-    const { isOnline, getDateLabel } = Base();
+const ChatHeader = ({ friend, isLoading, isTyping, lastSeen, setLastSeen}) => {
+    const { isOnline, getDateLabel, localeTimeString } = Base();
+
+    useEffect(() => {
+        if (friend && friend[0]?.lastSeen) setLastSeen(friend[0].lastSeen)
+    })
 
     if (isLoading) {
         return (
@@ -26,12 +31,21 @@ const ChatHeader = ({ friend, isLoading }) => {
                 <h2 className="text-xl font-bold text-white">
                     {friend ? friend[0].name : 'Friend'}
                 </h2>
-                {friend[0]?.lastSeen && (
-                    <p className="text-sm text-white opacity-75">
-                        {isOnline(friend[0])
-                            ? 'Online'
-                            : `Last seen ${getDateLabel(friend[0].lastSeen)} at ${new Date(friend[0].lastSeen).toLocaleTimeString()}`}
-                    </p>
+                {isTyping ? (
+                    <div className="text-gray-300 text-sm italic animate-pulse">
+                        Typing...
+                    </div>
+                ) : (
+                    <>
+                        {lastSeen && (
+                            <p className="text-sm text-white opacity-75">
+                                {isOnline(lastSeen)
+                                    ? 'Online'
+                                    : `Last seen ${getDateLabel(lastSeen)} at ${localeTimeString(lastSeen)}`}
+                            </p>
+                        )}
+                    </>
+
                 )}
             </div>
         </div>

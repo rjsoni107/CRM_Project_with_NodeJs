@@ -15,18 +15,28 @@ const { FRONTEND_URL, PORT } = process.env;
 
 const app = express();
 
+// Define allowed origins
+const allowedOrigins = [
+    FRONTEND_URL,
+    'http://192.168.1.111:3006',
+    'http://localhost:3006',
+].filter(Boolean);
+
 // Middleware
 app.use(cors({
-    origin: FRONTEND_URL || 'http://localhost:3006',
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
 }));
 
 app.use((req, res, next) => {
-    console.log('Request Origin:', req.headers.origin);
-    console.log('Request Method:', req.method);
-    console.log('Request URL:', req.url);
     next();
 });
 
@@ -53,12 +63,39 @@ const clients = new Map();
 // Map to store userId -> WebSocket clients (for notifications)
 const userClients = new Map();
 
+// Function to update lastSeen
+const updateLastSeen = async (userId) => {
+    try {
+        const userQuery = db.collection("users").where("userId", "==", userId);
+        const userSnapshot = await userQuery.get();
+        const userDocId = userSnapshot.docs[0].id;
+        await db.collection("users").doc(userDocId).update(
+            { lastSeen: new Date().toISOString() }
+        );
+        timeLog(`Updated lastSeen for user ${userId}`);
+    } catch (err) {
+        console.error('Error updating lastSeen:', err);
+    }
+};
+
+// Function to fetch lastSeen
+const userLastSeen = async (receiverId) => {
+    try {
+        const userQuery = db.collection("users").where("userId", "==", receiverId);
+        const userSnapshot = await userQuery.get();
+        const user = userSnapshot.docs[0].data();
+        if (user) return user.lastSeen || null;
+    } catch (error) {
+        console.error('Error fetching user lastSeen:', error);
+        return null;
+    }
+};
+
 // WebSocket connection handling
 ws.on('connection', async (ws, req) => {
     // CORS validation
     const origin = req.headers.origin;
-    const allowedOrigin = FRONTEND_URL || 'http://localhost:3006';
-    if (origin !== allowedOrigin) {
+    if (!allowedOrigins.includes(origin)) {
         timeLog(`[wss.on-connection] Unauthorized origin: ${origin}`);
         ws.close(1008, 'CORS policy violation');
         return;
@@ -77,27 +114,15 @@ ws.on('connection', async (ws, req) => {
             console.error('Invalid message format:', err);
             return;
         }
-        const { chatId, userId } = data;
+        const { chatId, userId, receiverId } = data;
 
         if (!chatId || !userId) {
             console.error('Missing chatId or userId in WebSocket message');
             return;
         }
+        await updateLastSeen(userId);
 
-        // Update lastSeen for the user
-        try {
-            const userQuery = db.collection("users").where("userId", "==", userId);
-            const userSnapshot = await userQuery.get();
-            const userDocId = userSnapshot.docs[0].id;
-            await db.collection("users").doc(userDocId).update(
-                { lastSeen: new Date().toISOString() }
-            );
-            timeLog(`Updated lastSeen for user ${userId}`);
-        } catch (err) {
-            console.error('Error updating lastSeen:', err);
-        }
-
-        if (chatId && userId) {
+        if (chatId && userId && receiverId) {
             if (!clients.has(chatId)) {
                 clients.set(chatId, new Set());
             }
@@ -112,6 +137,8 @@ ws.on('connection', async (ws, req) => {
             setUserClients(userClients);
 
             if (data.type === 'typing') {
+                await updateLastSeen(userId);
+                const lastSeen = await userLastSeen(receiverId);
                 const chatClients = clients.get(data.chatId) || new Set();
                 chatClients.forEach((client) => {
                     if (client !== ws && client.readyState === WebSocket.OPEN) {
@@ -119,16 +146,19 @@ ws.on('connection', async (ws, req) => {
                             type: 'typing',
                             chatId: data.chatId,
                             userId: data.userId,
+                            lastSeen: lastSeen,
                         }));
                     }
                 });
             } else {
+                const lastSeen = await userLastSeen(receiverId);
                 const unsubscribe = db.collection('chats')
                     .where('chatId', '==', chatId)
                     .orderBy('timestamp', 'asc')
                     .onSnapshot((snapshot) => {
                         const messages = snapshot.docs.map(doc => ({
                             id: doc.id,
+                            lastSeen: lastSeen,
                             ...doc.data(),
                         }));
 

@@ -20,14 +20,15 @@ const Chat = () => {
     const [friend, setFriends] = useState(null);
     const [error, setError] = useState(null);
     const [isTyping, setIsTyping] = useState(false);
+    const [lastSeen, setLastSeen] = useState(null)
     const wsRef = useRef(null);
     const typingTimeoutRef = useRef(null);
     const lastTypingEventRef = useRef(null);
     const messagesEndRef = useRef(null);
 
-    const { fetchData, apiPathAction, formatTime, getDateLabel } = Base();
+    const { fetchData, apiPathAction, getDateLabel, localeTimeString } = Base();
     const { handleSendMessage, groupMessagesByDate, isOnline } = ChatDTO({ setError, fetchData, apiPathAction, chatId, userId, receiverId, newMessage, setNewMessage, getDateLabel, setShowLoader });
-    const { fetchFriendsList } = FriendsListDTO({ fetchData, setShowLoader, apiPathAction, setFriends });
+    const { fetchFriendsList } = FriendsListDTO({ fetchData, setShowLoader, apiPathAction, setFriends, setLastSeen });
 
     // Fetch friend details
     useEffect(() => {
@@ -71,11 +72,11 @@ const Chat = () => {
 
             setTimeout(() => {
                 reconnectAttempts++;
-                wsRef.current = new WebSocket(process.env.REACT_APP_WS_URL || 'ws://localhost:3005');
+                wsRef.current = new WebSocket(process.env.REACT_APP_WS_URL || 'ws://192.168.1.111:3005' || 'ws://localhost:3005');
 
                 wsRef.current.onopen = () => {
                     if (wsRef.current.readyState === WebSocket.OPEN) {
-                        wsRef.current.send(JSON.stringify({ chatId, userId }));
+                        wsRef.current.send(JSON.stringify({ chatId, userId, receiverId }));
                         reconnectAttempts = 0;
                     } else {
                         console.warn('WebSocket is not in OPEN state:', wsRef.current.readyState);
@@ -83,21 +84,49 @@ const Chat = () => {
                 };
 
                 wsRef.current.onmessage = (event) => {
-                    const data = JSON.parse(event.data);
+                    let data;
+                    try {
+                        data = JSON.parse(event.data);
+                    } catch (err) {
+                        console.error('Error parsing WebSocket message:', err);
+                        setError('Invalid message format received');
+                        return;
+                    }
+
                     console.log(data, 'Received message from WebSocket');
                     setShowLoader(false);
                     setIsWebSocketLoading(false);
+
                     if (data.type === 'typing') {
                         if (data.userId !== userId) {
                             setIsTyping(true);
                             clearTimeout(typingTimeoutRef.current);
                             typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 3000);
                         }
+                    } else if (data.type === 'error') {
+                        setError(data.message || 'An error occurred while fetching messages');
                     } else {
-                        setMessages(prev => {
-                            const newMessages = data.filter(newMsg => !prev.some(msg => msg.id === newMsg.id));
-                            return [...prev, ...newMessages];
-                        });
+                        setLastSeen(data[0]?.lastSeen)
+                        if (Array.isArray(data)) {
+                            const validatedMessages = data.map(msg => ({
+                                ...msg,
+                                id: msg.id || `${msg.chatId}-${msg.timestamp}`,
+                            }));
+                            setMessages(prev => {
+                                const newMessages = validatedMessages.filter(newMsg => !prev.some(msg => msg.id === newMsg.id));
+                                return [...prev, ...newMessages];
+                            });
+
+                            if (validatedMessages.length > 0) {
+                                const latestMessage = validatedMessages[validatedMessages.length - 1];
+                                if (latestMessage.lastSeen) {
+                                    setLastSeen(latestMessage.lastSeen)
+                                }
+                            }
+                        } else {
+                            console.error('Received data is not an array:', data);
+                            setError('Unexpected message format received');
+                        }
                     }
                 };
 
@@ -132,7 +161,7 @@ const Chat = () => {
             setShowLoader(false);
             setIsWebSocketLoading(false);
         };
-    }, [chatId, userId]);
+    }, [chatId, userId, receiverId]);
 
     // Auto-scroll to latest message
     useEffect(() => {
@@ -155,7 +184,7 @@ const Chat = () => {
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
             const now = Date.now();
             if (!lastTypingEventRef.current || now - lastTypingEventRef.current > 1000) {
-                wsRef.current.send(JSON.stringify({ type: 'typing', chatId, userId }));
+                wsRef.current.send(JSON.stringify({ type: 'typing', chatId, userId, receiverId }));
                 lastTypingEventRef.current = now;
             }
         }
@@ -167,7 +196,14 @@ const Chat = () => {
     return (
         <main className="flex flex-col h-full bg-gray-100 flex-1 min-h-0">
             {/* Header - static at top */}
-            <ChatHeader friend={friend} isLoading={isLoading} isOnline={isOnline} />
+            <ChatHeader
+                friend={friend}
+                isLoading={isLoading}
+                isOnline={isOnline}
+                isTyping={isTyping}
+                lastSeen={lastSeen}
+                setLastSeen={setLastSeen}
+            />
 
             {/* Messages - scrollable */}
             <div className="flex-1 p-2 overflow-y-auto bg-gray-50 chat-messages">
@@ -193,15 +229,15 @@ const Chat = () => {
                                     >
                                         <p>{item.data.message}</p>
                                         <p className="text-[10px] mt-1 opacity-75 flex justify-end">
-                                            {formatTime(item.data.timestamp)}
+                                            {localeTimeString(item.data.timestamp)}
                                         </p>
                                     </div>
                                 </div>
                             )
                         ))}
-                        {isTyping && (
-                            <div className="text-gray-500 text-sm italic mb-2">
-                                {friend?.name || 'Friend'} is typing...
+                        {messages.length === 0 && (
+                            <div className="flex justify-center items-center h-full">
+                                <p className="text-gray-500">No messages yet.</p>
                             </div>
                         )}
                         <div ref={messagesEndRef} />

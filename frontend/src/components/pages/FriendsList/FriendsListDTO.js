@@ -1,6 +1,6 @@
 import { ENDPOINTS } from "../../../utility/ApiEndpoints";
 
-const FriendsListDTO = ({fetchData, setShowLoader, apiPathAction, setNotification, setFriends}) => {
+const FriendsListDTO = ({fetchData, setShowLoader, apiPathAction, setNotification, setFriends, setLastSeen }) => {
     // Fetch all users
     const fetchFriendsList = async (propsState) => {
         setShowLoader(true);
@@ -11,6 +11,8 @@ const FriendsListDTO = ({fetchData, setShowLoader, apiPathAction, setNotificatio
 
             if (responseJson && responseJson.responseStatus === 'SUCCESS') {
                 setFriends(friendsList);
+                if(setLastSeen) setLastSeen(friendsList[0]?.lastSeen);
+
             }
             setShowLoader(false);
         } catch (error) {

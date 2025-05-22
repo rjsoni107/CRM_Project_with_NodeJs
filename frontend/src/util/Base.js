@@ -11,7 +11,10 @@ const Base = () => {
     };
 
     const apiPathAction = (action) => {
-        const basePathAction = `${window.apiPath}/${action}`
+        const hostname = window.location.hostname;
+        const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+        const baseUrl = window.apiPath || (isLocalhost ? 'http://localhost:3005/api' : 'http://192.168.1.111:3005/api');
+        const basePathAction = `${baseUrl}/${action}`;
         return basePathAction;
     };
 
@@ -201,19 +204,6 @@ const Base = () => {
         }
     };
 
-    const formatDateAndSeconds = (dateStr) => {
-        if (!dateStr) return { formattedDate: "", time: "" };
-
-        const date = new Date(dateStr);
-        if (isNaN(date.getTime())) return { formattedDate: "", time: "" };
-
-        const pad = (num) => String(num).padStart(2, '0');
-        return {
-            formattedDate: `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()}`,
-            time: `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
-        };
-    };
-
     const invokePaginationMethod = (start, length, event, setState, fetchDataCallback) => {
         if (event === "onChangePage") {
             setState(prevState => {
@@ -238,15 +228,9 @@ const Base = () => {
         }
     };
 
-    // Function to format date and time
-    const formatTime = (date) => {
-        if (!date) return 'Just now';
-        const dateObj = new Date(date);
-        return dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: 'true' });
-    };
-
     // Helper function to format date labels
     const getDateLabel = (messageDate) => {
+        if (!messageDate) return '';
         const today = new Date();
         const yesterday = new Date(today);
         yesterday.setDate(today.getDate() - 1);
@@ -271,9 +255,16 @@ const Base = () => {
         }
     };
 
-    const isOnline = (friend) => {
-        if (!friend || !friend.lastSeen) return false;
-        const lastSeenTime = new Date(friend.lastSeen).getTime();
+    // Function to format date and time
+    const localeTimeString = (date) => {
+        if (!date) return 'Just now';
+        const dateObj = new Date(date);
+        return dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+
+    const isOnline = (lastSeen) => {
+        if (!lastSeen) return false;
+        const lastSeenTime = new Date(lastSeen).getTime();
         const currentTime = new Date().getTime();
         const differenceInSeconds = (currentTime - lastSeenTime) / 1000;
         return differenceInSeconds < 60;
@@ -283,7 +274,6 @@ const Base = () => {
         handleAutoLogout,
         fetchData,
         basePathAction,
-        formatDateAndSeconds,
         invokePaginationMethod,
         getCountryList,
         getStateList,
@@ -292,9 +282,9 @@ const Base = () => {
         handleStateChange,
         handleLogout,
         apiPathAction,
-        formatTime,
         getDateLabel,
-        isOnline
+        isOnline,
+        localeTimeString
     };
 };
 
