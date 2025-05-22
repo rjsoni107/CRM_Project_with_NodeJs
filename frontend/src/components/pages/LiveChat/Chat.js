@@ -68,7 +68,7 @@ const Chat = () => {
             }
 
             const delay = baseDelay * Math.pow(2, reconnectAttempts);
-            console.log(`Reconnecting to WebSocket in ${delay / 1000} seconds... (Attempt ${reconnectAttempts + 1})`);
+            // console.log(`Reconnecting to WebSocket in ${delay / 1000} seconds... (Attempt ${reconnectAttempts + 1})`);
 
             setTimeout(() => {
                 reconnectAttempts++;
@@ -93,7 +93,9 @@ const Chat = () => {
                         return;
                     }
 
+                    console.group("Received message from WebSocket")
                     console.log(data, 'Received message from WebSocket');
+                    console.groupEnd()
                     setShowLoader(false);
                     setIsWebSocketLoading(false);
 
@@ -108,21 +110,18 @@ const Chat = () => {
                     } else {
                         setLastSeen(data[0]?.lastSeen)
                         if (Array.isArray(data)) {
-                            const validatedMessages = data.map(msg => ({
-                                ...msg,
-                                id: msg.id || `${msg.chatId}-${msg.timestamp}`,
-                            }));
                             setMessages(prev => {
-                                const newMessages = validatedMessages.filter(newMsg => !prev.some(msg => msg.id === newMsg.id));
-                                return [...prev, ...newMessages];
+                                const messageMap = new Map(prev.map(msg => [msg.id, msg]));
+                                data.forEach(newMsg => {
+                                    messageMap.set(newMsg.id, {
+                                        ...messageMap.get(newMsg.id),
+                                        ...newMsg,
+                                        deliveredTo: newMsg.deliveredTo || messageMap.get(newMsg.id)?.deliveredTo || [],
+                                        readBy: newMsg.readBy || messageMap.get(newMsg.id)?.readBy || [],
+                                    });
+                                });
+                                return Array.from(messageMap.values()).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
                             });
-
-                            if (validatedMessages.length > 0) {
-                                const latestMessage = validatedMessages[validatedMessages.length - 1];
-                                if (latestMessage.lastSeen) {
-                                    setLastSeen(latestMessage.lastSeen)
-                                }
-                            }
                         } else {
                             console.error('Received data is not an array:', data);
                             setError('Unexpected message format received');
@@ -230,6 +229,20 @@ const Chat = () => {
                                         <p>{item.data.message}</p>
                                         <p className="text-[10px] mt-1 opacity-75 flex justify-end">
                                             {localeTimeString(item.data.timestamp)}
+                                            {item.data.senderId === userId && (
+                                                <>
+                                                    {item.data.readBy?.includes(item.data.receiverId) ? (
+                                                        // Show two blue ticks if message is read
+                                                        <span className="ml-2 text-white">Read</span>
+                                                    ) : item.data.deliveredTo?.includes(item.data.receiverId) ? (
+                                                        // Show two grey ticks if message is delivered
+                                                        <span className="ml-2 text-white">Delivered</span>
+                                                    ) : item.data.deliveredTo?.includes(item.data.senderId) ? (
+                                                        // Show one grey tick if message is sent
+                                                        <span className="ml-2 text-white">Sent</span>
+                                                    ) : null}
+                                                </>
+                                            )}
                                         </p>
                                     </div>
                                 </div>

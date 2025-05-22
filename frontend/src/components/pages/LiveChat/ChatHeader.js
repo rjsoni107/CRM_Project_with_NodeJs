@@ -1,12 +1,12 @@
 import { useEffect } from "react";
 import Base from "../../../util/Base";
 
-const ChatHeader = ({ friend, isLoading, isTyping, lastSeen, setLastSeen}) => {
+const ChatHeader = ({ friend, isLoading, isTyping, lastSeen, setLastSeen }) => {
     const { isOnline, getDateLabel, localeTimeString } = Base();
 
-    useEffect(() => {
-        if (friend && friend[0]?.lastSeen) setLastSeen(friend[0].lastSeen)
-    })
+    // useEffect(() => {
+    //     if (friend && friend[0]?.lastSeen) setLastSeen(friend[0].lastSeen)
+    // })
 
     if (isLoading) {
         return (

@@ -93,6 +93,7 @@ const userLastSeen = async (receiverId) => {
 
 // WebSocket connection handling
 ws.on('connection', async (ws, req) => {
+    
     // CORS validation
     const origin = req.headers.origin;
     if (!allowedOrigins.includes(origin)) {
@@ -120,7 +121,6 @@ ws.on('connection', async (ws, req) => {
             console.error('Missing chatId or userId in WebSocket message');
             return;
         }
-        await updateLastSeen(userId);
 
         if (chatId && userId && receiverId) {
             if (!clients.has(chatId)) {
@@ -146,7 +146,7 @@ ws.on('connection', async (ws, req) => {
                             type: 'typing',
                             chatId: data.chatId,
                             userId: data.userId,
-                            lastSeen: lastSeen,
+                            lastSeen,
                         }));
                     }
                 });
@@ -155,12 +155,42 @@ ws.on('connection', async (ws, req) => {
                 const unsubscribe = db.collection('chats')
                     .where('chatId', '==', chatId)
                     .orderBy('timestamp', 'asc')
-                    .onSnapshot((snapshot) => {
+                    .onSnapshot(async (snapshot) => {
                         const messages = snapshot.docs.map(doc => ({
                             id: doc.id,
                             lastSeen: lastSeen,
                             ...doc.data(),
                         }));
+
+                        // Batch update for deliveredTo and readBy
+                        const batch = db.batch();
+                        for (const doc of snapshot.docs) {
+                            const messageData = doc.data();
+                            const docRef = db.collection('chats').doc(doc.id);
+
+                            // Update deliveredTo: Only when the actual receiver (userId) receives the message
+                            if (messageData.receiverId === userId && userId !== messageData.senderId && userId === receiverId && !messageData.deliveredTo?.includes(userId)) {
+                                batch.update(docRef, {
+                                    deliveredTo: [...(messageData.deliveredTo || []), userId],
+                                });
+                            }
+
+                            // Update readBy: Only when the actual receiver (userId) views the message
+                            if (messageData.receiverId === userId && userId !== messageData.senderId && userId === receiverId && !messageData.readBy?.includes(userId)) {
+                                batch.update(docRef, {
+                                    readBy: [...(messageData.readBy || []), userId],
+                                });
+                            }
+                        }
+                        await batch.commit();
+
+                        // Update lastSeen when a new message is sent
+                        if (snapshot.docChanges().some(change => change.type === 'added')) {
+                            const newMessage = messages[messages.length - 1];
+                            if (newMessage && newMessage.senderId === userId) {
+                                await updateLastSeen(userId);
+                            }
+                        }
 
                         if (clients.has(chatId)) {
                             clients.get(chatId).forEach(client => {

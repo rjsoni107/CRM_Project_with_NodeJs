@@ -968,6 +968,8 @@ exports.sendChatMessage = async (req, res) => {
             receiverId,
             message,
             timestamp: new Date().toISOString(),
+            deliveredTo: [senderId],
+            readBy: [],
         };
 
         // Save the chat message to Firestore

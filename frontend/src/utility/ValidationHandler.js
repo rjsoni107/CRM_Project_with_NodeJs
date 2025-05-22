@@ -357,7 +357,6 @@ const ValidationHandler = () => {
         return isValid;
     };
 
-
     return {
         isValueExist,
         isValueExistAndBlank,
