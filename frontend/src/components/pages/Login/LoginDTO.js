@@ -1,9 +1,12 @@
+import { useDispatch } from "react-redux";
+import { setToken, setUser } from "../../../redux/userSlice";
 import { ENDPOINTS } from "../../../utility/ApiEndpoints";
 import ValidationHandler from "../../../utility/ValidationHandler";
 
 const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setShowLoader, apiPathAction }) => {
     const { validateFormHandler, validateMobile } = ValidationHandler();
     const { mobile, pin } = state.payload;
+    const dispatch = useDispatch();
 
     const openPage = (pathName, obj) => {
         setState(prevState => ({
@@ -31,6 +34,8 @@ const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setSho
                 if (response && responseStatus === "SUCCESS") {
                     localStorage.setItem("authToken", token);
                     localStorage.setItem('globalObj', JSON.stringify(userDetails));
+                    dispatch(setUser(userDetails))
+                    dispatch(setToken(token))
                     openPage(redirectAction, userDetails)
                 } else {
                     setError(responseMsg);

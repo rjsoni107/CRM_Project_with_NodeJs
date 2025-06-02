@@ -1,7 +1,10 @@
 import React from "react";
 import "./Dashboard.css";
+import { useSelector } from "react-redux";
 
 const Dashboard = () => {
+    const user = useSelector(state => state?.user)
+    console.log(user)
     return (
         <div className="dashboard-container">
             {/* Header Section */}

@@ -4,12 +4,13 @@ import Base from '../../../util/Base';
 import FriendsListDTO from './FriendsListDTO';
 import { ENDPOINTS } from '../../../utility/ApiEndpoints';
 import Loader from '../../loader/Loader';
+import { useSelector } from 'react-redux';
 
 const FriendsList = () => {
     const [friends, setFriends] = useState([]);
     const [showLoader, setShowLoader] = useState(false);
     const [notification, setNotification] = useState(null);
-    const loginDetails = JSON.parse(localStorage.getItem('globalObj')) || {};
+    const loginDetails = useSelector(state => state?.user);
     const userId = loginDetails.userId || 0;
 
     const { fetchData, basePathAction, apiPathAction } = Base();

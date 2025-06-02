@@ -4,10 +4,14 @@ import "./global";
 import { BrowserRouter } from 'react-router-dom';
 import Main from './components/main/Main';
 import './index.css';
+import { Provider } from 'react-redux';
+import { store } from './redux/store';
 
 const root = createRoot(document.getElementById('root'));
 root.render(
-    <BrowserRouter>
-        <Main />
-    </BrowserRouter>
+    <Provider store={store}>
+        <BrowserRouter>
+            <Main />
+        </BrowserRouter>
+    </Provider>
 );

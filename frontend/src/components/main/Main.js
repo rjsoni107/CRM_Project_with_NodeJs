@@ -7,9 +7,12 @@ import ProtectedRoute from "./ProtectedRoute";
 import Layout from "./Layout";
 import ErrorPage from "../pages/ErrorPage/ErrorPage";
 import ErrorBoundary from "./ErrorBoundary";
+import { logout, setToken } from "../../redux/userSlice";
+import { useDispatch } from "react-redux";
 
 function Main() {
     const { basePathAction, handleAutoLogout } = Base();
+    const dispatch = useDispatch()
 
     const currentUrl = window.location.href;
     const pagepath = currentUrl.slice(currentUrl.lastIndexOf("/") + 1);
@@ -18,6 +21,8 @@ function Main() {
     if (excludePages.includes(pagepath)) {
         localStorage.removeItem("authToken");
         localStorage.removeItem("globalObj");
+         dispatch(logout())
+         dispatch(setToken())
     }
 
     handleAutoLogout(); // Call this function on page load or periodically

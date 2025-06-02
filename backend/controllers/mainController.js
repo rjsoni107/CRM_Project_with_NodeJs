@@ -860,7 +860,7 @@ exports.changePin = async (req, res) => {
         timeLog("[changePin] Updating user's PIN...");
         await db.collection("users").doc(userDoc.id).update({ pin: hashedPin });
 
-        timeLog("[changePin] PIN updated successfully.");
+        timeLog("[changePin] PIN updated successfully."); 
         res.status(200).json({
             responseStatus: "SUCCESS",
             responseMsg: "PIN updated successfully",
