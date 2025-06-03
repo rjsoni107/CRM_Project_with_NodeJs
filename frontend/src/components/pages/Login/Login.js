@@ -13,7 +13,7 @@ const Login = () => {
     const [showLoader, setShowLoader] = useState(false);
     const [state, setState] = useState({
         payload: {
-            mobile: "",
+            userName: "",
             pin: "",
             otp: '',
             type: 'loginPin'
@@ -78,21 +78,21 @@ const Login = () => {
                     <form className="form-section">
                         <div className="w-full mb-15 mb-md-20">
                             <TextInput
-                                label="Mobile"
-                                name="mobile"
-                                id="mobile"
-                                placeholder="Enter Mobile Number"
-                                value={payload.mobile || ''}
+                                label="User Name"
+                                name="userName"
+                                id="userName"
+                                placeholder="Enter Mobile Number or Username"
+                                value={payload.userName || ''}
                                 className="form-control input-field"
                                 isRequired={true}
-                                maxLength={10}
+                                maxLength={20}
                                 onChange={evt => {
                                     inputChangeHandler(evt, setState);
                                     inputMessageHandler(evt, 'HIDE', 'error');
                                 }}
                                 onBlur={handleBlur}
-                                dataType="NUMBER"
-                                dataValidation="MOBILE"
+                                dataType="ALPHA_NUMERIC_SPACIAL"
+                                dataValidation="USER_NAME"
                             />
                         </div>
                         <div className="w-full mb-3">

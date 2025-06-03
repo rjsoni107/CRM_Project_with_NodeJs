@@ -1,4 +1,4 @@
-const db = require('../firebase');
+const User = require("../modules/userModelMongo");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
@@ -6,6 +6,34 @@ const { userPermissions } = require("../util/Base");
 const crypto = require("crypto");
 const { timeLog } = require('../util/logger');
 const { notifyUser } = require('../util/websocket');
+const LoginOTP = require("../modules/loginOtpModel");
+const ForgotPIN = require("../modules/forgotPinModel");
+
+// Utility function to generate unique username based on name and mobile
+const generateUniqueUsername = async (name, mobile) => {
+    // Clean the name: remove spaces, convert to lowercase
+    let baseName = name.toLowerCase().replace(/[^a-z0-9]/g, ''); // Remove non-alphanumeric chars
+    if (baseName.length < 2) {
+        baseName = 'user'; // Fallback if name is too short
+    }
+    // Take last 4 digits of mobile for uniqueness
+    const mobileSuffix = mobile.slice(-4);
+    let username = `${baseName}${mobileSuffix}`.slice(0, 20); // Ensure max length 20
+
+    // Check if username exists
+    let existingUser = await User.findOne({ userName: username });
+    let attempt = 1;
+
+    // If username exists, append a number until unique
+    while (existingUser) {
+        const suffix = `_${attempt}`;
+        username = `${baseName}${mobileSuffix}${suffix}`.slice(0, 20);
+        existingUser = await User.findOne({ userName: username });
+        attempt++;
+    }
+
+    return username;
+};
 
 // Generate Unique ID- This function generates a unique 16-digit ID for the user.
 function generateUniqueId() {
@@ -16,27 +44,24 @@ function generateUniqueId() {
 exports.createDefaultAdmin = async () => {
     try {
         timeLog("[createDefaultAdmin] Checking if default admin exists...");
-        // Use db.collection() instead of collection()
-        const adminQuery = db.collection("users").where("userType", "==", "ADMIN");
-        const adminSnapshot = await adminQuery.get();
+        const existingAdmin = await User.findOne({ userType: "ADMIN" });
 
-        if (!adminSnapshot.empty) {
+        if (existingAdmin) {
             timeLog("[createDefaultAdmin] Default admin already exists.");
             return;
         }
 
         timeLog("[createDefaultAdmin] Creating default admin...");
         const hashedPin = await bcrypt.hash("111111", 10);
-        const userRef = db.collection("users").doc();
-        await userRef.set({
-            userId: userRef.id,
-            firstName: "Default",
-            lastName: "Admin",
+        await User.create({
+            id: generateUniqueId(),
+            name: "Admin",
+            status: "Active",
+            userName: "admin",
             emailId: "admin@example.com",
             mobile: "1111111111",
             pin: hashedPin,
             userType: "ADMIN",
-            status: "Active",
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
         });
@@ -51,13 +76,29 @@ exports.createDefaultAdmin = async () => {
 exports.login = async (req, res) => {
     try {
         timeLog("[loginUser] Login request received:", req.body);
-        const { mobile, pin, type, otp } = req.body;
+        const { userName, pin, type, otp } = req.body;
 
-        timeLog("[loginUser] Finding user by mobile...");
-        const userQuery = db.collection("users").where("mobile", "==", mobile);
-        const userSnapshot = await userQuery.get();
+        // Validate input
+        if (!userName || (!pin && type !== 'loginOTP') || (type === 'loginOTP' && !otp)) {
+            timeLog("[loginUser] Missing required fields.");
+            return res.status(400).json({
+                responseStatus: "FAILED",
+                responseMsg: "Missing required fields",
+                responseCode: "400",
+            });
+        }
 
-        if (userSnapshot.empty) {
+        timeLog("[loginUser] Finding user by userName or mobile");
+        // Search user by userName, mobile
+        const user = await User.findOne({
+            $or: [{ userName: userName }, { mobile: userName }]
+        });
+        const isNotActive = await User.findOne({
+            $or: [{ userName: userName }, { mobile: userName }],
+            status: "Active"
+        });
+
+        if (!user) {
             timeLog("[loginUser] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
@@ -66,18 +107,7 @@ exports.login = async (req, res) => {
             });
         }
 
-        if (userSnapshot.size > 1) {
-            timeLog("[loginUser] Multiple users found with the same mobile number.");
-            return res.status(500).json({
-                responseStatus: "FAILED",
-                responseMsg: "Internal server error: Duplicate mobile number",
-                responseCode: "500",
-            });
-        }
-
-        const user = userSnapshot.docs[0].data();
-
-        if (user.status !== "Active") {
+        if (!isNotActive) {
             timeLog("[loginUser] User is not active.");
             return res.status(403).json({
                 responseStatus: "FAILED",
@@ -88,13 +118,9 @@ exports.login = async (req, res) => {
 
         if (type === 'loginOTP') {
             timeLog("[loginUser] Validating OTP...");
-            const otpQuery = db.collection("loginOtps")
-                .where("mobile", "==", mobile)
-                .where("otp", "==", otp)
-                .where("status", "==", "active");
-            const otpSnapshot = await otpQuery.get();
+            const loginOtp = await LoginOTP.findOne({ mobile: user.mobile, otp, status: "active" });
 
-            if (otpSnapshot.empty) {
+            if (!loginOtp) {
                 timeLog("[loginUser] Invalid or expired OTP.");
                 return res.status(401).json({
                     responseStatus: "FAILED",
@@ -103,12 +129,10 @@ exports.login = async (req, res) => {
                 });
             }
 
-            const otpDoc = otpSnapshot.docs[0];
-            const otpData = otpDoc.data();
-
-            if (otpData.otpExpiry < Date.now()) {
+            if (loginOtp.otpExpiry < Date.now()) {
                 timeLog("[loginUser] OTP has expired.");
-                await db.collection("loginOtps").doc(otpDoc.id).update({ status: "expired" });
+                loginOtp.status = "expired";
+                await loginOtp.save();
 
                 return res.status(401).json({
                     responseStatus: "FAILED",
@@ -118,9 +142,19 @@ exports.login = async (req, res) => {
             }
 
             timeLog("[loginUser] OTP verified successfully.");
-            await db.collection("loginOtps").doc(otpDoc.id).update({ status: "verified" });
+            loginOtp.status = "verified";
+            await loginOtp.save();
         } else {
             timeLog("[loginUser] Validating PIN...");
+            if (!user.pin) {
+                timeLog("[loginUser] User PIN is not set.");
+                return res.status(400).json({
+                    responseStatus: "FAILED",
+                    responseMsg: "User PIN is not set",
+                    responseCode: "400",
+                });
+            }
+
             const isMatchPin = await bcrypt.compare(pin, user.pin);
             if (!isMatchPin) {
                 timeLog("[loginUser] Invalid credentials.");
@@ -150,8 +184,8 @@ exports.login = async (req, res) => {
             userDetails: {
                 userId: user.userId,
                 name: user.name,
-                emailId: user.emailId,
                 mobile: user.mobile,
+                userName: user.userName,
                 userType: user.userType,
                 permissions,
             },
@@ -181,34 +215,18 @@ exports.signup = async (req, res) => {
             });
         }
 
-        const { emailId, mobile, pin, confirmPin, ...rest } = req.body;
+        const { name, mobile, pin, confirmPin, ...rest } = req.body;
 
         timeLog("[signup] Checking for duplicate mobile...");
-        const mobileQuery = db.collection("users").where("mobile", "==", mobile);
-        const mobileSnapshot = await mobileQuery.get();
+        const existingUser = await User.findOne({ mobile });
 
-        if (!mobileSnapshot.empty) {
-            timeLog("[signup] Duplicate mobile detected.");
+        if (existingUser) {
+            timeLog("[signup] Duplicate entry detected.");
             return res.status(400).json({
                 responseStatus: "FAILED",
-                responseMsg: "Mobile already exists",
+                responseMsg: "Mobile Number already exists",
                 responseCode: "400",
             });
-        }
-
-        if (emailId && emailId.trim() !== "") {
-            timeLog("[signup] Checking for duplicate email...");
-            const emailQuery = db.collection("users").where("emailId", "==", emailId);
-            const emailSnapshot = await emailQuery.get();
-
-            if (!emailSnapshot.empty) {
-                timeLog("[signup] Duplicate email detected.");
-                return res.status(400).json({
-                    responseStatus: "FAILED",
-                    responseMsg: "Email already exists",
-                    responseCode: "400",
-                });
-            }
         }
 
         if (pin !== confirmPin) {
@@ -220,33 +238,36 @@ exports.signup = async (req, res) => {
             });
         }
 
+        timeLog("[signup] Generating unique username...");
+        const userName = await generateUniqueUsername(name, mobile);
+
         timeLog("[signup] Hashing PIN...");
         const hashedPin = await bcrypt.hash(pin, 10);
 
         timeLog("[signup] Creating new account...");
-        const newUser = {
-            ...rest,
+
+        const newUser = await User.create({
+            ...req.body,
             userId: generateUniqueId(),
-            emailId,
+            userName,
             mobile,
             pin: hashedPin,
             userType: 'USER',
             status: 'InActive',
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
-        };
-
-        await db.collection("users").add(newUser);
+        });
 
         timeLog("[signup] Account created successfully.");
         res.status(201).json({
             responseStatus: "SUCCESS",
-            responseMsg: "Congratulations! your account has been created successfully🎉",
+            responseMsg: `Congratulations! your account has been created successfully🎉 
+            Your username is: ${newUser.userName}`,
             responseCode: "201",
             data: {
                 userId: newUser.userId,
+                userName: newUser.userName,
                 userType: newUser.userType,
-                emailId: newUser.emailId,
                 mobile: newUser.mobile,
                 created: newUser.created,
                 updated: newUser.updated,
@@ -254,6 +275,13 @@ exports.signup = async (req, res) => {
         });
     } catch (error) {
         console.error("[signup] Error creating account:", error.message);
+        if (error.code === 11000) {
+            return res.status(400).json({
+                responseStatus: "FAILED",
+                responseMsg: "Duplicate userName or mobile number",
+                responseCode: "400",
+            });
+        }
         res.status(500).json({
             responseStatus: "FAILED",
             responseMsg: "Error creating account: " + error.message,
@@ -278,34 +306,21 @@ exports.addUser = async (req, res) => {
             });
         }
 
-        const { emailId, mobile, pin, confirmPin, ...rest } = req.body;
+        const { emailId, mobile, pin, confirmPin } = req.body;
 
         timeLog("[addUser] Checking for duplicate mobile...");
-        const mobileQuery = db.collection("users").where("mobile", "==", mobile);
-        const mobileSnapshot = await mobileQuery.get();
+        const existingUser = await User.findOne({
+            or: [{ emailId }, { mobile }]
+        },
+        );
 
-        if (!mobileSnapshot.empty) {
-            timeLog("[addUser] Duplicate mobile detected.");
+        if (existingUser) {
+            timeLog("[addUser] Duplicate entry detected.");
             return res.status(400).json({
                 responseStatus: "FAILED",
-                responseMsg: "Mobile already exists",
+                responseMsg: "Duplicate entry detected: Email or Mobile already exists",
                 responseCode: "400",
             });
-        }
-
-        if (emailId && emailId.trim() !== "") {
-            timeLog("[addUser] Checking for duplicate email...");
-            const emailQuery = db.collection("users").where("emailId", "==", emailId);
-            const emailSnapshot = await emailQuery.get();
-
-            if (!emailSnapshot.empty) {
-                timeLog("[addUser] Duplicate email detected.");
-                return res.status(400).json({
-                    responseStatus: "FAILED",
-                    responseMsg: "Email already exists",
-                    responseCode: "400",
-                });
-            }
         }
 
         if (pin !== confirmPin) {
@@ -321,8 +336,8 @@ exports.addUser = async (req, res) => {
         const hashedPin = await bcrypt.hash(pin, 10);
 
         timeLog("[addUser] Creating new user...");
-        const newUser = {
-            ...rest,
+        const newUser = await User.create({
+            ...req.body,
             userId: generateUniqueId(),
             emailId,
             mobile,
@@ -331,7 +346,7 @@ exports.addUser = async (req, res) => {
             status: "InActive",
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
-        };
+        });
 
         await db.collection("users").add(newUser);
 
@@ -382,32 +397,21 @@ exports.fetchAllUsers = async (req, res) => {
         // Add a filter to only fetch users with userType = 'USER'
         filters.userType = 'USER';
 
-        // Build Firestore query
-        timeLog("[fetchAllUsers] Building Firestore query...");
-        let userQuery = db.collection("users");
-
-        for (const [key, value] of Object.entries(filters)) {
-            userQuery = userQuery.where(key, "==", value);
-        }
-
         // Exclude the current user (req.user.userId)
         if (req.user && req.user.userId) {
-            userQuery = userQuery.where('userId', '!=', req.user.userId);
+            filters.userId = { $ne: req.user.userId };
             timeLog(`[fetchAllUsers] Excluding current user with userId: ${req.user.userId}`);
         } else {
             timeLog("[fetchAllUsers] No current user found in req.user");
         }
 
-        timeLog("[fetchAllUsers] Fetching users from Firestore...");
-        const userSnapshot = await userQuery.get();
+        timeLog("[fetchAllUsers] Fetching users from MongoDB...");
+        const users = await User.find(filters)
+            .skip(start)
+            .limit(length)
+            // .lean();
 
-        // Apply pagination manually
-        const users = userSnapshot.docs.slice(start, start + length).map(doc => ({
-            userId: doc.userId,
-            ...doc.data(),
-        }));
-
-        const count = userSnapshot.size; // Total number of users matching the query
+        const count = await User.countDocuments(filters);
 
         timeLog("[fetchAllUsers] Users fetched successfully. Count:", count);
         res.json({
@@ -416,8 +420,8 @@ exports.fetchAllUsers = async (req, res) => {
             responseCode: "200",
             userList: users.map(user => ({
                 userId: user.userId,
+                userName: user.userName,
                 name: user.name,
-                businessName: user.businessName,
                 emailId: user.emailId,
                 mobile: user.mobile,
                 userType: user.userType,
@@ -442,44 +446,32 @@ exports.fetchUserByKey = async (req, res) => {
         const { userId, emailId, mobile } = req.body;
         timeLog("[fetchUserByKey] Request body:", req.body);
 
-        // Build Firestore query
-        let userQuery = db.collection("users");
-        if (userId) {
-            userQuery = userQuery.where("userId", "==", userId);
-        } else if (emailId) {
-            userQuery = userQuery.where("emailId", "==", emailId);
-        } else if (mobile) {
-            userQuery = userQuery.where("mobile", "==", mobile);
-        } else {
-            timeLog("[fetchUserByKey] No valid key provided.");
-            return res.status(400).json({
-                responseStatus: "FAILED",
-                responseMsg: "At least one key (id, emailId, or mobile) is required",
-                responseCode: "400",
-            });
-        }
+        const query = {};
+        if (userId) query.userId = userId;
+        if (emailId) query.emailId = emailId;
+        if (mobile) query.mobile = mobile;
+        timeLog("[fetchUserByKey] Query object:", query);
 
+        // Search for the user
         timeLog("[fetchUserByKey] Searching for user...");
-        const userSnapshot = await userQuery.get();
+        const user = await User.findOne(query);
+        timeLog("[fetchUserByKey] User found:", user);
 
-        if (userSnapshot.empty) {
+        if (user) {
+            res.json({
+                responseStatus: "SUCCESS",
+                responseMsg: "User fetched successfully",
+                responseCode: "200",
+                user,
+            });
+        } else {
             timeLog("[fetchUserByKey] User not found.");
-            return res.status(404).json({
+            res.status(404).json({
                 responseStatus: "FAILED",
                 responseMsg: "User not found!",
                 responseCode: "404",
             });
         }
-
-        const user = userSnapshot.docs[0].data();
-        timeLog("[fetchUserByKey] User found:", user);
-
-        res.json({
-            responseStatus: "SUCCESS",
-            responseMsg: "User fetched successfully",
-            responseCode: "200",
-            user,
-        });
     } catch (error) {
         console.error("[fetchUserByKey] Error fetching user:", error.message);
         res.status(500).json({
@@ -510,12 +502,15 @@ exports.updateUser = async (req, res) => {
         const updatedData = req.body; // Extract the updated data from the request body
         timeLog("[updateUser] Updated data:", updatedData);
 
-        // Query Firestore to find the document with the matching `id` field
-        timeLog("[updateUser] Searching for user in Firestore...");
-        const userQuery = db.collection("users").where("userId", "==", userId);
-        const userSnapshot = await userQuery.get();
+        // Update the user in the database
+        timeLog("[updateUser] Updating user in database...");
+        const updatedUser = await User.findOneAndUpdate(
+            { id: userId },
+            updatedData,
+            { new: true } // Return the updated document
+        );
 
-        if (userSnapshot.empty) {
+        if (!updatedUser) {
             timeLog("[updateUser] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
@@ -523,13 +518,6 @@ exports.updateUser = async (req, res) => {
                 responseCode: "404",
             });
         }
-
-        // Get the Firestore document ID
-        const userDocId = userSnapshot.docs[0].id;
-
-        // Update the user document in Firestore
-        timeLog("[updateUser] Updating user in Firestore...");
-        await db.collection("users").doc(userDocId).update(updatedData);
 
         timeLog("[updateUser] User updated successfully.");
         res.status(200).json({
@@ -565,11 +553,8 @@ exports.deleteUser = async (req, res) => {
             });
         }
 
-        // Reference to the user document in Firestore
-        const userQuery = db.collection("users").where("userId", "==", userId);
-        const userSnapshot = await userQuery.get();
-
-        if (userSnapshot.empty) {
+        const user = await User.deleteOne({ userId });
+        if (user.deletedCount === 0) {
             timeLog("[deleteUser] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
@@ -578,19 +563,13 @@ exports.deleteUser = async (req, res) => {
             });
         }
 
-        // Get the document ID of the user
-        const userDocId = userSnapshot.docs[0].id;
-
-        // Delete the user document
-        timeLog("[deleteUser] Deleting user from Firestore...");
-        await db.collection("users").doc(userDocId).delete();
-
         timeLog("[deleteUser] User deleted successfully.");
         res.status(200).json({
             responseStatus: "SUCCESS",
             responseMsg: "User deleted successfully",
             responseCode: "200",
         });
+
     } catch (error) {
         console.error("[deleteUser] Error deleting user:", error.message);
         res.status(500).json({
@@ -605,22 +584,37 @@ exports.deleteUser = async (req, res) => {
 exports.generateOtp = async (req, res) => {
     try {
         timeLog("[generateOtp] Request received:", req.body);
-        const { mobile, type } = req.body;
+        const { userName, type } = req.body;
 
-        if (!mobile) {
-            timeLog("[generateOtp] Mobile number is missing.");
+        // Validate userName
+        if (!userName) {
+            timeLog("[generateOtp] userName is missing.");
             return res.status(400).json({
                 responseStatus: "FAILED",
-                responseMsg: "Mobile number is required",
+                responseMsg: "userName is required",
                 responseCode: "400",
             });
         }
 
-        timeLog("[generateOtp] Finding user by mobile...");
-        const userQuery = db.collection("users").where("mobile", "==", mobile);
-        const userSnapshot = await userQuery.get();
+        const userNameRegex = /^(?:[0-9]{10}|[a-zA-Z0-9._-]{6,20})$/;
+        if (!userNameRegex.test(userName)) {
+            timeLog("[generateOtp] Invalid userName format.");
+            return res.status(400).json({
+                responseStatus: "FAILED",
+                responseMsg: "Invalid userName, must be a 10-digit mobile number or username (6-20 alphanumeric characters with underscores or hyphens)",
+                responseCode: "400",
+            });
+        }
 
-        if (userSnapshot.empty) {
+        timeLog("[generateOtp] Finding user by userName or mobile...");
+        const user = await User.findOne({
+            $or: [
+                { userName: userName },
+                { mobile: userName }
+            ]
+        });
+
+        if (!user) {
             timeLog("[generateOtp] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
@@ -628,8 +622,6 @@ exports.generateOtp = async (req, res) => {
                 responseCode: "404",
             });
         }
-
-        const user = userSnapshot.docs[0].data();
 
         if (user.status !== "Active") {
             timeLog("[generateOtp] User is not active.");
@@ -640,34 +632,31 @@ exports.generateOtp = async (req, res) => {
             });
         }
 
+        // Extract mobile number from user
+        const mobile = user.mobile;
+
         // Generate a 6-digit OTP
         timeLog("[generateOtp] Generating OTP...");
         const otp = crypto.randomInt(100000, 999999).toString();
 
-        // Save OTP in Firestore
+        // Save OTP in the database
         timeLog("[generateOtp] Marking existing OTPs as inactive...");
-        const otpCollection = type === 'loginOTP' ? "loginOtps" : "forgotPins";
+        const collectionName = type === 'loginOTP' ? LoginOTP : ForgotPIN;
 
-        const otpQuery = db.collection(otpCollection)
-            .where("mobile", "==", mobile)
-            .where("status", "==", "active");
-        const otpSnapshot = await otpQuery.get();
-
-        // Mark existing OTPs as inactive
-        const batch = db.batch();
-        otpSnapshot.forEach((doc) => {
-            batch.update(doc.ref, { status: "inActive" });
-        });
-        await batch.commit();
+        await collectionName.updateMany(
+            { mobile, status: "active" },
+            { $set: { status: "inActive" } }
+        );
 
         timeLog("[generateOtp] Saving new OTP...");
-        await db.collection(otpCollection).add({
+        const newOtpEntry = new collectionName({
             mobile,
             otp,
-            otpExpiry: Date.now() + 5 * 60 * 1000, // OTP valid for 5 minutes
+            otpExpiry: Date.now() + 5 * 60 * 1000, // 5 minutes expiry
             status: "active",
             created: new Date().toISOString(),
         });
+        await newOtpEntry.save();
 
         const formattedMobile = mobile.startsWith('+') ? mobile : `+91${mobile}`;
 
@@ -708,10 +697,8 @@ exports.verifyOtp = async (req, res) => {
 
         // Find the user by mobile
         timeLog("[verifyOtp] Finding user by mobile...");
-        const userQuery = db.collection("users").where("mobile", "==", mobile);
-        const userSnapshot = await userQuery.get();
-
-        if (userSnapshot.empty) {
+        const user = await User.findOne({ mobile });
+        if (!user) {
             timeLog("[verifyOtp] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
@@ -719,8 +706,6 @@ exports.verifyOtp = async (req, res) => {
                 responseCode: "404",
             });
         }
-
-        const user = userSnapshot.docs[0].data();
 
         if (user.status !== "Active") {
             timeLog("[verifyOtp] User is not active.");
@@ -733,13 +718,9 @@ exports.verifyOtp = async (req, res) => {
 
         // Find the active OTP for the mobile
         timeLog("[verifyOtp] Finding active OTP...");
-        const otpQuery = db.collection("forgotPins")
-            .where("mobile", "==", mobile)
-            .where("otp", "==", otp)
-            .where("status", "==", "active");
-        const otpSnapshot = await otpQuery.get();
+        const forgotPIN = await ForgotPIN.findOne({ mobile, otp, status: "active" });
 
-        if (otpSnapshot.empty) {
+        if (!forgotPIN) {
             timeLog("[verifyOtp] Invalid or expired OTP.");
             return res.status(401).json({
                 responseStatus: "FAILED",
@@ -748,13 +729,12 @@ exports.verifyOtp = async (req, res) => {
             });
         }
 
-        const otpDoc = otpSnapshot.docs[0];
-        const otpData = otpDoc.data();
-
         // Check if OTP is expired
-        if (otpData.otpExpiry < Date.now()) {
+        if (forgotPIN.otpExpiry < Date.now()) {
             timeLog("[verifyOtp] OTP has expired.");
-            await db.collection("forgotPins").doc(otpDoc.id).update({ status: "expired" });
+            // Mark the OTP as expired
+            forgotPIN.status = "expired";
+            await forgotPIN.save();
 
             return res.status(401).json({
                 responseStatus: "FAILED",
@@ -765,12 +745,13 @@ exports.verifyOtp = async (req, res) => {
 
         // Clear OTP after successful verification
         timeLog("[verifyOtp] Marking OTP as verified...");
-        await db.collection("forgotPins").doc(otpDoc.id).update({ status: "verified" });
+        forgotPIN.status = "verified";
+        await forgotPIN.save();
 
         // Generate JWT token
         timeLog("[verifyOtp] Generating JWT token...");
         const token = jwt.sign(
-            { userId: user.userId, userType: user.userType }, // Payload
+            { id: user.id, userType: user.userType }, // Payload
             process.env.JWT_SECRET, // Secret key
             { algorithm: "HS256", expiresIn: "1h" } // Token expiration time
         );
@@ -782,7 +763,7 @@ exports.verifyOtp = async (req, res) => {
             responseCode: "200",
             token,
             userDetails: {
-                userId: user.userId,
+                id: user.id,
                 mobile: user.mobile,
                 userType: user.userType,
             },
@@ -803,22 +784,11 @@ exports.changePin = async (req, res) => {
         timeLog("[changePin] Request received:", req.body);
         const { mobile, pin, confirmPin } = req.body;
 
-        // Validate input
-        if (!mobile || !pin || !confirmPin) {
-            timeLog("[changePin] Missing required fields.");
-            return res.status(400).json({
-                responseStatus: "FAILED",
-                responseMsg: "Mobile, PIN, and Confirm PIN are required",
-                responseCode: "400",
-            });
-        }
-
         // Find the user by mobile
         timeLog("[changePin] Finding user by mobile...");
-        const userQuery = db.collection("users").where("mobile", "==", mobile);
-        const userSnapshot = await userQuery.get();
+        const user = await User.findOne({ mobile });
 
-        if (userSnapshot.empty) {
+        if (!user) {
             timeLog("[changePin] User not found.");
             return res.status(404).json({
                 responseStatus: "FAILED",
@@ -826,9 +796,6 @@ exports.changePin = async (req, res) => {
                 responseCode: "404",
             });
         }
-
-        const userDoc = userSnapshot.docs[0];
-        const user = userDoc.data();
 
         // Validate the new PIN and confirm PIN
         if (pin !== confirmPin) {
@@ -847,7 +814,7 @@ exports.changePin = async (req, res) => {
             timeLog("[changePin] New PIN cannot be the same as the old PIN.");
             return res.status(402).json({
                 responseStatus: "FAILED",
-                responseMsg: "New PIN cannot be the same as the old PIN",
+                responseMsg: "New PIN cannot be same as old PIN",
                 responseCode: "402",
             });
         }
@@ -856,11 +823,12 @@ exports.changePin = async (req, res) => {
         timeLog("[changePin] Hashing new PIN...");
         const hashedPin = await bcrypt.hash(pin, 10);
 
-        // Update the user's PIN in Firestore
+        // Update the user's PIN
         timeLog("[changePin] Updating user's PIN...");
-        await db.collection("users").doc(userDoc.id).update({ pin: hashedPin });
+        user.pin = hashedPin;
+        await user.save();
 
-        timeLog("[changePin] PIN updated successfully."); 
+        timeLog("[changePin] PIN updated successfully.");
         res.status(200).json({
             responseStatus: "SUCCESS",
             responseMsg: "PIN updated successfully",

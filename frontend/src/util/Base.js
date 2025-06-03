@@ -205,11 +205,12 @@ const Base = () => {
     };
 
     const invokePaginationMethod = (start, length, event, setState, fetchDataCallback) => {
+        console.log(start)
         if (event === "onChangePage") {
             setState(prevState => {
                 const updatedState = {
                     ...prevState,
-                    start: start * prevState.length, // Update start based on the current page
+                    start: (start - 1) * prevState.length, // Update start based on the current page
                     length: length, // Keep the current length
                 };
                 fetchDataCallback(updatedState); // Trigger data fetch with the updated state

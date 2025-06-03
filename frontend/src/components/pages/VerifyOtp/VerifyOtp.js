@@ -18,7 +18,7 @@ const VerifyOtp = () => {
     const [isTimerActive, setIsTimerActive] = useState(true);
     const [state, setState] = useState({
         payload: {
-            mobile: mobile || "",
+            userName: mobile || "",
             type: type || "",
             otp: "",
             pin: ""

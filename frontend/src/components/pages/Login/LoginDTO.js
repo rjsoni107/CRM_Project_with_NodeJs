@@ -4,8 +4,8 @@ import { ENDPOINTS } from "../../../utility/ApiEndpoints";
 import ValidationHandler from "../../../utility/ValidationHandler";
 
 const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setShowLoader, apiPathAction }) => {
-    const { validateFormHandler, validateMobile } = ValidationHandler();
-    const { mobile, pin } = state.payload;
+    const { validateFormHandler, validateBlankField } = ValidationHandler();
+    const { mobile, pin, userName } = state.payload;
     const dispatch = useDispatch();
 
     const openPage = (pathName, obj) => {
@@ -21,7 +21,7 @@ const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setSho
         const that = event.target;
 
         if (validateFormHandler(that)) {
-            const payload = { mobile, pin };
+            const payload = { userName, pin };
             const fetchAction = apiPathAction(ENDPOINTS.LOGIN_ACTION);
             const redirectAdminPanal = basePathAction(ENDPOINTS.DASHBOARD);
             const redirectUserPanal = basePathAction(ENDPOINTS.FRIENDS_LIST);
@@ -29,7 +29,8 @@ const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setSho
             try {
                 const response = await fetchData('POST', fetchAction, payload);
                 const { responseStatus, responseMsg, userDetails, token } = response;
-                const redirectAction = userDetails?.userType === "ADMIN" ? redirectAdminPanal : redirectUserPanal;
+                const isManagment = userDetails?.userType === "ADMIN" || userDetails?.userType === "SUBADMIN";
+                const redirectAction = isManagment ? redirectAdminPanal : redirectUserPanal;
 
                 if (response && responseStatus === "SUCCESS") {
                     localStorage.setItem("authToken", token);
@@ -51,9 +52,9 @@ const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setSho
     const handleGenerateOtp = async (event, type) => {
         event.preventDefault();
 
-         if (!validateMobile(mobile)) return;
+         if (!validateBlankField(userName, 'userName', 'mobile')) return;
 
-        const payload = { mobile, type };
+        const payload = { userName, type };
         const fetchAction = apiPathAction(ENDPOINTS.GENERATE_OTP_ACTION);
         const redirectAction = basePathAction(ENDPOINTS.VERIFY_OTP);
         setShowLoader(true)
@@ -77,9 +78,9 @@ const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setSho
     const handleForgotPin = async (event) => {
         event.preventDefault();
         
-        if (!validateMobile(mobile)) return;
+        if (!validateBlankField(userName, 'userName', 'mobile')) return;
 
-        const payload = { mobile: mobile };
+        const payload = { userName: userName };
         setShowLoader(true)
         try {
             const response = await fetchData('POST', basePathAction(ENDPOINTS.FORGOT_PIN), payload);

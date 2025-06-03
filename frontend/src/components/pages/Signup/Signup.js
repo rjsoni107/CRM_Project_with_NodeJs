@@ -18,7 +18,6 @@ const Signup = () => {
         payload: {
             name: '',
             mobile: '',
-            emailId: '',
             pin: '',
             confirmPin: ''
         }
@@ -140,7 +139,7 @@ const Signup = () => {
                                 dataType="MOBILE"
                                 dataValidation="MOBILE"
                             />
-                            <TextInput
+                            {/* <TextInput
                                 wrapper="mb-4"
                                 label="Email ID"
                                 sublable="true"
@@ -160,7 +159,7 @@ const Signup = () => {
                                 onBlur={handleBlur}
                                 dataType="EMAIL"
                                 dataValidation="EMAIL"
-                            />
+                            /> */}
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                             <TextInput

@@ -12,7 +12,7 @@ const VerifyOtpDTO = ({
     apiPathAction
 }) => {
 
-    const { mobile, otp, pin, type } = state.payload;
+    const { userName, otp, pin, type } = state.payload;
 
     const openPage = (pathName, obj) => {
         setState(prevState => ({
@@ -30,9 +30,9 @@ const VerifyOtpDTO = ({
         }));
     };
 
-    const getOtpHandler = async (mobile, type) => {
+    const getOtpHandler = async (userName, type) => {
         setShowLoader(true);
-        const payload = { mobile, type };
+        const payload = { userName, type };
         const fetchAction = apiPathAction(ENDPOINTS.GENERATE_OTP_ACTION)
 
         try {
@@ -60,7 +60,7 @@ const VerifyOtpDTO = ({
         const that = event.target;
 
         if (validateFormHandler(that)) {
-            const payload = { mobile, otp, pin, type };
+            const payload = { userName, otp, pin, type };
             const isLoginOtp = type === 'loginOTP'
             const fetchActionType = isLoginOtp ? ENDPOINTS.LOGIN_ACTION : ENDPOINTS.VERIFY_OTP_ACTION;
             const redirectActionType = isLoginOtp ? ENDPOINTS.DASHBOARD : ENDPOINTS.CHANGE_PIN

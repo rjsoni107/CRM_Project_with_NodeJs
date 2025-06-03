@@ -39,7 +39,7 @@ const ERROR_TYPE = {
         IS_BLANK: "Please enter customer name",
         IS_INVALID: "Invalid customer name",
     },
-    username: {
+    userName: {
         IS_BLANK: "Please enter user name",
         IS_INVALID: "Invalid user name",
     },

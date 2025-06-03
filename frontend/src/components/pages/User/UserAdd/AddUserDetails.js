@@ -9,6 +9,7 @@ const AddUserDetails = forwardRef((props, ref) => {
         payload: {
             status: '',
             name: '',
+            userName: '',
             emailId: '',
             mobile: '',
             pin: '',
@@ -52,7 +53,7 @@ const AddUserDetails = forwardRef((props, ref) => {
     const { getCountryList, getStateList, getCityList, handleCountryChange, handleStateChange } = Base();
 
     const { status_list, payload, status, state, country, city, city_list, countries_list, state_list } = userState;
-    const { name, lastName, emailId, mobile, company, website, address, zip } = payload;
+    const { name, userName, emailId, mobile, company, website, address, zip } = payload;
 
     useImperativeHandle(ref, () => ({
         getPayload: () => payload
@@ -113,6 +114,22 @@ const AddUserDetails = forwardRef((props, ref) => {
                     }}
                     onBlur={handleBlur}
                     dataType="ALPHA_SPACE"
+                />
+                <TextInput
+                    label="User Name"
+                    name="userName"
+                    id="userName"
+                    placeholder="Enter Your User Name"
+                    value={userName || ''}
+                    className="form-control input-field"
+                    isRequired={true}
+                    maxLength={100}
+                    onChange={evt => {
+                        inputChangeHandler(evt, setState);
+                        inputMessageHandler(evt, 'HIDE', 'error');
+                    }}
+                    onBlur={handleBlur}
+                    dataType="ALPHA_NUMERIC_SPACIAL"
                 />
                 <TextInput
                     label="Email ID"

@@ -78,7 +78,7 @@ function UserList() {
     const columns = [
         { name: 'User ID', selector: row => row.userId, sortable: true },
         { name: 'Name', selector: row => row.name, sortable: true },
-        { name: 'Email', selector: row => row.emailId, sortable: true },
+        { name: 'User Name', selector: row => row.userName, sortable: true },
         { name: 'Mobile', selector: row => row.mobile, sortable: true },
         {
             name: 'User Status', selector: row => row.status, sortable: true,
