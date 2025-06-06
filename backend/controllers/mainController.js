@@ -254,7 +254,7 @@ exports.signup = async (req, res) => {
             mobile,
             pin: hashedPin,
             userType: 'USER',
-            status: 'InActive',
+            status: 'Active',
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
         });
@@ -344,7 +344,7 @@ exports.addUser = async (req, res) => {
             mobile,
             pin: hashedPin,
             userType: "USER",
-            status: "InActive",
+            status: "Active",
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
         });
@@ -506,7 +506,7 @@ exports.updateUser = async (req, res) => {
         // Update the user in the database
         timeLog("[updateUser] Updating user in database...");
         const updatedUser = await User.findOneAndUpdate(
-            { id: userId },
+            { userId: userId },
             updatedData,
             { new: true } // Return the updated document
         );
@@ -1084,7 +1084,7 @@ exports.searchUserList = async (req, res) => {
             status: "Active",
             userId: { $ne: currentUserId },
             $or: [{ name: query }, { mobile: query }]
-        }).select("-password");
+        }).select("-pin");
 
         return res.json({
             responseStatus: "SUCCESS",
@@ -1095,7 +1095,59 @@ exports.searchUserList = async (req, res) => {
         });
     } catch (error) {
         return res.status(500).json({
-            message: error.message || error,
+            responseStatus: "FAILED",
+            responseMsg: "Error user fetching: " + error.message,
+            responseCode: "500",
+            error: true
+        });
+    }
+}
+
+exports.updateUserProfile = async (req, res) => {
+    try {
+        const authHeader = req.headers["authorization"];
+        const token = authHeader?.split(" ")[1];
+        const user = await getUserDetailsFromToken(token);
+        const { name, profile_pic, about } = req.body;
+
+        if (!name) {
+            return res.status(400).json({
+                responseStatus: "FAILED",
+                responseMsg: "Name is required",
+                responseCode: "400",
+                error: true
+            });
+        }
+
+        // Update user and return the new document
+        const updatedUser = await User.findByIdAndUpdate(
+            user._id,
+            { name, profile_pic, about },
+            { new: true, select: "-pin" }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                responseStatus: "FAILED",
+                responseMsg: "User not found",
+                responseCode: "404",
+                error: true
+            });
+        }
+
+        return res.json({
+            responseStatus: "SUCCESS",
+            responseMsg: "User updated successfully",
+            responseCode: "200",
+            data: updatedUser,
+            success: true
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            responseStatus: "FAILED",
+            responseMsg: "Error updating user: " + error.message,
+            responseCode: "500",
             error: true
         });
     }

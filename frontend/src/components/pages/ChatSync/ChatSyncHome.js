@@ -16,7 +16,7 @@ const ChatSyncHome = () => {
     const location = useLocation();
     const [showLoader, setShowLoader] = useState(false);
 
-    const { fetchData, apiPathAction } = Base();
+    const { fetchData, apiPathAction, basePathAction } = Base();
 
     // Fetch user details on mount
     const fetchUserDetails = async (propsState) => {
@@ -30,12 +30,12 @@ const ChatSyncHome = () => {
 
             if (data.logout) {
                 dispatch(logout())
-                navigate(ENDPOINTS.LOGIN)
+                navigate(basePathAction(ENDPOINTS.LOGIN))
             }
             setShowLoader(false);
         } catch (error) {
             dispatch(logout())
-            navigate(ENDPOINTS.LOGIN)
+            navigate(basePathAction(ENDPOINTS.LOGIN))
             console.error('Error fetching users:', error);
         }
     };
@@ -60,7 +60,7 @@ const ChatSyncHome = () => {
             // Optionally handle socket errors or disconnects
             socketConnection.on('auth-error', (data) => {
                 dispatch(logout());
-                navigate(ENDPOINTS.LOGIN);
+                navigate(basePathAction(ENDPOINTS.LOGIN));
             });
         } else {
             console.warn('No token found, skipping socket connection');

@@ -91,6 +91,22 @@ function UserList() {
                     when: row => row.status === 'InActive',
                     classNames: ['text-azure'],
                 },
+                {
+                    when: row => row.status === 'Pending',
+                    classNames: ['text-warning'],
+                },
+                {
+                    when: row => row.status === 'Blocked',
+                    classNames: ['text-danger'],
+                },
+                {
+                    when: row => row.status === 'Suspended',
+                    classNames: ['text-danger'],
+                },
+                {
+                    when: row => row.status === 'Blacklisted',
+                    classNames: ['text-danger'],
+                },
             ]
         },
         {

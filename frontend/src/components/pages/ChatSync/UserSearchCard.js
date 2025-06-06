@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import Avatar from '../../avatar/Avatar'
+import Avatar from '../../helperComponent/Avatar'
 import { ENDPOINTS } from '../../../utility/ApiEndpoints'
 import Base from '../../../util/Base'
 import { IoMdPersonAdd } from "react-icons/io";

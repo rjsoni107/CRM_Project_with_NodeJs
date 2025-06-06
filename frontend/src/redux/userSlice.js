@@ -11,6 +11,7 @@ const initialState = {
     profile_pic: "",
     onlineUser: [],
     lastSeen: '',
+    about: '',
 }
 
 export const userSlice = createSlice({
@@ -26,6 +27,7 @@ export const userSlice = createSlice({
             state.userType = action.payload.userType
             state.profile_pic = action.payload.profile_pic
             state.lastSeen = action.payload.lastSeen
+            state.about = action.payload.about
         },
         setToken: (state, action) => {
             state.token = action.payload
@@ -39,6 +41,7 @@ export const userSlice = createSlice({
             state.userType = ""
             state.profile_pic = ""
             state.lastSeen = ""
+            state.about = ""
         },
         setOnlineUser: (state, action) => {
             state.onlineUser = action.payload

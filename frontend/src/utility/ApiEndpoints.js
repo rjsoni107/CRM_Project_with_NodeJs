@@ -37,4 +37,5 @@ export const ENDPOINTS = {
     GET_FRIENDS_LIST_ACTION: 'getFriendsListAction',
     GET_USER_PROFILE_ACTION: 'getUserProfileAction',
     SEARCH_USER_LIST_ACTION: 'searchUserListAction',
+    UPDATE_USER_PROFILE: 'updateUserProfile',
 }

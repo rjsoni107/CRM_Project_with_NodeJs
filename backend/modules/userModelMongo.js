@@ -18,10 +18,11 @@ const UsersSchema = new mongoose.Schema({
     company: String,
     website: String,
     profile_pic: { type: String, default: "", trim: true },
-    status: { type: String, default: "InActive" },
+    status: { type: String, default: "Active" },
     created: { type: Date, default: Date.now },
     updated: { type: Date, default: Date.now },
     lastSeen: { type: Date },
+    about: String,
     token: String
 }, { versionKey: false, collection: process.env.MONGO_DB_USERS, timestamps: true });
 

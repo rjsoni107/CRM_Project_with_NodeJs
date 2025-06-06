@@ -82,11 +82,6 @@ const RoutesConfig = [
         isProtected: true,
     },
     {
-        path: ENDPOINTS.FRIENDS_LIST,
-        element: <FriendsList />,
-        isProtected: true,
-    },
-    {
         path: `${ENDPOINTS.USER}/:id`,
         element: <UserEdit />,
         isProtected: true,

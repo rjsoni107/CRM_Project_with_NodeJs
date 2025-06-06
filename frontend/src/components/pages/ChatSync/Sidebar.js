@@ -9,7 +9,7 @@ import SearchUser from './SearchUser';
 import { FaImage, FaVideo } from "react-icons/fa6";
 import { getSocket } from '../../../lib/socket';
 import { logout } from '../../../redux/userSlice';
-import Avatar from '../../avatar/Avatar';
+import Avatar from '../../helperComponent/Avatar';
 import EditUserProfile from './EditUserProfile';
 import Base from '../../../util/Base';
 import { ENDPOINTS } from '../../../utility/ApiEndpoints';

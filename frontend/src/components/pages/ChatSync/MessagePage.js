@@ -7,13 +7,13 @@ import { IoClose } from "react-icons/io5";
 import backgroundImage from '../../../assets/wallapaper.jpeg'
 import { IoMdSend } from "react-icons/io";
 import moment from 'moment'
-import Avatar from '../../avatar/Avatar';
 import uploadFile from '../../../helpers/uploadFile';
 import { getSocket } from '../../../lib/socket';
 import Loading from '../../loader/Loading';
 import Base from '../../../util/Base';
 import { ENDPOINTS } from '../../../utility/ApiEndpoints';
 import { IoCheckmark, IoCheckmarkDone } from "react-icons/io5";
+import Avatar from '../../helperComponent/Avatar';
 
 const MessagePage = () => {
     const { basePathAction, getDateLabel, localeTimeString } = Base();

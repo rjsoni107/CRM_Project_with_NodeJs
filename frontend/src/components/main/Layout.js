@@ -5,8 +5,6 @@ import SidebarPanal from "../sidebar/SidebarPanal";
 import ChatSyncHome from "../pages/ChatSync/ChatSyncHome";
 const Layout = ({ forceUpdate }) => {
     const { userType, permissions, name } = JSON.parse(localStorage.getItem("globalObj") || "{}");
-    console.log(userType)
-
     const [isSidebarVisible, setSidebarVisible] = useState(window.innerWidth > 768);
 
     const toggleSidebar = () => setSidebarVisible((prev) => !prev);

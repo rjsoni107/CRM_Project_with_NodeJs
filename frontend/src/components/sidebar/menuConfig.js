@@ -1,6 +1,5 @@
 import { FaChartPie, FaUser, FaAddressBook, FaFile } from "react-icons/fa";
 import { ENDPOINTS } from "../../utility/ApiEndpoints";
-import Chat from "../pages/LiveChat/Chat";
 
 // Centralized menu configuration
 const menuConfig = [
@@ -23,7 +22,6 @@ const menuConfig = [
         children: [
             { label: "Add User", path: ENDPOINTS.ADD_USER },
             { label: "User List", path: ENDPOINTS.USER_LIST },
-            { label: "Friends List", path: ENDPOINTS.FRIENDS_LIST },
         ],
     },
     {

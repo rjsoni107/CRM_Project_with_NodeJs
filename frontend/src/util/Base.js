@@ -210,7 +210,6 @@ const Base = () => {
     };
 
     const invokePaginationMethod = (start, length, event, setState, fetchDataCallback) => {
-        console.log(start)
         if (event === "onChangePage") {
             setState(prevState => {
                 const updatedState = {

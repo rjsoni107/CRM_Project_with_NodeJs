@@ -5,6 +5,7 @@
 .text-dark-charcoal { color: #333333 !important;}
 .text-davys-grey { color: #555555 !important;}
 .text-azure { color: #007bff !important;}
+.text-warning { color: #ffc107 !important; }
 
 /* BACKGROUND */
 .bg-none { background: none !important; }
@@ -57,31 +58,6 @@
 .m-28 { margin: 28px !important; }
 .m-29 { margin: 29px !important; }
 .m-30 { margin: 30px !important; }
-
-/* MARGIN TOP */
-/* .mt-0 { margin-top: 0 !important; }
-.mt-5 { margin-top: 5px !important; }
-.mt-10 { margin-top: 10px !important; }
-.mt-12 { margin-top: 12px !important; }
-.mt-13 { margin-top: 13px !important; }
-.mt-14 { margin-top: 14px !important; }
-.mt-15 { margin-top: 15px !important; }
-.mt-16 { margin-top: 16px !important; }
-.mt-17 { margin-top: 17px !important; }
-.mt-18 { margin-top: 18px !important; }
-.mt-19 { margin-top: 19px !important; }
-.mt-20 { margin-top: 20px !important; }
-.mt-21 { margin-top: 21px !important; }
-.mt-22 { margin-top: 22px !important; }
-.mt-23 { margin-top: 23px !important; }
-.mt-24 { margin-top: 24px !important; }
-.mt-25 { margin-top: 25px !important; }
-.mt-26 { margin-top: 26px !important; }
-.mt-27 { margin-top: 27px !important; }
-.mt-28 { margin-top: 28px !important; }
-.mt-29 { margin-top: 29px !important; }
-.mt-30 { margin-top: 30px !important; }
-.mt-80 { margin-top: 80px !important; } */
 
 /* MARGIN BOTTOM */
 .mb-0 { margin-bottom: 0 !important; }
