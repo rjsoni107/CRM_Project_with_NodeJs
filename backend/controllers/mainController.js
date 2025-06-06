@@ -5,9 +5,10 @@ const { validationResult } = require("express-validator");
 const { userPermissions } = require("../util/Base");
 const crypto = require("crypto");
 const { timeLog } = require('../util/logger');
-const { notifyUser } = require('../util/websocket');
+// const { notifyUser } = require('../util/websocket');
 const LoginOTP = require("../modules/loginOtpModel");
 const ForgotPIN = require("../modules/forgotPinModel");
+const getUserDetailsFromToken = require("../helpers/getUserDetailsFromToken");
 
 // Utility function to generate unique username based on name and mobile
 const generateUniqueUsername = async (name, mobile) => {
@@ -54,7 +55,7 @@ exports.createDefaultAdmin = async () => {
         timeLog("[createDefaultAdmin] Creating default admin...");
         const hashedPin = await bcrypt.hash("111111", 10);
         await User.create({
-            id: generateUniqueId(),
+            userId: generateUniqueId(),
             name: "Admin",
             status: "Active",
             userName: "admin",
@@ -168,7 +169,7 @@ exports.login = async (req, res) => {
 
         timeLog("[loginUser] Generating JWT token...");
         const token = jwt.sign(
-            { userId: user.userId, userType: user.userType },
+            { userId: user.userId, userType: user.userType, id: user._id, },
             process.env.JWT_SECRET,
             { algorithm: "HS256", expiresIn: "1h" }
         );
@@ -409,7 +410,7 @@ exports.fetchAllUsers = async (req, res) => {
         const users = await User.find(filters)
             .skip(start)
             .limit(length)
-            // .lean();
+        // .lean();
 
         const count = await User.countDocuments(filters);
 
@@ -1052,3 +1053,50 @@ exports.fetchActiveFriendsList = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch friends list' });
     }
 };
+
+exports.getUserProfileDetails = async (req, res) => {
+    try {
+        const authHeader = req.headers["authorization"];
+        const token = authHeader?.split(" ")[1];
+
+        const user = await getUserDetailsFromToken(token)
+
+        return res.status(200).json({
+            message: "user details",
+            data: user
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message || error,
+            error: true
+        })
+    }
+}
+
+exports.searchUserList = async (req, res) => {
+    try {
+        const { search } = req.body;
+        const currentUserId = req.user?.userId;
+        const query = new RegExp(search, "i");
+
+        const users = await User.find({
+            userType: "USER",
+            status: "Active",
+            userId: { $ne: currentUserId },
+            $or: [{ name: query }, { mobile: query }]
+        }).select("-password");
+
+        return res.json({
+            responseStatus: "SUCCESS",
+            responseMsg: "Users fetched successfully",
+            responseCode: "200",
+            data: users,
+            success: true
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message || error,
+            error: true
+        });
+    }
+}

@@ -1,9 +1,11 @@
+import { getSocket } from "../lib/socket";
 import { ENDPOINTS } from "../utility/ApiEndpoints";
 import { jwtDecode } from "jwt-decode";
 
 const Base = () => {
     let isAutoLogoutHandled = false
     const authToken = localStorage.getItem('authToken');
+    const socketConnection = getSocket()
 
     const basePathAction = (action) => {
         const basePathAction = `/${action}`
@@ -20,9 +22,12 @@ const Base = () => {
 
     const handleLogout = (setShowLoader) => {
         setShowLoader(true)
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("globalObj");
+        localStorage.clear();
         window.location.href = basePathAction(ENDPOINTS.LOGIN);
+        if (socketConnection) {
+            socketConnection.removeAllListeners();
+            socketConnection.disconnect();
+        }
     };
 
     const fetchData = async (method, actionName, payload, isContentType = true, isStringify = true) => {
@@ -244,9 +249,9 @@ const Base = () => {
         const msgDateOnly = new Date(msgDate.getFullYear(), msgDate.getMonth(), msgDate.getDate());
 
         if (msgDateOnly.getTime() === todayDate.getTime()) {
-            return 'Today';
+            return 'today';
         } else if (msgDateOnly.getTime() === yesterdayDate.getTime()) {
-            return 'Yesterday';
+            return 'yesterday';
         } else {
             return msgDate.toLocaleDateString('en-US', {
                 month: 'long',

@@ -9,7 +9,7 @@ const ProtectedRoute = ({ children, requiredPermission }) => {
     const permissions = JSON.parse(localStorage.getItem("globalObj"))?.permissions || [];
 
     // Check if the user is authenticated
-    if (!isAuthenticated) return <Navigate to={basePathAction(ENDPOINTS.LOGIN)} replace />;                                                                                                                                                                                                                                                                                                                                                       
+    if (!isAuthenticated) return <Navigate to={basePathAction(ENDPOINTS.LOGIN)} replace />; 
 
     // Check if the user has the required permission
     if (requiredPermission && !permissions.includes(requiredPermission)) {

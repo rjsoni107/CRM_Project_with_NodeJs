@@ -42,8 +42,8 @@ const SidebarPanal = ({ isSidebarVisible, permissions, onClose }) => {
                         <div className="flex justify-between items-center">
                             <MenuItem className="menu-toggle cursor-none">
                                 <div className="flex justify-center items-center">
-                                    <img src={`${window.basePath}/img/logo192.png`} alt="ChatSync-Logo" className='md:h-[30px] h-[25px]' />
-                                    <span className="ml-1">ChatSync</span>
+                                    <img src={`${window.basePath}/img/ChatSync_White_Logo.png`} alt="ChatSync-Logo" className='md:h-[30px] h-[25px]' />
+                                    {/* <span className="ml-1">ChatSync</span> */}
                                 </div>
                             </MenuItem>
                             <button className="toggle-sidebar-btn block md:hidden mr-1 mb-1" onClick={onClose}> <FaTimes /> </button>

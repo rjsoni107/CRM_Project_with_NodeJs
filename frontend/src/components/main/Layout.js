@@ -2,8 +2,10 @@ import { Outlet } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Topbar from "../topbar/Topbar";
 import SidebarPanal from "../sidebar/SidebarPanal";
+import ChatSyncHome from "../pages/ChatSync/ChatSyncHome";
 const Layout = ({ forceUpdate }) => {
     const { userType, permissions, name } = JSON.parse(localStorage.getItem("globalObj") || "{}");
+    console.log(userType)
 
     const [isSidebarVisible, setSidebarVisible] = useState(window.innerWidth > 768);
 
@@ -20,15 +22,19 @@ const Layout = ({ forceUpdate }) => {
     }, []);
 
     return (
-        <div className="layout h-full">
-            <SidebarPanal isSidebarVisible={isSidebarVisible} userType={userType} permissions={permissions} onClose={closeSidebar}/>
-            <div className={`main-content ${isSidebarVisible ? "sidebar-open" : "sidebar-close"}`}>
-                <Topbar toggleSidebar={toggleSidebar} isSidebarVisible={isSidebarVisible} userType={userType} name={name} />
-                <div className="pt-[60px] h-full flex flex-col">
-                    <Outlet />
+        userType !== 'USER' ? (
+            <div className="layout h-full">
+                <SidebarPanal isSidebarVisible={isSidebarVisible} userType={userType} permissions={permissions} onClose={closeSidebar} />
+                <div className={`main-content ${isSidebarVisible ? "sidebar-open" : "sidebar-close"}`}>
+                    <Topbar toggleSidebar={toggleSidebar} isSidebarVisible={isSidebarVisible} userType={userType} name={name} />
+                    <div className="pt-[60px] h-full flex flex-col">
+                        <Outlet />
+                    </div>
                 </div>
             </div>
-        </div>
+        ) : (
+            <ChatSyncHome />
+        )
     );
 };
 

@@ -35,7 +35,8 @@ const userPermissions = {
         "logout",
         "chat/:chatId/:senderId/:receiverId",
         "profile",
-        "friendsList"
+        "friendsList",
+        "chat"
         // "dashboard",
         // "home",
         // "userList",

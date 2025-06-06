@@ -23,7 +23,7 @@ const Login = () => {
     });
 
     const { fetchData, basePathAction, apiPathAction } = Base();
-    const { validateInputHandler, inputChangeHandler, inputMessageHandler, validateFormHandler } = ValidationHandler();
+    const { validateInputHandler, inputChangeHandler, inputMessageHandler } = ValidationHandler();
     const { payload, redirect, redirectState } = state;
 
     const stateContext = {
@@ -62,8 +62,7 @@ const Login = () => {
                     <div className='flex justify-center login-mobile-logo-container'>
                         <img src={`${window.basePath}/img/logo192.png`} alt="ChatSync-Logo" className='md:h-[120px] h-[65px] login-mobile-logo' />
                     </div>
-                    <h1 className="fs-20 fs-sm-24 fs-md-36 fw-700">ChatSync</h1>
-                    <p className="fs-12 fs-sm-14 fs-md-16 fw-400">Connect Together With Your Friends</p>
+                    <img src={`${window.basePath}/img/ChatSync.png`} alt="ChatSync-Logo" className='md:h-[120px] h-[65px] mb-4' />
                 </div>
             </div>
 

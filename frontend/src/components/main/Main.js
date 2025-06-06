@@ -19,10 +19,9 @@ function Main() {
     const excludePages = ["index", "login", "logout", "error", "oops"];
 
     if (excludePages.includes(pagepath)) {
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("globalObj");
-         dispatch(logout())
-         dispatch(setToken())
+        localStorage.clear()
+        dispatch(logout())
+        dispatch(setToken())
     }
 
     handleAutoLogout(); // Call this function on page load or periodically
@@ -45,6 +44,13 @@ function Main() {
                                 >
                                     {/* Nested route for protected routes */}
                                     <Route index element={route.element} />
+                                    {route.children && route.children.map((child, childIndex) => (
+                                        <Route
+                                            key={`${index}-${childIndex}`}
+                                            path={child.path}
+                                            element={child.element}
+                                        />
+                                    ))}
                                 </Route>
                             );
                         }

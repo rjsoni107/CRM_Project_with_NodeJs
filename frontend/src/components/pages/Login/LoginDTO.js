@@ -24,7 +24,7 @@ const LoginDTO = ({ setError, fetchData, basePathAction, setState, state, setSho
             const payload = { userName, pin };
             const fetchAction = apiPathAction(ENDPOINTS.LOGIN_ACTION);
             const redirectAdminPanal = basePathAction(ENDPOINTS.DASHBOARD);
-            const redirectUserPanal = basePathAction(ENDPOINTS.FRIENDS_LIST);
+            const redirectUserPanal = basePathAction(ENDPOINTS.CHAT);
             setShowLoader(true)
             try {
                 const response = await fetchData('POST', fetchAction, payload);

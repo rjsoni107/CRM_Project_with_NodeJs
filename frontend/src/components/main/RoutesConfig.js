@@ -2,6 +2,8 @@ import React from "react";
 import { ENDPOINTS } from "../../utility/ApiEndpoints";
 import Chat from "../pages/LiveChat/Chat";
 import FriendsList from "../pages/FriendsList/FriendsList";
+const MessagePage = React.lazy(() => import("../pages/ChatSync/MessagePage"));
+const ChatSyncHome = React.lazy(() => import("../pages/ChatSync/ChatSyncHome"));
 const VerifyOtp = React.lazy(() => import("../pages/VerifyOtp/VerifyOtp"));
 const AddUser = React.lazy(() => import("../pages/User/UserAdd/AddUser"));
 const UserList = React.lazy(() => import("../pages/User/UserList/UserList"));
@@ -41,12 +43,6 @@ const RoutesConfig = [
         isProtected: false,
     },
     {
-        path: `${ENDPOINTS.CHAT}/:chatId/:senderId/:receiverId`,
-        element: <Chat />,
-        isProtected: true,
-    },
-
-    {
         path: ENDPOINTS.VERIFY_OTP,
         element: <VerifyOtp />,
         isProtected: false,
@@ -56,15 +52,22 @@ const RoutesConfig = [
         element: <ChangePin />,
         isProtected: false,
     },
-
+    
+    {
+        path: ENDPOINTS.CHAT,
+        element: <ChatSyncHome />,
+        children: [
+            {
+                path: ':userId',
+                element: <MessagePage />
+            }
+        ],
+        isProtected: true,
+    },
+    
     // Protected Routes
     {
         path: ENDPOINTS.DASHBOARD,
-        element: <Dashboard />,
-        isProtected: true,
-    },
-    {
-        path: ENDPOINTS.HOME,
         element: <Dashboard />,
         isProtected: true,
     },

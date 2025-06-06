@@ -35,4 +35,6 @@ export const ENDPOINTS = {
     NOTIFICATION: 'notifications',
     FRIENDS_LIST: 'friendsList',
     GET_FRIENDS_LIST_ACTION: 'getFriendsListAction',
+    GET_USER_PROFILE_ACTION: 'getUserProfileAction',
+    SEARCH_USER_LIST_ACTION: 'searchUserListAction',
 }
