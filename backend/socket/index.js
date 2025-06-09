@@ -190,7 +190,7 @@ io.on('connection', async (socket) => {
             }
 
             // Find the conversation between the two users
-            const conversation = await ConversationModel.findOne({  
+            const conversation = await ConversationModel.findOne({
                 "$or": [
                     { sender: userId, receiver: msgByUserId },
                     { sender: msgByUserId, receiver: userId }

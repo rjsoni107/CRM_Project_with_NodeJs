@@ -1139,7 +1139,7 @@ exports.updateUserProfile = async (req, res) => {
             responseStatus: "SUCCESS",
             responseMsg: "User updated successfully",
             responseCode: "200",
-            data: updatedUser,
+            profileData: updatedUser,
             success: true
         });
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link, useParams } from 'react-router-dom'
-import { HiDotsVertical } from "react-icons/hi";
-import { FaAngleLeft, FaPlus, FaImage, FaVideo } from "react-icons/fa6";
+import { PiDotsThreeOutlineVerticalFill } from "react-icons/pi";
+import { FaAngleLeft, FaImage, FaVideo } from "react-icons/fa6";
 import { IoClose } from "react-icons/io5";
 import backgroundImage from '../../../assets/wallapaper.jpeg'
 import { IoMdSend } from "react-icons/io";
@@ -14,6 +14,7 @@ import Base from '../../../util/Base';
 import { ENDPOINTS } from '../../../utility/ApiEndpoints';
 import { IoCheckmark, IoCheckmarkDone } from "react-icons/io5";
 import Avatar from '../../helperComponent/Avatar';
+import { FcAddImage } from "react-icons/fc";
 
 const MessagePage = () => {
     const { basePathAction, getDateLabel, localeTimeString } = Base();
@@ -31,7 +32,6 @@ const MessagePage = () => {
     })
 
     const isOnline = user?.onlineUser?.includes(dataUser?._id)
-    // console.log('lastSeen', user?.lastSeen)
     const [openImageVideoUpload, setOpenImageVideoUpload] = useState(false)
     const [message, setMessage] = useState({
         text: "",
@@ -175,8 +175,6 @@ const MessagePage = () => {
         }
     }
 
-    console.log('dataUser', dataUser)
-
     return (
         <div style={{ backgroundImage: `url(${backgroundImage})` }} className='bg-no-repeat bg-cover h-full'>
             <header className='sticky top-0 h-16 bg-white flex justify-between items-center px-4'>
@@ -200,18 +198,19 @@ const MessagePage = () => {
                                 <span className="text-gray-600 text-sm italic animate-pulse">
                                     Typing...
                                 </span>
-                            ) : (
-
-                                isOnline
-                                    ? <span className='text-primary'>online</span>
-                                    : <span className='text-slate-500'>{`last seen ${getDateLabel(dataUser?.lastSeen)} at ${localeTimeString(dataUser?.lastSeen)}`}</span>
-                            )}
+                            ) : isOnline ? (
+                                <span className='text-primary'>online</span>
+                            ) : dataUser?.lastSeen ? (
+                                <span className='text-slate-500'>
+                                    last seen {getDateLabel(dataUser?.lastSeen)} at {localeTimeString(dataUser?.lastSeen)}
+                                </span>
+                            ) : ("")}
                         </p>
                     </div>
                 </div>
                 <div>
                     <button className='cursor-pointer hover:text-primary'>
-                        <HiDotsVertical />
+                        <PiDotsThreeOutlineVerticalFill />
                     </button>
                 </div>
             </header>
@@ -303,7 +302,7 @@ const MessagePage = () => {
             <section className='h-16 bg-white flex items-center px-4'>
                 <div className='relative'>
                     <button onClick={handleUploadImageVideoOpen} className='flex justify-center items-center w-11 h-11 rounded-full hover:bg-primary hover:text-white'>
-                        <FaPlus size={20} />
+                        <FcAddImage size={25} />
                     </button>
                     {/* Video and image upload */}
                     {
